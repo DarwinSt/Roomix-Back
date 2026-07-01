@@ -7,6 +7,7 @@ import com.example.roomix.habitacion.exception.TransicionEstadoInvalidaException
 import com.example.roomix.huesped.exception.HuespedException;
 import com.example.roomix.inventario.exception.InventarioException;
 import com.example.roomix.incidencia.exception.IncidenciaException;
+import com.example.roomix.reserva.exception.ReservaException;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -49,6 +50,16 @@ public class GlobalExceptionHandler {
         detail.setTitle(ex.getIncidenciaErrorCode().name());
         detail.setProperty("codigo", ex.getErrorCode());
         detail.setProperty("modulo", "INCIDENCIAS");
+        detail.setProperty("timestamp", Instant.now());
+        return detail;
+    }
+
+    @ExceptionHandler(ReservaException.class)
+    public ProblemDetail handleReserva(ReservaException ex) {
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(ex.getHttpStatus(), ex.getMessage());
+        detail.setTitle(ex.getReservaErrorCode().name());
+        detail.setProperty("codigo", ex.getErrorCode());
+        detail.setProperty("modulo", "RESERVAS");
         detail.setProperty("timestamp", Instant.now());
         return detail;
     }

@@ -9,6 +9,7 @@ import com.example.roomix.huesped.dto.HuespedResumenResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,6 +22,8 @@ public record HabitacionResponse(
         List<String> caracteristicas,
         TipoHabitacion tipoHabitacion,
         String descripcion,
+        @Schema(description = "Tarifa por noche de la habitación", nullable = true)
+        BigDecimal precioNoche,
         EstadoHabitacion estado,
         @Schema(description = "Fecha planificada de entrada (reserva)", format = "date", nullable = true)
         LocalDate fechaEntrada,
@@ -46,6 +49,7 @@ public record HabitacionResponse(
                 .caracteristicas(List.copyOf(habitacion.getCaracteristicas()))
                 .tipoHabitacion(habitacion.getTipoHabitacion())
                 .descripcion(habitacion.getDescripcion())
+                .precioNoche(habitacion.getPrecioNoche())
                 .estado(habitacion.getEstado())
                 .fechaEntrada(habitacion.getFechaEntrada())
                 .fechaSalida(habitacion.getFechaSalida())

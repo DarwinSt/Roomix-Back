@@ -3,6 +3,8 @@ package com.example.roomix.huesped.controller;
 import com.example.roomix.huesped.dto.HuespedRequest;
 import com.example.roomix.huesped.dto.HuespedResponse;
 import com.example.roomix.huesped.service.HuespedService;
+import com.example.roomix.reserva.dto.ReservaResponse;
+import com.example.roomix.reserva.service.ReservaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -28,6 +30,7 @@ import java.util.List;
 public class HuespedController {
 
     private final HuespedService huespedService;
+    private final ReservaService reservaService;
 
     @Operation(summary = "Listar huéspedes")
     @GetMapping
@@ -65,5 +68,11 @@ public class HuespedController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void eliminar(@PathVariable Long id) {
         huespedService.eliminar(id);
+    }
+
+    @Operation(summary = "Historial de reservas del huésped")
+    @GetMapping("/{id}/reservas")
+    public List<ReservaResponse> historialReservas(@PathVariable Long id) {
+        return reservaService.historialHuesped(id);
     }
 }

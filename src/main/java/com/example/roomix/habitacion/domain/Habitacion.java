@@ -22,6 +22,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -62,6 +63,10 @@ public class Habitacion {
 
     @Column(nullable = false, length = 500)
     private String descripcion;
+
+    /** Tarifa por noche específica de esta habitación. */
+    @Column(name = "precio_noche", precision = 10, scale = 2)
+    private BigDecimal precioNoche;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)

@@ -13,12 +13,12 @@ import com.example.roomix.habitacion.exception.HabitacionNotFoundException;
 import com.example.roomix.habitacion.exception.NumeroHabitacionDuplicadoException;
 import com.example.roomix.habitacion.exception.ReservaInvalidaException;
 import com.example.roomix.habitacion.repository.HabitacionRepository;
-import com.example.roomix.huesped.domain.Huesped;
 import com.example.roomix.huesped.exception.HuespedErrorCode;
 import com.example.roomix.huesped.exception.HuespedException;
 import com.example.roomix.huesped.service.HuespedService;
 import com.example.roomix.incidencia.repository.IncidenciaRepository;
 import com.example.roomix.incidencia.service.IncidenciaService;
+import com.example.roomix.reserva.service.ReservaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -39,6 +39,7 @@ public class HabitacionService {
     private final HabitacionInhabilitacionService inhabilitacionService;
     private final IncidenciaRepository incidenciaRepository;
     private final HuespedService huespedService;
+    private final ReservaService reservaService;
     @Lazy
     private final IncidenciaService incidenciaService;
 
@@ -72,6 +73,7 @@ public class HabitacionService {
                 .caracteristicas(normalizarCaracteristicas(request.caracteristicas()))
                 .tipoHabitacion(request.tipoHabitacion())
                 .descripcion(request.descripcion().trim())
+                .precioNoche(request.precioNoche())
                 .estado(estado)
                 .build();
 
@@ -96,6 +98,7 @@ public class HabitacionService {
         habitacion.getCaracteristicas().addAll(normalizarCaracteristicas(request.caracteristicas()));
         habitacion.setTipoHabitacion(request.tipoHabitacion());
         habitacion.setDescripcion(request.descripcion().trim());
+        habitacion.setPrecioNoche(request.precioNoche());
 
         if (request.estado() != null) {
             inhabilitacionService.sincronizar(habitacion);
@@ -246,6 +249,8 @@ public class HabitacionService {
                             + " (noches de la estadía)"
             );
         }
+
+        reservaService.validarSinSolapamiento(habitacion.getId(), entrada, salida);
     }
 
     private void validarNumeroUnico(String numero, Long idExcluido) {
@@ -280,18 +285,22 @@ public class HabitacionService {
             }
             habitacion.setHoraRealCheckIn(LocalDateTime.now());
             habitacion.setEstadoReserva(EstadoReserva.EN_CURSO);
+            reservaService.marcarEnCurso(habitacion);
             return;
         }
 
         if (estadoActual == EstadoHabitacion.OCUPADO && nuevoEstado == EstadoHabitacion.LIBRE) {
-            habitacion.setHoraRealCheckOut(LocalDateTime.now());
+            LocalDateTime horaCheckOut = LocalDateTime.now();
+            habitacion.setHoraRealCheckOut(horaCheckOut);
             habitacion.setEstadoReserva(EstadoReserva.FINALIZADA);
+            reservaService.finalizar(habitacion, horaCheckOut);
             limpiarReserva(habitacion);
             return;
         }
 
         if (estadoActual == EstadoHabitacion.RESERVADO && nuevoEstado == EstadoHabitacion.LIBRE) {
             habitacion.setEstadoReserva(EstadoReserva.CANCELADA);
+            reservaService.cancelar(habitacion);
             limpiarReserva(habitacion);
             return;
         }
@@ -307,12 +316,6 @@ public class HabitacionService {
             LocalDate fechaSalida,
             Long huespedId
     ) {
-        if (huespedId == null) {
-            throw new HuespedException(HuespedErrorCode.HUESPED_REQUERIDO);
-        }
-        Huesped huesped = huespedService.buscarActivo(huespedId);
-        huespedService.validarDisponibleParaAsignar(huesped, habitacion.getId());
-
         LocalDate entrada = fechaEntrada != null ? fechaEntrada : LocalDate.now();
         LocalDate salida = fechaSalida != null ? fechaSalida : entrada.plusDays(1);
 
@@ -325,13 +328,7 @@ public class HabitacionService {
             throw new ReservaInvalidaException("La reserva debe incluir al menos 1 noche");
         }
 
-        habitacion.setFechaEntrada(entrada);
-        habitacion.setFechaSalida(salida);
-        habitacion.setCantidadNoches(noches);
-        habitacion.setEstadoReserva(EstadoReserva.CONFIRMADA);
-        habitacion.setHoraRealCheckIn(null);
-        habitacion.setHoraRealCheckOut(null);
-        habitacion.setHuesped(huesped);
+        reservaService.registrarEnHabitacion(habitacion, entrada, salida, huespedId);
     }
 
     private List<String> normalizarCaracteristicas(List<String> caracteristicas) {

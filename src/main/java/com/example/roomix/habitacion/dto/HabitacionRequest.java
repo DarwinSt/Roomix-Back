@@ -3,11 +3,13 @@ package com.example.roomix.habitacion.dto;
 import com.example.roomix.habitacion.domain.EstadoHabitacion;
 import com.example.roomix.habitacion.domain.TipoHabitacion;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -50,6 +52,15 @@ public record HabitacionRequest(
         @NotBlank(message = "La descripción es obligatoria")
         @Size(max = 500, message = "La descripción no puede superar 500 caracteres")
         String descripcion,
+
+        @Schema(
+                description = "Tarifa por noche de esta habitación",
+                example = "120.00",
+                requiredMode = Schema.RequiredMode.REQUIRED
+        )
+        @NotNull(message = "El precio por noche es obligatorio")
+        @DecimalMin(value = "0.01", message = "El precio por noche debe ser mayor que cero")
+        BigDecimal precioNoche,
 
         @Schema(
                 description = "Estado operativo inicial. Por defecto `LIBRE` si se omite al crear.",

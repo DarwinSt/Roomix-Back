@@ -2,6 +2,7 @@ package com.example.roomix.habitacion.repository;
 
 import com.example.roomix.habitacion.domain.EstadoHabitacion;
 import com.example.roomix.habitacion.domain.Habitacion;
+import com.example.roomix.habitacion.domain.TipoHabitacion;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Collection;
@@ -19,4 +20,6 @@ public interface HabitacionRepository extends JpaRepository<Habitacion, Long> {
     List<Habitacion> findByEstadoIn(Collection<EstadoHabitacion> estados);
 
     Optional<Habitacion> findByHuespedIdAndEstadoIn(Long huespedId, Collection<EstadoHabitacion> estados);
+
+    List<Habitacion> findByTipoHabitacion(TipoHabitacion tipoHabitacion);
 }
