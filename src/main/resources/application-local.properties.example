@@ -1,0 +1,7 @@
+# Copia este archivo como application-local.properties (no se sube a git).
+spring.datasource.url=jdbc:postgresql://localhost:5432/roomix
+spring.datasource.username=postgres
+spring.datasource.password=TU_CONTRASEÑA
+
+# update = Hibernate ajusta tablas | validate = solo valida contra schema.sql ya ejecutado
+spring.jpa.hibernate.ddl-auto=update
