@@ -4,6 +4,7 @@ import com.example.roomix.habitacion.domain.EstadoHabitacion;
 import com.example.roomix.habitacion.domain.Habitacion;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,4 +15,8 @@ public interface HabitacionRepository extends JpaRepository<Habitacion, Long> {
     boolean existsByNumeroAndIdNot(String numero, Long id);
 
     List<Habitacion> findByEstado(EstadoHabitacion estado);
+
+    List<Habitacion> findByEstadoIn(Collection<EstadoHabitacion> estados);
+
+    Optional<Habitacion> findByHuespedIdAndEstadoIn(Long huespedId, Collection<EstadoHabitacion> estados);
 }

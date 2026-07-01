@@ -61,6 +61,9 @@ public record HabitacionRequest(
         LocalDate fechaEntrada,
 
         @Schema(description = "Fecha planificada de salida (requerida si estado es RESERVADO)", format = "date", nullable = true)
-        LocalDate fechaSalida
+        LocalDate fechaSalida,
+
+        @Schema(description = "Huésped asignado (requerido si estado es RESERVADO)", nullable = true)
+        Long huespedId
 ) {
 }

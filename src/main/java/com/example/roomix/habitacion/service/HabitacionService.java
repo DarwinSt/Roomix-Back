@@ -13,6 +13,10 @@ import com.example.roomix.habitacion.exception.HabitacionNotFoundException;
 import com.example.roomix.habitacion.exception.NumeroHabitacionDuplicadoException;
 import com.example.roomix.habitacion.exception.ReservaInvalidaException;
 import com.example.roomix.habitacion.repository.HabitacionRepository;
+import com.example.roomix.huesped.domain.Huesped;
+import com.example.roomix.huesped.exception.HuespedErrorCode;
+import com.example.roomix.huesped.exception.HuespedException;
+import com.example.roomix.huesped.service.HuespedService;
 import com.example.roomix.incidencia.repository.IncidenciaRepository;
 import com.example.roomix.incidencia.service.IncidenciaService;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +38,7 @@ public class HabitacionService {
     private final HabitacionRepository habitacionRepository;
     private final HabitacionInhabilitacionService inhabilitacionService;
     private final IncidenciaRepository incidenciaRepository;
+    private final HuespedService huespedService;
     @Lazy
     private final IncidenciaService incidenciaService;
 
@@ -75,7 +80,7 @@ public class HabitacionService {
         }
         if (estado == EstadoHabitacion.RESERVADO) {
             validarDisponibleParaReserva(habitacion, request.fechaEntrada(), request.fechaSalida());
-            aplicarNuevaReserva(habitacion, request.fechaEntrada(), request.fechaSalida());
+            aplicarNuevaReserva(habitacion, request.fechaEntrada(), request.fechaSalida(), request.huespedId());
         }
 
         return HabitacionResponse.from(habitacionRepository.save(habitacion));
@@ -110,7 +115,8 @@ public class HabitacionService {
                     estadoAnterior,
                     request.estado(),
                     request.fechaEntrada(),
-                    request.fechaSalida()
+                    request.fechaSalida(),
+                    request.huespedId()
             );
             if (request.estado() == EstadoHabitacion.RESERVADO) {
                 habitacion.setEstadoRetorno(null);
@@ -120,7 +126,7 @@ public class HabitacionService {
         } else if (request.fechaEntrada() != null && request.fechaSalida() != null
                 && habitacion.getEstado() == EstadoHabitacion.RESERVADO) {
             validarDisponibleParaReserva(habitacion, request.fechaEntrada(), request.fechaSalida());
-            aplicarNuevaReserva(habitacion, request.fechaEntrada(), request.fechaSalida());
+            aplicarNuevaReserva(habitacion, request.fechaEntrada(), request.fechaSalida(), request.huespedId());
         }
 
         inhabilitacionService.sincronizar(habitacion);
@@ -146,7 +152,8 @@ public class HabitacionService {
                     estadoActual,
                     EstadoHabitacion.LIBRE,
                     request.fechaEntrada(),
-                    request.fechaSalida()
+                    request.fechaSalida(),
+                    null
             );
             habitacion.setEstado(EstadoHabitacion.INHABILITADO);
             habitacion.setMotivoInhabilitacion(MotivoInhabilitacion.POST_CHECKOUT);
@@ -171,7 +178,8 @@ public class HabitacionService {
                 estadoActual,
                 request.estado(),
                 request.fechaEntrada(),
-                request.fechaSalida()
+                request.fechaSalida(),
+                request.huespedId()
         );
 
         if (request.estado() == EstadoHabitacion.RESERVADO) {
@@ -200,6 +208,7 @@ public class HabitacionService {
         habitacion.setEstadoReserva(null);
         habitacion.setHoraRealCheckIn(null);
         habitacion.setHoraRealCheckOut(null);
+        habitacion.setHuesped(null);
     }
 
     public boolean tieneReservaVigente(Habitacion habitacion) {
@@ -257,14 +266,18 @@ public class HabitacionService {
             EstadoHabitacion estadoActual,
             EstadoHabitacion nuevoEstado,
             LocalDate fechaEntrada,
-            LocalDate fechaSalida
+            LocalDate fechaSalida,
+            Long huespedId
     ) {
         if (nuevoEstado == EstadoHabitacion.RESERVADO) {
-            aplicarNuevaReserva(habitacion, fechaEntrada, fechaSalida);
+            aplicarNuevaReserva(habitacion, fechaEntrada, fechaSalida, huespedId);
             return;
         }
 
         if (estadoActual == EstadoHabitacion.RESERVADO && nuevoEstado == EstadoHabitacion.OCUPADO) {
+            if (habitacion.getHuesped() == null) {
+                throw new HuespedException(HuespedErrorCode.HUESPED_SIN_ASIGNAR_CHECKIN);
+            }
             habitacion.setHoraRealCheckIn(LocalDateTime.now());
             habitacion.setEstadoReserva(EstadoReserva.EN_CURSO);
             return;
@@ -288,7 +301,18 @@ public class HabitacionService {
         }
     }
 
-    private void aplicarNuevaReserva(Habitacion habitacion, LocalDate fechaEntrada, LocalDate fechaSalida) {
+    private void aplicarNuevaReserva(
+            Habitacion habitacion,
+            LocalDate fechaEntrada,
+            LocalDate fechaSalida,
+            Long huespedId
+    ) {
+        if (huespedId == null) {
+            throw new HuespedException(HuespedErrorCode.HUESPED_REQUERIDO);
+        }
+        Huesped huesped = huespedService.buscarActivo(huespedId);
+        huespedService.validarDisponibleParaAsignar(huesped, habitacion.getId());
+
         LocalDate entrada = fechaEntrada != null ? fechaEntrada : LocalDate.now();
         LocalDate salida = fechaSalida != null ? fechaSalida : entrada.plusDays(1);
 
@@ -307,6 +331,7 @@ public class HabitacionService {
         habitacion.setEstadoReserva(EstadoReserva.CONFIRMADA);
         habitacion.setHoraRealCheckIn(null);
         habitacion.setHoraRealCheckOut(null);
+        habitacion.setHuesped(huesped);
     }
 
     private List<String> normalizarCaracteristicas(List<String> caracteristicas) {

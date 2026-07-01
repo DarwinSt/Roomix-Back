@@ -4,6 +4,7 @@ import com.example.roomix.habitacion.exception.HabitacionNoDisponibleException;
 import com.example.roomix.habitacion.exception.HabitacionNotFoundException;
 import com.example.roomix.habitacion.exception.NumeroHabitacionDuplicadoException;
 import com.example.roomix.habitacion.exception.TransicionEstadoInvalidaException;
+import com.example.roomix.huesped.exception.HuespedException;
 import com.example.roomix.inventario.exception.InventarioException;
 import com.example.roomix.incidencia.exception.IncidenciaException;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -21,6 +22,16 @@ import java.util.Map;
 @Hidden
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(HuespedException.class)
+    public ProblemDetail handleHuesped(HuespedException ex) {
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(ex.getHttpStatus(), ex.getMessage());
+        detail.setTitle(ex.getHuespedErrorCode().name());
+        detail.setProperty("codigo", ex.getErrorCode());
+        detail.setProperty("modulo", "HUESPEDES");
+        detail.setProperty("timestamp", Instant.now());
+        return detail;
+    }
 
     @ExceptionHandler(InventarioException.class)
     public ProblemDetail handleInventario(InventarioException ex) {

@@ -19,6 +19,9 @@ public record ActualizarEstadoRequest(
         LocalDate fechaSalida,
 
         @Schema(description = "Obligatorio al pasar a INHABILITADO", nullable = true)
-        MotivoInhabilitacion motivoInhabilitacion
+        MotivoInhabilitacion motivoInhabilitacion,
+
+        @Schema(description = "Obligatorio al reservar la habitación", nullable = true)
+        Long huespedId
 ) {
 }

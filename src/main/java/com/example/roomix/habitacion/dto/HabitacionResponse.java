@@ -5,6 +5,7 @@ import com.example.roomix.habitacion.domain.EstadoReserva;
 import com.example.roomix.habitacion.domain.Habitacion;
 import com.example.roomix.habitacion.domain.MotivoInhabilitacion;
 import com.example.roomix.habitacion.domain.TipoHabitacion;
+import com.example.roomix.huesped.dto.HuespedResumenResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
@@ -34,6 +35,8 @@ public record HabitacionResponse(
         @Schema(description = "Hora real de check-out del huésped", format = "date-time", nullable = true)
         LocalDateTime horaRealCheckOut,
         MotivoInhabilitacion motivoInhabilitacion,
+        @Schema(description = "Huésped asignado a la reserva o estadía actual", nullable = true)
+        HuespedResumenResponse huesped,
         LocalDateTime fechaHoraUltimaActualizacion
 ) {
     public static HabitacionResponse from(Habitacion habitacion) {
@@ -51,6 +54,7 @@ public record HabitacionResponse(
                 .horaRealCheckIn(habitacion.getHoraRealCheckIn())
                 .horaRealCheckOut(habitacion.getHoraRealCheckOut())
                 .motivoInhabilitacion(habitacion.getMotivoInhabilitacion())
+                .huesped(HuespedResumenResponse.from(habitacion.getHuesped()))
                 .fechaHoraUltimaActualizacion(habitacion.getFechaHoraUltimaActualizacion())
                 .build();
     }
