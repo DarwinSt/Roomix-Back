@@ -5,6 +5,7 @@ import com.example.roomix.habitacion.domain.EstadoHabitacion;
 import com.example.roomix.habitacion.repository.HabitacionRepository;
 import com.example.roomix.habitacion.service.HabitacionInhabilitacionService;
 import com.example.roomix.incidencia.domain.AlcanceIncidencia;
+import com.example.roomix.incidencia.domain.ContextoLimpieza;
 import com.example.roomix.incidencia.domain.EstadoIncidencia;
 import com.example.roomix.incidencia.domain.Incidencia;
 import com.example.roomix.incidencia.domain.IncidenciaTarea;
@@ -135,24 +136,14 @@ public class IncidenciaService {
                     ));
             inhabilitacionService.sincronizar(habitacion);
             habitacionRepository.save(habitacion);
-            validarCreacionServicio(habitacion, request.tipo());
+            validarCreacionServicio(habitacion, request.tipo(), request.contextoLimpieza());
             referenciaTitulo = "habitación " + habitacion.getNumero();
 
             if (request.tipo() == TipoIncidencia.MANTENIMIENTO && request.fechaHoraProgramada() == null) {
                 throw new IncidenciaException(IncidenciaErrorCode.FECHA_PROGRAMADA_REQUERIDA);
             }
 
-            if (incidenciaRepository.existsByHabitacionIdAndTipoAndEstadoNotIn(
-                    habitacion.getId(),
-                    request.tipo(),
-                    ESTADOS_CERRADOS
-            )) {
-                throw new IncidenciaException(
-                        IncidenciaErrorCode.INCIDENCIA_ACTIVA_EXISTENTE,
-                        request.tipo(),
-                        habitacion.getNumero()
-                );
-            }
+            validarIncidenciaActivaDuplicada(habitacion, request.tipo(), request.contextoLimpieza());
         } else {
             if (ubicacion == null || ubicacion.isBlank()) {
                 throw new IncidenciaException(IncidenciaErrorCode.UBICACION_REQUERIDA);
@@ -166,10 +157,11 @@ public class IncidenciaService {
                 .habitacion(habitacion)
                 .ubicacion(alcance == AlcanceIncidencia.ZONA_COMUN ? ubicacion : null)
                 .tipo(request.tipo())
-                .titulo(tituloParaTipo(request.tipo(), alcance, referenciaTitulo))
+                .contextoLimpieza(resolverContextoLimpieza(request.tipo(), request.contextoLimpieza()))
+                .titulo(tituloParaTipo(request.tipo(), request.contextoLimpieza(), alcance, referenciaTitulo))
                 .descripcion(request.descripcion() != null && !request.descripcion().isBlank()
                         ? request.descripcion().trim()
-                        : descripcionPorDefecto(request.tipo(), alcance))
+                        : descripcionPorDefecto(request.tipo(), request.contextoLimpieza(), alcance))
                 .estado(EstadoIncidencia.CREADA)
                 .fechaHoraProgramada(request.fechaHoraProgramada())
                 .build();
@@ -182,14 +174,16 @@ public class IncidenciaService {
 
     @Transactional
     public IncidenciaResponse crearLimpiezaPostCheckout(Habitacion habitacion) {
-        if (incidenciaRepository.existsByHabitacionIdAndTipoAndEstadoNotIn(
+        if (incidenciaRepository.existsLimpiezaPostCheckoutActiva(
                 habitacion.getId(),
                 TipoIncidencia.LIMPIEZA,
+                ContextoLimpieza.POST_CHECKOUT,
                 ESTADOS_CERRADOS
         )) {
             return incidenciaRepository.findActivasPorHabitacion(habitacion.getId(), ESTADOS_CERRADOS)
                     .stream()
-                    .filter(i -> i.getTipo() == TipoIncidencia.LIMPIEZA)
+                    .filter(i -> i.getTipo() == TipoIncidencia.LIMPIEZA
+                            && i.getContextoLimpieza() == ContextoLimpieza.POST_CHECKOUT)
                     .findFirst()
                     .map(IncidenciaResponse::from)
                     .orElseThrow();
@@ -199,8 +193,14 @@ public class IncidenciaService {
                 .alcance(AlcanceIncidencia.HABITACION)
                 .habitacion(habitacion)
                 .tipo(TipoIncidencia.LIMPIEZA)
-                .titulo(tituloParaTipo(TipoIncidencia.LIMPIEZA, AlcanceIncidencia.HABITACION, "habitación " + habitacion.getNumero()))
-                .descripcion("Limpieza automática tras check-out del huésped.")
+                .contextoLimpieza(ContextoLimpieza.POST_CHECKOUT)
+                .titulo(tituloParaTipo(
+                        TipoIncidencia.LIMPIEZA,
+                        ContextoLimpieza.POST_CHECKOUT,
+                        AlcanceIncidencia.HABITACION,
+                        "habitación " + habitacion.getNumero()
+                ))
+                .descripcion("Limpieza obligatoria tras check-out. La habitación no se puede reservar hasta finalizarla.")
                 .estado(EstadoIncidencia.CREADA)
                 .build();
         agregarTareas(incidencia, TipoIncidencia.LIMPIEZA, AlcanceIncidencia.HABITACION);
@@ -296,10 +296,18 @@ public class IncidenciaService {
     }
 
     private void sincronizarHabitacionSiAplica(Incidencia incidencia) {
-        if (incidencia.getHabitacion() != null) {
+        if (incidencia.getHabitacion() != null && afectaDisponibilidadHabitacion(incidencia)) {
             inhabilitacionService.sincronizar(incidencia.getHabitacion());
             habitacionRepository.save(incidencia.getHabitacion());
         }
+    }
+
+    private boolean afectaDisponibilidadHabitacion(Incidencia incidencia) {
+        if (incidencia.getTipo() == TipoIncidencia.MANTENIMIENTO) {
+            return true;
+        }
+        return incidencia.getTipo() == TipoIncidencia.LIMPIEZA
+                && incidencia.getContextoLimpieza() == ContextoLimpieza.POST_CHECKOUT;
     }
 
     private void validarTipoZonaComun(TipoIncidencia tipo) {
@@ -316,12 +324,41 @@ public class IncidenciaService {
         return ubicacion != null ? ubicacion.trim() : null;
     }
 
-    private void validarCreacionServicio(Habitacion habitacion, TipoIncidencia tipo) {
+    private void validarCreacionServicio(
+            Habitacion habitacion,
+            TipoIncidencia tipo,
+            ContextoLimpieza contextoLimpieza
+    ) {
         if (habitacion.getEstado() == EstadoHabitacion.INHABILITADO) {
+            if (tipo != TipoIncidencia.MANTENIMIENTO && tipo != TipoIncidencia.OTRO) {
+                throw new IncidenciaException(
+                        IncidenciaErrorCode.TIPO_NO_PERMITIDO,
+                        tipo,
+                        habitacion.getEstado()
+                );
+            }
             return;
         }
         if (habitacion.getEstado() == EstadoHabitacion.OCUPADO) {
-            if (tipo == TipoIncidencia.LIMPIEZA || tipo == TipoIncidencia.MANTENIMIENTO) {
+            if (tipo == TipoIncidencia.MANTENIMIENTO) {
+                throw new IncidenciaException(
+                        IncidenciaErrorCode.TIPO_NO_PERMITIDO,
+                        tipo,
+                        habitacion.getEstado()
+                );
+            }
+            if (tipo == TipoIncidencia.LIMPIEZA) {
+                if (contextoLimpieza == null
+                        || (contextoLimpieza != ContextoLimpieza.URGENCIA
+                        && contextoLimpieza != ContextoLimpieza.HUESPED_AUSENTE)) {
+                    throw new IncidenciaException(
+                            IncidenciaErrorCode.TIPO_NO_PERMITIDO,
+                            tipo,
+                            habitacion.getEstado()
+                    );
+                }
+            }
+            if (contextoLimpieza == ContextoLimpieza.POST_CHECKOUT) {
                 throw new IncidenciaException(
                         IncidenciaErrorCode.TIPO_NO_PERMITIDO,
                         tipo,
@@ -332,7 +369,7 @@ public class IncidenciaService {
         }
         if (habitacion.getEstado() == EstadoHabitacion.LIBRE
                 || habitacion.getEstado() == EstadoHabitacion.RESERVADO) {
-            if (tipo == TipoIncidencia.SERVICIO_CUARTO || tipo == TipoIncidencia.LIMPIEZA) {
+            if (tipo != TipoIncidencia.MANTENIMIENTO && tipo != TipoIncidencia.OTRO) {
                 throw new IncidenciaException(
                         IncidenciaErrorCode.TIPO_NO_PERMITIDO,
                         tipo,
@@ -346,6 +383,47 @@ public class IncidenciaService {
                 tipo,
                 habitacion.getNumero()
         );
+    }
+
+    private void validarIncidenciaActivaDuplicada(
+            Habitacion habitacion,
+            TipoIncidencia tipo,
+            ContextoLimpieza contextoLimpieza
+    ) {
+        if (tipo == TipoIncidencia.LIMPIEZA) {
+            ContextoLimpieza ctx = resolverContextoLimpieza(tipo, contextoLimpieza);
+            if (incidenciaRepository.existsLimpiezaActivaConContexto(
+                    habitacion.getId(),
+                    TipoIncidencia.LIMPIEZA,
+                    ctx,
+                    ESTADOS_CERRADOS
+            )) {
+                throw new IncidenciaException(
+                        IncidenciaErrorCode.INCIDENCIA_ACTIVA_EXISTENTE,
+                        tipo,
+                        habitacion.getNumero()
+                );
+            }
+            return;
+        }
+        if (incidenciaRepository.existsByHabitacionIdAndTipoAndEstadoNotIn(
+                habitacion.getId(),
+                tipo,
+                ESTADOS_CERRADOS
+        )) {
+            throw new IncidenciaException(
+                    IncidenciaErrorCode.INCIDENCIA_ACTIVA_EXISTENTE,
+                    tipo,
+                    habitacion.getNumero()
+            );
+        }
+    }
+
+    private ContextoLimpieza resolverContextoLimpieza(TipoIncidencia tipo, ContextoLimpieza contexto) {
+        if (tipo != TipoIncidencia.LIMPIEZA) {
+            return null;
+        }
+        return contexto;
     }
 
     private Incidencia buscarEntidad(Long id) {
@@ -385,7 +463,12 @@ public class IncidenciaService {
                 });
     }
 
-    private String tituloParaTipo(TipoIncidencia tipo, AlcanceIncidencia alcance, String referencia) {
+    private String tituloParaTipo(
+            TipoIncidencia tipo,
+            ContextoLimpieza contexto,
+            AlcanceIncidencia alcance,
+            String referencia
+    ) {
         if (alcance == AlcanceIncidencia.ZONA_COMUN) {
             return switch (tipo) {
                 case MANTENIMIENTO -> "Mantenimiento — " + referencia;
@@ -393,15 +476,29 @@ public class IncidenciaService {
                 default -> "Incidencia — " + referencia;
             };
         }
+        if (tipo == TipoIncidencia.LIMPIEZA) {
+            if (contexto == null || contexto == ContextoLimpieza.POST_CHECKOUT) {
+                return "Limpieza post check-out — " + referencia;
+            }
+            return switch (contexto) {
+                case URGENCIA -> "Limpieza urgente — " + referencia;
+                case HUESPED_AUSENTE -> "Limpieza (huésped ausente) — " + referencia;
+                case POST_CHECKOUT -> "Limpieza post check-out — " + referencia;
+            };
+        }
         return switch (tipo) {
-            case LIMPIEZA -> "Limpieza " + referencia;
             case MANTENIMIENTO -> "Mantenimiento " + referencia;
             case SERVICIO_CUARTO -> "Servicio al cuarto — " + referencia;
             case OTRO -> "Servicio " + referencia;
+            default -> "Incidencia " + referencia;
         };
     }
 
-    private String descripcionPorDefecto(TipoIncidencia tipo, AlcanceIncidencia alcance) {
+    private String descripcionPorDefecto(
+            TipoIncidencia tipo,
+            ContextoLimpieza contexto,
+            AlcanceIncidencia alcance
+    ) {
         if (alcance == AlcanceIncidencia.ZONA_COMUN) {
             return switch (tipo) {
                 case MANTENIMIENTO -> "Mantenimiento o reparación en zona común del hotel.";
@@ -409,11 +506,21 @@ public class IncidenciaService {
                 default -> "Incidencia en zona común.";
             };
         }
+        if (tipo == TipoIncidencia.LIMPIEZA) {
+            if (contexto == null || contexto == ContextoLimpieza.POST_CHECKOUT) {
+                return "Limpieza obligatoria tras check-out antes de una nueva reserva.";
+            }
+            return switch (contexto) {
+                case URGENCIA -> "Limpieza urgente con huésped en la habitación.";
+                case HUESPED_AUSENTE -> "Limpieza mientras el huésped está fuera; la reserva sigue activa.";
+                case POST_CHECKOUT -> "Limpieza obligatoria tras check-out antes de una nueva reserva.";
+            };
+        }
         return switch (tipo) {
-            case LIMPIEZA -> "Limpieza post check-out o preparación de habitación.";
             case MANTENIMIENTO -> "Mantenimiento programado; inhabilita la habitación solo el día indicado.";
             case SERVICIO_CUARTO -> "Entrega de comida o amenities al huésped.";
             case OTRO -> "Servicio adicional en habitación.";
+            default -> "Servicio en habitación.";
         };
     }
 }

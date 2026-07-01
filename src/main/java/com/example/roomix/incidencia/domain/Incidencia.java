@@ -61,6 +61,11 @@ public class Incidencia {
     @Column(nullable = false, length = 30)
     private TipoIncidencia tipo;
 
+    /** Solo para tipo LIMPIEZA: distingue post check-out, urgencia o huésped ausente. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "contexto_limpieza", length = 30)
+    private ContextoLimpieza contextoLimpieza;
+
     @Column(nullable = false, length = 150)
     private String titulo;
 

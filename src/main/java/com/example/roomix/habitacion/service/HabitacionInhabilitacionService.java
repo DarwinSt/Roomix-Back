@@ -4,6 +4,7 @@ import com.example.roomix.habitacion.domain.EstadoHabitacion;
 import com.example.roomix.habitacion.domain.Habitacion;
 import com.example.roomix.habitacion.domain.MotivoInhabilitacion;
 import com.example.roomix.habitacion.repository.HabitacionRepository;
+import com.example.roomix.incidencia.domain.ContextoLimpieza;
 import com.example.roomix.incidencia.domain.EstadoIncidencia;
 import com.example.roomix.incidencia.domain.TipoIncidencia;
 import com.example.roomix.incidencia.repository.IncidenciaRepository;
@@ -72,9 +73,10 @@ public class HabitacionInhabilitacionService {
     }
 
     public boolean tieneLimpiezaPendiente(Long habitacionId) {
-        return incidenciaRepository.existsLimpiezaActiva(
+        return incidenciaRepository.existsLimpiezaPostCheckoutActiva(
                 habitacionId,
                 TipoIncidencia.LIMPIEZA,
+                ContextoLimpieza.POST_CHECKOUT,
                 ESTADOS_CERRADOS
         );
     }

@@ -1,6 +1,7 @@
 package com.example.roomix.incidencia.dto;
 
 import com.example.roomix.incidencia.domain.AlcanceIncidencia;
+import com.example.roomix.incidencia.domain.ContextoLimpieza;
 import com.example.roomix.incidencia.domain.TipoIncidencia;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
@@ -22,6 +23,12 @@ public record CrearIncidenciaRequest(
         @NotNull
         @Schema(description = "Tipo de servicio", example = "MANTENIMIENTO")
         TipoIncidencia tipo,
+
+        @Schema(
+                description = "Contexto de limpieza (obligatorio si tipo=LIMPIEZA en habitación OCUPADO)",
+                nullable = true
+        )
+        ContextoLimpieza contextoLimpieza,
 
         @Schema(description = "Descripción opcional", nullable = true)
         String descripcion,

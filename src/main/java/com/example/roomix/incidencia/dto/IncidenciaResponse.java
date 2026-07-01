@@ -1,6 +1,7 @@
 package com.example.roomix.incidencia.dto;
 
 import com.example.roomix.incidencia.domain.AlcanceIncidencia;
+import com.example.roomix.incidencia.domain.ContextoLimpieza;
 import com.example.roomix.incidencia.domain.EstadoIncidencia;
 import com.example.roomix.incidencia.domain.Incidencia;
 import com.example.roomix.incidencia.domain.IncidenciaProgresoCalculator;
@@ -23,6 +24,7 @@ public record IncidenciaResponse(
         Long personalAsignadoId,
         String personalAsignadoNombre,
         TipoIncidencia tipo,
+        ContextoLimpieza contextoLimpieza,
         String titulo,
         String descripcion,
         EstadoIncidencia estado,
@@ -55,6 +57,7 @@ public record IncidenciaResponse(
                         incidencia.getPersonalAsignado() != null ? incidencia.getPersonalAsignado().getNombre() : null
                 )
                 .tipo(incidencia.getTipo())
+                .contextoLimpieza(incidencia.getContextoLimpieza())
                 .titulo(incidencia.getTitulo())
                 .descripcion(incidencia.getDescripcion())
                 .estado(incidencia.getEstado())

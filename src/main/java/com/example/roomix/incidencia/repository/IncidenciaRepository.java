@@ -1,5 +1,6 @@
 package com.example.roomix.incidencia.repository;
 
+import com.example.roomix.incidencia.domain.ContextoLimpieza;
 import com.example.roomix.incidencia.domain.EstadoIncidencia;
 import com.example.roomix.incidencia.domain.Incidencia;
 import com.example.roomix.incidencia.domain.TipoIncidencia;
@@ -99,6 +100,36 @@ public interface IncidenciaRepository extends JpaRepository<Incidencia, Long> {
             @Param("inicioDia") LocalDateTime inicioDia,
             @Param("finDia") LocalDateTime finDia,
             @Param("tipoMantenimiento") TipoIncidencia tipoMantenimiento,
+            @Param("cerradas") Collection<EstadoIncidencia> cerradas
+    );
+
+    @Query("""
+            SELECT CASE WHEN COUNT(i) > 0 THEN true ELSE false END
+            FROM Incidencia i
+            WHERE i.habitacion.id = :habitacionId
+              AND i.tipo = :tipoLimpieza
+              AND i.contextoLimpieza = :contexto
+              AND i.estado NOT IN :cerradas
+            """)
+    boolean existsLimpiezaActivaConContexto(
+            @Param("habitacionId") Long habitacionId,
+            @Param("tipoLimpieza") TipoIncidencia tipoLimpieza,
+            @Param("contexto") ContextoLimpieza contexto,
+            @Param("cerradas") Collection<EstadoIncidencia> cerradas
+    );
+
+    @Query("""
+            SELECT CASE WHEN COUNT(i) > 0 THEN true ELSE false END
+            FROM Incidencia i
+            WHERE i.habitacion.id = :habitacionId
+              AND i.tipo = :tipoLimpieza
+              AND i.contextoLimpieza = :contextoPostCheckout
+              AND i.estado NOT IN :cerradas
+            """)
+    boolean existsLimpiezaPostCheckoutActiva(
+            @Param("habitacionId") Long habitacionId,
+            @Param("tipoLimpieza") TipoIncidencia tipoLimpieza,
+            @Param("contextoPostCheckout") ContextoLimpieza contextoPostCheckout,
             @Param("cerradas") Collection<EstadoIncidencia> cerradas
     );
 
