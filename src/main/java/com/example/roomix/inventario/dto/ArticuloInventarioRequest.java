@@ -1,5 +1,7 @@
 package com.example.roomix.inventario.dto;
 
+import jakarta.validation.constraints.DecimalMin;
+import java.math.BigDecimal;
 import com.example.roomix.inventario.domain.UnidadMedida;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
@@ -43,6 +45,14 @@ public record ArticuloInventarioRequest(
         String ubicacion,
 
         @Schema(description = "Indica si el artículo está activo", example = "true")
-        Boolean activo
+        Boolean activo,
+
+        @Schema(description = "Proveedor habitual", example = "Distribuidora Caribe S.A.S.")
+        @Size(max = 120, message = "El proveedor no puede superar 120 caracteres")
+        String proveedor,
+
+        @Schema(description = "Costo unitario de referencia en COP", example = "18500")
+        @DecimalMin(value = "0", message = "El precio no puede ser negativo")
+        BigDecimal precioUnitario
 ) {
 }

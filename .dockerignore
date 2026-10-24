@@ -1,0 +1,9 @@
+target/
+.idea/
+.vscode/
+.git/
+.github/
+*.iml
+# Credenciales locales: nunca deben llegar a la imagen
+src/main/resources/application-local.properties
+.env

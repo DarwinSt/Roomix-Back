@@ -3,6 +3,7 @@ package com.example.roomix.habitacion.service;
 import com.example.roomix.habitacion.domain.EstadoHabitacion;
 import com.example.roomix.habitacion.domain.EstadoReserva;
 import com.example.roomix.habitacion.domain.Habitacion;
+import com.example.roomix.habitacion.domain.TipoHabitacion;
 import com.example.roomix.habitacion.domain.HabitacionEstadoTransicion;
 import com.example.roomix.habitacion.domain.MotivoInhabilitacion;
 import com.example.roomix.habitacion.dto.ActualizarEstadoRequest;
@@ -40,6 +41,8 @@ public class HabitacionService {
     private final IncidenciaRepository incidenciaRepository;
     private final HuespedService huespedService;
     private final ReservaService reservaService;
+    private final HabitacionFotoService fotoService;
+    private final com.example.roomix.habitacion.repository.HabitacionFotoRepository fotoRepository;
     @Lazy
     private final IncidenciaService incidenciaService;
 
@@ -53,13 +56,17 @@ public class HabitacionService {
         }
         habitacionRepository.saveAll(habitaciones);
 
-        return habitaciones.stream().map(HabitacionResponse::from).toList();
+        java.util.Map<Long, List<Long>> fotos = fotoService.idsPorHabitacion(
+                habitaciones.stream().map(Habitacion::getId).toList());
+        return habitaciones.stream()
+                .map(h -> HabitacionResponse.from(h).conFotos(fotos.get(h.getId())))
+                .toList();
     }
 
     public HabitacionResponse obtenerPorId(Long id) {
         Habitacion habitacion = buscarEntidad(id);
         inhabilitacionService.sincronizar(habitacion);
-        return HabitacionResponse.from(habitacionRepository.save(habitacion));
+        return responder(habitacionRepository.save(habitacion));
     }
 
     @Transactional
@@ -74,6 +81,8 @@ public class HabitacionService {
                 .tipoHabitacion(request.tipoHabitacion())
                 .descripcion(request.descripcion().trim())
                 .precioNoche(request.precioNoche())
+                .piso(resolverPiso(request.piso(), request.numero()))
+                .capacidad(resolverCapacidad(request.capacidad(), request.tipoHabitacion()))
                 .estado(estado)
                 .build();
 
@@ -85,7 +94,7 @@ public class HabitacionService {
             aplicarNuevaReserva(habitacion, request.fechaEntrada(), request.fechaSalida(), request.huespedId());
         }
 
-        return HabitacionResponse.from(habitacionRepository.save(habitacion));
+        return responder(habitacionRepository.save(habitacion));
     }
 
     @Transactional
@@ -99,6 +108,8 @@ public class HabitacionService {
         habitacion.setTipoHabitacion(request.tipoHabitacion());
         habitacion.setDescripcion(request.descripcion().trim());
         habitacion.setPrecioNoche(request.precioNoche());
+        habitacion.setPiso(resolverPiso(request.piso(), request.numero()));
+        habitacion.setCapacidad(resolverCapacidad(request.capacidad(), request.tipoHabitacion()));
 
         if (request.estado() != null) {
             inhabilitacionService.sincronizar(habitacion);
@@ -133,7 +144,7 @@ public class HabitacionService {
         }
 
         inhabilitacionService.sincronizar(habitacion);
-        return HabitacionResponse.from(habitacionRepository.save(habitacion));
+        return responder(habitacionRepository.save(habitacion));
     }
 
     @Transactional
@@ -163,7 +174,7 @@ public class HabitacionService {
             habitacion.setEstadoRetorno(EstadoHabitacion.LIBRE);
             Habitacion guardada = habitacionRepository.save(habitacion);
             incidenciaService.crearLimpiezaPostCheckout(guardada);
-            return HabitacionResponse.from(guardada);
+            return responder(guardada);
         }
 
         boolean reservaDesdeInhabilitado = estadoActual == EstadoHabitacion.INHABILITADO
@@ -193,7 +204,7 @@ public class HabitacionService {
         habitacion.setEstado(request.estado());
         Habitacion guardada = habitacionRepository.save(habitacion);
         inhabilitacionService.sincronizar(guardada);
-        return HabitacionResponse.from(habitacionRepository.save(guardada));
+        return responder(habitacionRepository.save(guardada));
     }
 
     @Transactional
@@ -201,6 +212,7 @@ public class HabitacionService {
         Habitacion habitacion = buscarEntidad(id);
         incidenciaRepository.deleteTareasByHabitacionId(id);
         incidenciaRepository.deleteByHabitacionId(id);
+        fotoRepository.deleteByHabitacionId(id);
         habitacionRepository.delete(habitacion);
     }
 
@@ -329,6 +341,35 @@ public class HabitacionService {
         }
 
         reservaService.registrarEnHabitacion(habitacion, entrada, salida, huespedId);
+    }
+
+    private HabitacionResponse responder(Habitacion habitacion) {
+        return HabitacionResponse.from(habitacion)
+                .conFotos(fotoService.idsPorHabitacion(List.of(habitacion.getId())).get(habitacion.getId()));
+    }
+
+    /** Piso indicado o, por convención hotelera, el primer dígito del número (205 → piso 2). */
+    static Integer resolverPiso(Integer piso, String numero) {
+        if (piso != null) {
+            return piso;
+        }
+        String limpio = numero == null ? "" : numero.trim();
+        if (limpio.length() >= 3 && Character.isDigit(limpio.charAt(0))) {
+            return Character.getNumericValue(limpio.charAt(0));
+        }
+        return 1;
+    }
+
+    static Integer resolverCapacidad(Integer capacidad, TipoHabitacion tipo) {
+        if (capacidad != null) {
+            return capacidad;
+        }
+        return switch (tipo) {
+            case INDIVIDUAL -> 1;
+            case DOBLE, EJECUTIVA -> 2;
+            case TRIPLE, SUITE -> 3;
+            case FAMILIAR -> 5;
+        };
     }
 
     private List<String> normalizarCaracteristicas(List<String> caracteristicas) {

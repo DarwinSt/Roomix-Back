@@ -3,6 +3,7 @@ package com.example.roomix.huesped.dto;
 import com.example.roomix.huesped.domain.Huesped;
 import com.example.roomix.huesped.domain.TipoDocumento;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -43,6 +44,11 @@ public record HuespedRequest(
         @Size(max = 500)
         String notas,
 
-        Boolean activo
+        Boolean activo,
+
+        @Schema(description = "El titular autoriza el tratamiento de sus datos personales (Ley 1581 de 2012)")
+        @NotNull(message = "Debe indicar la autorización de tratamiento de datos")
+        @AssertTrue(message = "Se requiere la autorización del titular para el tratamiento de sus datos (Ley 1581 de 2012)")
+        Boolean autorizaTratamientoDatos
 ) {
 }

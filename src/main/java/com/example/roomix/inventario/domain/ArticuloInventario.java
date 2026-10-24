@@ -1,5 +1,6 @@
 package com.example.roomix.inventario.domain;
 
+import java.math.BigDecimal;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -61,6 +62,13 @@ public class ArticuloInventario {
 
     @Column(length = 150)
     private String ubicacion;
+
+    @Column(length = 120)
+    private String proveedor;
+
+    /** Costo unitario de referencia (para valorizar el inventario). */
+    @Column(name = "precio_unitario", precision = 12, scale = 2)
+    private BigDecimal precioUnitario;
 
     @Column(nullable = false)
     @Builder.Default

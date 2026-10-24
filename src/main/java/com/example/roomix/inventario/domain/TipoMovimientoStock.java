@@ -9,5 +9,8 @@ public enum TipoMovimientoStock {
     ENTRADA,
 
     @Schema(description = "Salida de unidades del inventario")
-    SALIDA
+    SALIDA,
+
+    @Schema(description = "Ajuste por conteo físico: la cantidad indicada es el nuevo stock real")
+    AJUSTE
 }

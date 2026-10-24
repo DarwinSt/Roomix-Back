@@ -1,5 +1,15 @@
 package com.example.roomix.reserva.controller;
 
+import com.example.roomix.finanzas.dto.FacturaDtos.CuentaResponse;
+import com.example.roomix.finanzas.dto.FinanzasDtos.AnularRequest;
+import com.example.roomix.finanzas.service.FacturacionService;
+import com.example.roomix.habitacion.dto.HabitacionResponse;
+import com.example.roomix.reserva.domain.CanalReserva;
+import com.example.roomix.reserva.dto.ActualizarReservaRequest;
+import com.example.roomix.reserva.service.ReservaOperacionService;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+
 import com.example.roomix.habitacion.domain.EstadoReserva;
 import com.example.roomix.habitacion.domain.TipoHabitacion;
 import com.example.roomix.reserva.dto.CrearReservaRequest;
@@ -32,6 +42,8 @@ import java.util.List;
 public class ReservaController {
 
     private final ReservaService reservaService;
+    private final ReservaOperacionService operacionService;
+    private final FacturacionService facturacionService;
 
     @Operation(summary = "Listar reservas con filtros opcionales")
     @GetMapping
@@ -75,5 +87,44 @@ public class ReservaController {
     @ResponseStatus(HttpStatus.CREATED)
     public ReservaResponse crear(@Valid @RequestBody CrearReservaRequest request) {
         return reservaService.crear(request);
+    }
+
+    @Operation(summary = "Modificar reserva",
+            description = "Confirmada: fechas, huésped, canal y observaciones. En curso: solo fecha de salida y observaciones")
+    @PutMapping("/{id}")
+    public ReservaResponse actualizar(@PathVariable Long id, @Valid @RequestBody ActualizarReservaRequest request) {
+        return reservaService.actualizar(id, request);
+    }
+
+    @Operation(summary = "Cancelar reserva confirmada (con motivo)")
+    @PatchMapping("/{id}/cancelar")
+    public ReservaResponse cancelar(@PathVariable Long id, @Valid @RequestBody AnularRequest request) {
+        return reservaService.cancelarReserva(id, request.motivo());
+    }
+
+    @Operation(summary = "Check-in rápido de la reserva")
+    @PatchMapping("/{id}/check-in")
+    public HabitacionResponse checkIn(@PathVariable Long id) {
+        return operacionService.checkIn(id);
+    }
+
+    @Operation(summary = "Check-out de la reserva", description = "Inhabilita la habitación para limpieza y emite la factura")
+    @PatchMapping("/{id}/check-out")
+    public ReservaOperacionService.CheckOutResponse checkOut(@PathVariable Long id) {
+        return operacionService.checkOut(id);
+    }
+
+    @Operation(summary = "Cuenta del huésped (alojamiento + servicios, facturado y pagado)")
+    @GetMapping("/{id}/cuenta")
+    public CuentaResponse cuenta(@PathVariable Long id) {
+        return facturacionService.cuentaReserva(id);
+    }
+
+    @Operation(summary = "Canales de reserva")
+    @GetMapping("/canales")
+    public List<java.util.Map<String, String>> canales() {
+        return java.util.Arrays.stream(CanalReserva.values())
+                .map(c -> java.util.Map.of("codigo", c.name(), "nombre", c.getNombre()))
+                .toList();
     }
 }

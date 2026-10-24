@@ -1,5 +1,6 @@
 package com.example.roomix.inventario.dto;
 
+import java.math.BigDecimal;
 import com.example.roomix.inventario.domain.ArticuloInventario;
 import com.example.roomix.inventario.domain.UnidadMedida;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,6 +22,9 @@ public record ArticuloInventarioResponse(
         @Schema(example = "true") boolean activo,
         @Schema(description = "Cantidad en o por debajo del mínimo", example = "false")
         boolean stockBajo,
+        String proveedor,
+        BigDecimal precioUnitario,
+        @Schema(description = "cantidad × precio unitario") BigDecimal valorTotal,
         @Schema(type = "string", format = "date-time") LocalDateTime fechaHoraCreacion,
         @Schema(type = "string", format = "date-time") LocalDateTime fechaHoraUltimaActualizacion
 ) {
@@ -36,6 +40,11 @@ public record ArticuloInventarioResponse(
                 .ubicacion(articulo.getUbicacion())
                 .activo(articulo.isActivo())
                 .stockBajo(calcularStockBajo(articulo))
+                .proveedor(articulo.getProveedor())
+                .precioUnitario(articulo.getPrecioUnitario())
+                .valorTotal(articulo.getPrecioUnitario() != null
+                        ? articulo.getPrecioUnitario().multiply(BigDecimal.valueOf(articulo.getCantidad()))
+                        : null)
                 .fechaHoraCreacion(articulo.getFechaHoraCreacion())
                 .fechaHoraUltimaActualizacion(articulo.getFechaHoraUltimaActualizacion())
                 .build();

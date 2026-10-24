@@ -23,4 +23,14 @@ public abstract class BusinessException extends RuntimeException {
     public HttpStatus getHttpStatus() {
         return httpStatus;
     }
+
+    /** Título del ProblemDetail (nombre del código de error). Los módulos nuevos lo sobrescriben. */
+    public String getTitulo() {
+        return errorCode;
+    }
+
+    /** Módulo funcional que originó el error (ej. FINANZAS). */
+    public String getModulo() {
+        return null;
+    }
 }

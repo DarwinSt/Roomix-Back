@@ -4,6 +4,8 @@ import com.example.roomix.habitacion.domain.EstadoHabitacion;
 import com.example.roomix.habitacion.domain.TipoHabitacion;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -62,6 +64,14 @@ public record HabitacionRequest(
         @DecimalMin(value = "0.01", message = "El precio por noche debe ser mayor que cero")
         BigDecimal precioNoche,
 
+        @Schema(description = "Piso o planta (si se omite, se toma el primer dígito del número)", example = "1")
+        @Min(value = 0, message = "El piso no puede ser negativo")
+        @Max(value = 200, message = "Piso no válido")
+        Integer piso,
+        @Schema(description = "Capacidad máxima de huéspedes (si se omite, se asigna según el tipo)", example = "2")
+        @Min(value = 1, message = "La capacidad mínima es 1")
+        @Max(value = 20, message = "Capacidad no válida")
+        Integer capacidad,
         @Schema(
                 description = "Estado operativo inicial. Por defecto `LIBRE` si se omite al crear.",
                 example = "LIBRE"

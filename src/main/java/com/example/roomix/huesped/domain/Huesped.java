@@ -14,6 +14,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -70,6 +71,15 @@ public class Huesped {
     @Column(nullable = false)
     @Builder.Default
     private boolean activo = true;
+
+    /** Autorización del titular para el tratamiento de sus datos personales (Ley 1581 de 2012). */
+    @Column(name = "autoriza_tratamiento_datos", nullable = false)
+    @ColumnDefault("false")
+    @Builder.Default
+    private boolean autorizaTratamientoDatos = false;
+
+    @Column(name = "fecha_hora_autorizacion")
+    private LocalDateTime fechaHoraAutorizacion;
 
     @CreationTimestamp
     @Column(name = "fecha_hora_creacion", nullable = false)

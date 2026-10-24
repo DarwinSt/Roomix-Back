@@ -64,6 +64,14 @@ public class Habitacion {
     @Column(nullable = false, length = 500)
     private String descripcion;
 
+    /** Piso o planta donde se ubica (para el plano del hotel). */
+    @Column
+    private Integer piso;
+
+    /** Número máximo de huéspedes. */
+    @Column
+    private Integer capacidad;
+
     /** Tarifa por noche específica de esta habitación. */
     @Column(name = "precio_noche", precision = 10, scale = 2)
     private BigDecimal precioNoche;

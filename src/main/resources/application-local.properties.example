@@ -1,7 +1,11 @@
 # Copia este archivo como application-local.properties (no se sube a git).
+# Alternativa: define las variables de entorno DB_URL, DB_USERNAME y DB_PASSWORD.
 spring.datasource.url=jdbc:postgresql://localhost:5432/roomix
 spring.datasource.username=postgres
 spring.datasource.password=TU_CONTRASEÑA
 
-# update = Hibernate ajusta tablas | validate = solo valida contra schema.sql ya ejecutado
-spring.jpa.hibernate.ddl-auto=update
+# Logs SQL útiles en desarrollo
+spring.jpa.show-sql=true
+
+# Carga los datos de demostración (db/seed-data.sql) si la base está vacía
+app.seed.enabled=true

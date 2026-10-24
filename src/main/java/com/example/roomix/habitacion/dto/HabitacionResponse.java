@@ -24,6 +24,9 @@ public record HabitacionResponse(
         String descripcion,
         @Schema(description = "Tarifa por noche de la habitación", nullable = true)
         BigDecimal precioNoche,
+        @Schema(description = "Piso o planta") Integer piso,
+        @Schema(description = "Capacidad máxima de huéspedes") Integer capacidad,
+        @Schema(description = "Ids de fotos; la imagen está en /api/habitaciones/{id}/fotos/{fotoId}") List<Long> fotoIds,
         EstadoHabitacion estado,
         @Schema(description = "Fecha planificada de entrada (reserva)", format = "date", nullable = true)
         LocalDate fechaEntrada,
@@ -42,6 +45,13 @@ public record HabitacionResponse(
         HuespedResumenResponse huesped,
         LocalDateTime fechaHoraUltimaActualizacion
 ) {
+    public HabitacionResponse conFotos(List<Long> ids) {
+        return new HabitacionResponse(id, numero, caracteristicas, tipoHabitacion, descripcion, precioNoche, piso,
+                capacidad, ids != null ? List.copyOf(ids) : List.of(), estado, fechaEntrada, fechaSalida, cantidadNoches,
+                estadoReserva, horaRealCheckIn, horaRealCheckOut, motivoInhabilitacion, huesped,
+                fechaHoraUltimaActualizacion);
+    }
+
     public static HabitacionResponse from(Habitacion habitacion) {
         return HabitacionResponse.builder()
                 .id(habitacion.getId())
@@ -50,6 +60,9 @@ public record HabitacionResponse(
                 .tipoHabitacion(habitacion.getTipoHabitacion())
                 .descripcion(habitacion.getDescripcion())
                 .precioNoche(habitacion.getPrecioNoche())
+                .piso(habitacion.getPiso())
+                .capacidad(habitacion.getCapacidad())
+                .fotoIds(List.of())
                 .estado(habitacion.getEstado())
                 .fechaEntrada(habitacion.getFechaEntrada())
                 .fechaSalida(habitacion.getFechaSalida())
