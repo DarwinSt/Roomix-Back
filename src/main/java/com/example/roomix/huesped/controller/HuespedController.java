@@ -41,6 +41,15 @@ public class HuespedController {
         return huespedService.listar(activo, busqueda);
     }
 
+    @Operation(summary = "Búsqueda rápida para autocompletar (por palabras, sin tildes; máximo 20 resultados)")
+    @GetMapping("/buscar")
+    public List<HuespedResponse> buscar(
+            @RequestParam String q,
+            @RequestParam(defaultValue = "8") int limite
+    ) {
+        return huespedService.buscarRapido(q, limite);
+    }
+
     @Operation(summary = "Obtener huésped por id")
     @GetMapping("/{id}")
     public HuespedResponse obtener(@PathVariable Long id) {

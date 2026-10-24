@@ -57,6 +57,11 @@ public enum InventarioErrorCode {
             HttpStatus.UNPROCESSABLE_ENTITY,
             "INV-010",
             "La categoría predefinida '%s' no puede eliminarse; desactívela si no la necesita"
+    ),
+    CANTIDAD_MOVIMIENTO_INVALIDA(
+            HttpStatus.BAD_REQUEST,
+            "INV-011",
+            "La cantidad de una entrada o salida debe ser al menos 1"
     );
 
     private final HttpStatus httpStatus;

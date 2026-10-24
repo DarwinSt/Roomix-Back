@@ -1,17 +1,22 @@
 package com.example.roomix.config;
 
+import com.example.roomix.auditoria.config.AuditoriaInterceptor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+/**
+ * Configuración MVC. El CORS se define en SecurityConfig (debe aplicarse antes de la autenticación).
+ */
 @Configuration
+@RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
 
+    private final AuditoriaInterceptor auditoriaInterceptor;
+
     @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")
-                .allowedOrigins("http://localhost:4200", "http://localhost:3000", "http://localhost:5173")
-                .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-                .allowedHeaders("*");
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(auditoriaInterceptor).addPathPatterns("/api/**");
     }
 }

@@ -23,6 +23,9 @@ public record HuespedResponse(
         LocalDate fechaNacimiento,
         String notas,
         boolean activo,
+        @Schema(description = "Autorización de tratamiento de datos (Ley 1581 de 2012)")
+        boolean autorizaTratamientoDatos,
+        LocalDateTime fechaHoraAutorizacion,
         @Schema(description = "Habitación con reserva o estadía activa", nullable = true)
         String habitacionActualNumero,
         LocalDateTime fechaHoraCreacion,
@@ -42,6 +45,8 @@ public record HuespedResponse(
                 .fechaNacimiento(huesped.getFechaNacimiento())
                 .notas(huesped.getNotas())
                 .activo(huesped.isActivo())
+                .autorizaTratamientoDatos(huesped.isAutorizaTratamientoDatos())
+                .fechaHoraAutorizacion(huesped.getFechaHoraAutorizacion())
                 .habitacionActualNumero(habitacionActualNumero)
                 .fechaHoraCreacion(huesped.getFechaHoraCreacion())
                 .fechaHoraUltimaActualizacion(huesped.getFechaHoraUltimaActualizacion())

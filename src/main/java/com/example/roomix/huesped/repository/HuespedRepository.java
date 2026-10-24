@@ -1,5 +1,7 @@
 package com.example.roomix.huesped.repository;
 
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
 import com.example.roomix.huesped.domain.Huesped;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -8,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface HuespedRepository extends JpaRepository<Huesped, Long> {
+public interface HuespedRepository extends JpaRepository<Huesped, Long>, JpaSpecificationExecutor<Huesped> {
 
     Optional<Huesped> findByNumeroDocumentoIgnoreCase(String numeroDocumento);
 

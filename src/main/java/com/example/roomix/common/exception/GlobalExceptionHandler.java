@@ -98,6 +98,19 @@ public class GlobalExceptionHandler {
         return detail;
     }
 
+    /** Excepciones de negocio de los módulos que no tienen un manejador específico. */
+    @ExceptionHandler(BusinessException.class)
+    public ProblemDetail handleBusiness(BusinessException ex) {
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(ex.getHttpStatus(), ex.getMessage());
+        detail.setTitle(ex.getTitulo());
+        detail.setProperty("codigo", ex.getErrorCode());
+        if (ex.getModulo() != null) {
+            detail.setProperty("modulo", ex.getModulo());
+        }
+        detail.setProperty("timestamp", Instant.now());
+        return detail;
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> errores = new HashMap<>();

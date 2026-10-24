@@ -1,5 +1,12 @@
 package com.example.roomix.huesped.service;
 
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Predicate;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import java.util.ArrayList;
+
 import com.example.roomix.habitacion.domain.EstadoHabitacion;
 import com.example.roomix.habitacion.domain.Habitacion;
 import com.example.roomix.habitacion.repository.HabitacionRepository;
@@ -38,6 +45,50 @@ public class HuespedService {
         return huespedes.stream()
                 .map(h -> HuespedResponse.from(h, habitacionPorHuesped.get(h.getId())))
                 .toList();
+    }
+
+    /**
+     * Búsqueda rápida para autocompletar: cada palabra debe aparecer en nombre, apellidos, documento o correo,
+     * sin distinguir mayúsculas ni tildes ("steween mora" o "gomez" encuentran "Steween Mora" y "Gómez").
+     */
+    public List<HuespedResponse> buscarRapido(String texto, int limite) {
+        if (texto == null || texto.isBlank()) {
+            return List.of();
+        }
+        String[] palabras = normalizar(texto).split("\\s+");
+        Specification<Huesped> spec = (root, query, cb) -> {
+            Expression<String> campos = cb.concat(cb.concat(cb.concat(cb.concat(cb.concat(cb.concat(
+                    root.get("nombre"), " "), root.get("apellidos")), " "), root.get("numeroDocumento")), " "),
+                    cb.coalesce(root.get("email"), ""));
+            Expression<String> sinTildes = cb.function("translate", String.class, cb.lower(campos),
+                    cb.literal(CON_TILDE), cb.literal(SIN_TILDE));
+            List<Predicate> condiciones = new ArrayList<>();
+            condiciones.add(cb.isTrue(root.get("activo")));
+            for (int i = 0; i < Math.min(palabras.length, 5); i++) {
+                condiciones.add(cb.like(sinTildes, "%" + palabras[i] + "%"));
+            }
+            return cb.and(condiciones.toArray(Predicate[]::new));
+        };
+        int tope = Math.min(Math.max(limite, 1), 20);
+        List<Huesped> encontrados = huespedRepository.findAll(spec,
+                PageRequest.of(0, tope, Sort.by("apellidos").ascending().and(Sort.by("nombre").ascending()))).getContent();
+        Map<Long, String> habitacionPorHuesped = mapaHabitacionActual();
+        return encontrados.stream()
+                .map(h -> HuespedResponse.from(h, habitacionPorHuesped.get(h.getId())))
+                .toList();
+    }
+
+    private static final String CON_TILDE = "áéíóúüàèìòùñ";
+    private static final String SIN_TILDE = "aeiouuaeioun";
+
+    private static String normalizar(String texto) {
+        String t = texto.trim().toLowerCase();
+        StringBuilder sb = new StringBuilder(t.length());
+        for (char c : t.toCharArray()) {
+            int i = CON_TILDE.indexOf(c);
+            sb.append(i >= 0 ? SIN_TILDE.charAt(i) : c);
+        }
+        return sb.toString();
     }
 
     public HuespedResponse obtenerPorId(Long id) {
@@ -104,6 +155,10 @@ public class HuespedService {
         huesped.setNotas(normalizarOpcional(request.notas()));
         if (request.activo() != null) {
             huesped.setActivo(request.activo());
+        }
+        if (Boolean.TRUE.equals(request.autorizaTratamientoDatos()) && !huesped.isAutorizaTratamientoDatos()) {
+            huesped.setAutorizaTratamientoDatos(true);
+            huesped.setFechaHoraAutorizacion(java.time.LocalDateTime.now());
         }
         return huesped;
     }

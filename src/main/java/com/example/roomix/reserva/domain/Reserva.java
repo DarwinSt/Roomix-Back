@@ -19,6 +19,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -71,6 +72,24 @@ public class Reserva {
 
     @Column(name = "hora_real_check_out")
     private LocalDateTime horaRealCheckOut;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @ColumnDefault("'PRESENCIAL'")
+    @Builder.Default
+    private CanalReserva canal = CanalReserva.PRESENCIAL;
+
+    @Column(length = 500)
+    private String observaciones;
+
+    @Column(name = "motivo_cancelacion", length = 200)
+    private String motivoCancelacion;
+
+    @Column(name = "fecha_hora_cancelacion")
+    private LocalDateTime fechaHoraCancelacion;
+
+    @Column(name = "registrada_por", length = 50)
+    private String registradaPor;
 
     @CreationTimestamp
     @Column(name = "fecha_hora_creacion", nullable = false, updatable = false)

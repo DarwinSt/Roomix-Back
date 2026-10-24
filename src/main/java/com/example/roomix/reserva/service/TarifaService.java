@@ -55,14 +55,15 @@ public class TarifaService {
         }
     }
 
+    /** Tarifas base por noche en pesos colombianos (COP). */
     private BigDecimal precioPorDefecto(TipoHabitacion tipo) {
         return switch (tipo) {
-            case INDIVIDUAL -> BigDecimal.valueOf(80);
-            case DOBLE -> BigDecimal.valueOf(120);
-            case TRIPLE -> BigDecimal.valueOf(150);
-            case SUITE -> BigDecimal.valueOf(250);
-            case FAMILIAR -> BigDecimal.valueOf(180);
-            case EJECUTIVA -> BigDecimal.valueOf(200);
+            case INDIVIDUAL -> BigDecimal.valueOf(185_000);
+            case DOBLE -> BigDecimal.valueOf(265_000);
+            case TRIPLE -> BigDecimal.valueOf(330_000);
+            case SUITE -> BigDecimal.valueOf(680_000);
+            case FAMILIAR -> BigDecimal.valueOf(390_000);
+            case EJECUTIVA -> BigDecimal.valueOf(430_000);
         };
     }
 }

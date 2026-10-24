@@ -1,5 +1,12 @@
 package com.example.roomix.inventario.controller;
 
+import com.example.roomix.common.dto.PaginaResponse;
+import com.example.roomix.inventario.domain.TipoMovimientoStock;
+import com.example.roomix.inventario.dto.MovimientoInventarioResponse;
+import com.example.roomix.inventario.dto.ResumenInventarioResponse;
+import org.springframework.format.annotation.DateTimeFormat;
+import java.time.LocalDate;
+
 import com.example.roomix.habitacion.dto.ErrorResponseDoc;
 import com.example.roomix.inventario.dto.AjustarStockRequest;
 import com.example.roomix.inventario.dto.ArticuloInventarioRequest;
@@ -191,5 +198,29 @@ public class InventarioController {
             @PathVariable Long id
     ) {
         inventarioService.eliminar(id);
+    }
+
+    @Operation(summary = "Historial de movimientos de un artículo (entradas, salidas y ajustes)")
+    @GetMapping("/{id}/movimientos")
+    public List<MovimientoInventarioResponse> movimientosArticulo(@PathVariable Long id) {
+        return inventarioService.movimientosDeArticulo(id);
+    }
+
+    @Operation(summary = "Movimientos de inventario en un periodo (por defecto, últimos 30 días)")
+    @GetMapping("/movimientos")
+    public PaginaResponse<MovimientoInventarioResponse> movimientos(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            @RequestParam(required = false) TipoMovimientoStock tipo,
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "50") int tamano
+    ) {
+        return inventarioService.movimientos(desde, hasta, tipo, pagina, tamano);
+    }
+
+    @Operation(summary = "Reporte de inventario", description = "Valorización, productos críticos y artículos más usados")
+    @GetMapping("/reportes/resumen")
+    public ResumenInventarioResponse resumen(@RequestParam(defaultValue = "30") int dias) {
+        return inventarioService.resumen(dias);
     }
 }

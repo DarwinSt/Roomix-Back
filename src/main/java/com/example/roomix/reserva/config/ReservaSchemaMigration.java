@@ -59,18 +59,18 @@ public class ReservaSchemaMigration implements ApplicationRunner {
     }
 
     private void seedTarifas() {
-        insertarTarifaSiFalta("INDIVIDUAL", 80);
-        insertarTarifaSiFalta("DOBLE", 120);
-        insertarTarifaSiFalta("TRIPLE", 150);
-        insertarTarifaSiFalta("SUITE", 250);
-        insertarTarifaSiFalta("FAMILIAR", 180);
-        insertarTarifaSiFalta("EJECUTIVA", 200);
+        insertarTarifaSiFalta("INDIVIDUAL", 185_000);
+        insertarTarifaSiFalta("DOBLE", 265_000);
+        insertarTarifaSiFalta("TRIPLE", 330_000);
+        insertarTarifaSiFalta("SUITE", 680_000);
+        insertarTarifaSiFalta("FAMILIAR", 390_000);
+        insertarTarifaSiFalta("EJECUTIVA", 430_000);
     }
 
     private void insertarTarifaSiFalta(String tipo, double precio) {
         jdbcTemplate.update("""
-                INSERT INTO tarifas_tipo_habitacion (tipo_habitacion, precio_noche)
-                VALUES (?, ?)
+                INSERT INTO tarifas_tipo_habitacion (tipo_habitacion, precio_noche, fecha_hora_ultima_actualizacion)
+                VALUES (?, ?, NOW())
                 ON CONFLICT (tipo_habitacion) DO NOTHING
                 """, tipo, precio);
     }

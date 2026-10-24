@@ -3,6 +3,7 @@ package com.example.roomix.reserva.dto;
 import com.example.roomix.habitacion.domain.EstadoReserva;
 import com.example.roomix.habitacion.domain.TipoHabitacion;
 import com.example.roomix.huesped.dto.HuespedResumenResponse;
+import com.example.roomix.reserva.domain.CanalReserva;
 import com.example.roomix.reserva.domain.Reserva;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -27,6 +28,12 @@ public record ReservaResponse(
         BigDecimal totalEstimado,
         LocalDateTime horaRealCheckIn,
         LocalDateTime horaRealCheckOut,
+        CanalReserva canal,
+        String canalNombre,
+        String observaciones,
+        String motivoCancelacion,
+        LocalDateTime fechaHoraCancelacion,
+        String registradaPor,
         LocalDateTime fechaHoraCreacion,
         LocalDateTime fechaHoraUltimaActualizacion
 ) {
@@ -45,6 +52,12 @@ public record ReservaResponse(
                 .totalEstimado(reserva.getTotalEstimado())
                 .horaRealCheckIn(reserva.getHoraRealCheckIn())
                 .horaRealCheckOut(reserva.getHoraRealCheckOut())
+                .canal(reserva.getCanal())
+                .canalNombre(reserva.getCanal() != null ? reserva.getCanal().getNombre() : null)
+                .observaciones(reserva.getObservaciones())
+                .motivoCancelacion(reserva.getMotivoCancelacion())
+                .fechaHoraCancelacion(reserva.getFechaHoraCancelacion())
+                .registradaPor(reserva.getRegistradaPor())
                 .fechaHoraCreacion(reserva.getFechaHoraCreacion())
                 .fechaHoraUltimaActualizacion(reserva.getFechaHoraUltimaActualizacion())
                 .build();

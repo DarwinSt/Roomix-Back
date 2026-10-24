@@ -1,5 +1,10 @@
 package com.example.roomix.reserva.service;
 
+import com.example.roomix.auth.service.UsuarioActual;
+import com.example.roomix.reserva.domain.CanalReserva;
+import com.example.roomix.reserva.dto.ActualizarReservaRequest;
+import org.springframework.util.StringUtils;
+
 import com.example.roomix.habitacion.domain.EstadoHabitacion;
 import com.example.roomix.habitacion.domain.EstadoReserva;
 import com.example.roomix.habitacion.domain.Habitacion;
@@ -147,6 +152,9 @@ public class ReservaService {
         huespedService.validarDisponibleParaAsignar(huesped, habitacion.getId());
 
         Reserva reserva = registrarReserva(habitacion, huesped, request.fechaEntrada(), request.fechaSalida());
+        reserva.setCanal(request.canal() != null ? request.canal() : CanalReserva.PRESENCIAL);
+        reserva.setObservaciones(StringUtils.hasText(request.observaciones()) ? request.observaciones().trim() : null);
+        reservaRepository.save(reserva);
         aplicarSnapshotEnHabitacion(habitacion, reserva, huesped);
         habitacion.setEstado(EstadoHabitacion.RESERVADO);
         habitacionRepository.save(habitacion);
@@ -195,8 +203,119 @@ public class ReservaService {
         reservaRepository.findFirstByHabitacionIdAndEstadoReservaIn(habitacion.getId(), ESTADOS_ACTIVOS)
                 .ifPresent(reserva -> {
                     reserva.setEstadoReserva(EstadoReserva.CANCELADA);
+                    reserva.setFechaHoraCancelacion(LocalDateTime.now());
+                    if (reserva.getMotivoCancelacion() == null) {
+                        reserva.setMotivoCancelacion("Cancelada desde el módulo de habitaciones");
+                    }
                     reservaRepository.save(reserva);
                 });
+    }
+
+    public List<ReservaResponse> historialHabitacion(Long habitacionId) {
+        if (!habitacionRepository.existsById(habitacionId)) {
+            throw new HabitacionNotFoundException(habitacionId);
+        }
+        return reservaRepository.findByHabitacionIdOrderByFechaEntradaDesc(habitacionId).stream()
+                .map(ReservaResponse::from)
+                .toList();
+    }
+
+    /**
+     * Modifica una reserva. Confirmada: fechas, huésped, canal y observaciones.
+     * En curso: solo la fecha de salida (extensión o salida anticipada) y observaciones.
+     */
+    @Transactional
+    public ReservaResponse actualizar(Long id, ActualizarReservaRequest request) {
+        Reserva reserva = buscarEntidad(id);
+        Habitacion habitacion = reserva.getHabitacion();
+        EstadoReserva estado = reserva.getEstadoReserva();
+        if (estado != EstadoReserva.CONFIRMADA && estado != EstadoReserva.EN_CURSO) {
+            throw new ReservaException(ReservaErrorCode.RESERVA_NO_EDITABLE,
+                    "La reserva no se puede modificar en estado " + estado);
+        }
+        if (estado == EstadoReserva.EN_CURSO && !request.fechaEntrada().equals(reserva.getFechaEntrada())) {
+            throw new ReservaException(ReservaErrorCode.RESERVA_NO_EDITABLE,
+                    "La estadía ya inició: solo se puede cambiar la fecha de salida");
+        }
+
+        LocalDate entrada = request.fechaEntrada();
+        LocalDate salida = request.fechaSalida();
+        int noches = validarFechas(entrada, salida);
+        if (reservaRepository.existeSolapamientoExcluyendo(habitacion.getId(), reserva.getId(), entrada, salida, ESTADOS_ACTIVOS)) {
+            throw new ReservaException(ReservaErrorCode.SOLAPAMIENTO);
+        }
+        LocalDate desdeMantenimiento = estado == EstadoReserva.EN_CURSO ? reserva.getFechaSalida() : entrada;
+        if (salida.isAfter(desdeMantenimiento)
+                && inhabilitacionService.tieneMantenimientoEnRango(habitacion.getId(), desdeMantenimiento, salida)) {
+            throw new HabitacionNoDisponibleException(
+                    "Hay mantenimiento programado en la habitación entre el " + desdeMantenimiento + " y el " + salida);
+        }
+
+        if (estado == EstadoReserva.CONFIRMADA) {
+            if (request.huespedId() != null && !request.huespedId().equals(reserva.getHuesped().getId())) {
+                Huesped nuevo = huespedService.buscarActivo(request.huespedId());
+                huespedService.validarDisponibleParaAsignar(nuevo, habitacion.getId());
+                reserva.setHuesped(nuevo);
+                habitacion.setHuesped(nuevo);
+            }
+            if (request.canal() != null) {
+                reserva.setCanal(request.canal());
+            }
+            reserva.setFechaEntrada(entrada);
+        }
+        reserva.setFechaSalida(salida);
+        reserva.setCantidadNoches(noches);
+        reserva.setTotalEstimado(reserva.getTarifaNoche().multiply(BigDecimal.valueOf(noches)));
+        reserva.setObservaciones(StringUtils.hasText(request.observaciones()) ? request.observaciones().trim() : null);
+
+        habitacion.setFechaEntrada(reserva.getFechaEntrada());
+        habitacion.setFechaSalida(salida);
+        habitacion.setCantidadNoches(noches);
+        habitacionRepository.save(habitacion);
+        return ReservaResponse.from(reservaRepository.save(reserva));
+    }
+
+    /** Cancela una reserva confirmada (antes del check-in) registrando el motivo, y libera la habitación. */
+    @Transactional
+    public ReservaResponse cancelarReserva(Long id, String motivo) {
+        Reserva reserva = buscarEntidad(id);
+        if (reserva.getEstadoReserva() != EstadoReserva.CONFIRMADA) {
+            throw new ReservaException(ReservaErrorCode.RESERVA_NO_CANCELABLE,
+                    "Solo se cancelan reservas confirmadas (estado actual: " + reserva.getEstadoReserva() + ")");
+        }
+        if (!StringUtils.hasText(motivo)) {
+            throw new ReservaException(ReservaErrorCode.MOTIVO_CANCELACION_REQUERIDO);
+        }
+        reserva.setEstadoReserva(EstadoReserva.CANCELADA);
+        reserva.setMotivoCancelacion(motivo.trim());
+        reserva.setFechaHoraCancelacion(LocalDateTime.now());
+        reservaRepository.save(reserva);
+
+        Habitacion habitacion = reserva.getHabitacion();
+        boolean esReservaActual = habitacion.getHuesped() != null
+                && habitacion.getHuesped().getId().equals(reserva.getHuesped().getId())
+                && reserva.getFechaEntrada().equals(habitacion.getFechaEntrada());
+        if (esReservaActual) {
+            habitacion.setFechaEntrada(null);
+            habitacion.setFechaSalida(null);
+            habitacion.setCantidadNoches(null);
+            habitacion.setEstadoReserva(null);
+            habitacion.setHoraRealCheckIn(null);
+            habitacion.setHoraRealCheckOut(null);
+            habitacion.setHuesped(null);
+            if (habitacion.getEstado() == EstadoHabitacion.RESERVADO) {
+                habitacion.setEstado(EstadoHabitacion.LIBRE);
+            } else if (habitacion.getEstadoRetorno() == EstadoHabitacion.RESERVADO) {
+                habitacion.setEstadoRetorno(EstadoHabitacion.LIBRE);
+            }
+            inhabilitacionService.sincronizar(habitacion);
+            habitacionRepository.save(habitacion);
+        }
+        return ReservaResponse.from(reserva);
+    }
+
+    public Reserva buscarReserva(Long id) {
+        return buscarEntidad(id);
     }
 
     public void validarSinSolapamiento(Long habitacionId, LocalDate entrada, LocalDate salida) {
@@ -244,6 +363,7 @@ public class ReservaService {
                 .estadoReserva(EstadoReserva.CONFIRMADA)
                 .tarifaNoche(tarifaNoche)
                 .totalEstimado(total)
+                .registradaPor(UsuarioActual.username())
                 .build();
 
         return reservaRepository.save(reserva);
