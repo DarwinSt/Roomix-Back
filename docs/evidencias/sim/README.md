@@ -23,23 +23,25 @@ el programa sabía que había ocurrido.
 | `resultados/G01.json` … `G30.json` | Resultado de cada gemelo: parámetros, cifras de la simulación, cifras de Roomix, verificaciones de integridad y tiempos de respuesta de cada operación. |
 | `resultados/resumen.json` y `resultados/fig/` | Resumen de los 30 gemelos y gráficos. |
 | `bases/roomix_sim_gXX.dump` | Copia completa de la base de datos de cada gemelo (formato de `pg_dump`). |
-| `credencial-prueba.txt` | Contraseña de prueba de los usuarios de los gemelos (solo sirve en estas bases sintéticas locales). |
+| `resultados-v2/` | **Segunda corrida (4 de noviembre de 2026, Roomix 1.1, con el pago al reservar): es la que presenta la tesis.** Misma estructura que `resultados/`. |
+| `bases-v2/roomix_sim_v2_gXX.dump` | Copia completa de la base de cada gemelo de la segunda corrida (formato de `pg_dump`). |
+| `credencial-prueba.txt` | Contraseña de prueba de los usuarios de los gemelos. **No se publica en el repositorio**: para abrir un gemelo, créela localmente con el valor de `ROOMIX_SIM_CLAVE` usado al generarlos. |
 
-Además, las 30 bases siguen disponibles en el PostgreSQL local del equipo con los nombres `roomix_sim_g01` … `roomix_sim_g30`.
+Además, las bases siguen disponibles en el PostgreSQL local del equipo de desarrollo con los nombres `roomix_sim_g01` … `roomix_sim_g30` (primera corrida) y `roomix_sim_v2_g01` … `roomix_sim_v2_g30` (segunda corrida).
 
 ## Cómo abrir un gemelo en Roomix
 
 1. Si la base no está en el equipo, restaurarla desde su copia:
 
    ```bash
-   createdb -U postgres roomix_sim_g30
-   pg_restore -U postgres -d roomix_sim_g30 bases/roomix_sim_g30.dump
+   createdb -U postgres roomix_sim_v2_g30
+   pg_restore -U postgres -d roomix_sim_v2_g30 bases-v2/roomix_sim_v2_g30.dump
    ```
 
 2. Arrancar el backend apuntando a esa base (desde la carpeta `Roomix-Back`):
 
    ```bash
-   DATABASE_URL=postgresql://postgres:<clave-postgres>@localhost:5432/roomix_sim_g30 APP_SEED_ENABLED=false java -jar target/roomix-0.0.1-SNAPSHOT.jar
+   DATABASE_URL=postgresql://postgres:<clave-postgres>@localhost:5432/roomix_sim_v2_g30 APP_SEED_ENABLED=false java -jar target/roomix-0.0.1-SNAPSHOT.jar
    ```
 
 3. Arrancar el frontend (`npm start` en `Roomix-FRONT`), abrir http://localhost:4200 e ingresar con el usuario `admin`
