@@ -7,9 +7,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
+/** Datos de ejemplo: solo en modo demostración (APP_SEED_ENABLED=true), nunca en la base de un hotel real. */
+@ConditionalOnProperty(name = "app.seed.enabled", havingValue = "true")
 @Component
 @Order(20)
 @RequiredArgsConstructor
