@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EventoErrorCode.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.evento.exception</a> &gt; <span class="el_source">EventoErrorCode.java</span></div><h1>EventoErrorCode.java</h1><pre class="source lang-java linenums">package com.example.roomix.evento.exception;
+
+import com.example.roomix.common.exception.ModuloErrorCode;
+import lombok.Getter;
+import org.springframework.http.HttpStatus;
+
+<span class="fc" id="L7">@Getter</span>
+public enum EventoErrorCode implements ModuloErrorCode {
+<span class="fc" id="L9">    EVENTO_NO_ENCONTRADO(HttpStatus.NOT_FOUND, &quot;EVT-001&quot;, &quot;No se encontró el evento con id %s&quot;),</span>
+<span class="fc" id="L10">    SALON_NO_ENCONTRADO(HttpStatus.NOT_FOUND, &quot;EVT-002&quot;, &quot;No se encontró el salón con id %s&quot;),</span>
+<span class="fc" id="L11">    SALON_INACTIVO(HttpStatus.UNPROCESSABLE_ENTITY, &quot;EVT-003&quot;, &quot;El salón %s no está disponible&quot;),</span>
+<span class="fc" id="L12">    FECHAS_INVALIDAS(HttpStatus.BAD_REQUEST, &quot;EVT-004&quot;, &quot;La hora de fin debe ser posterior a la de inicio&quot;),</span>
+<span class="fc" id="L13">    SALON_OCUPADO(HttpStatus.CONFLICT, &quot;EVT-005&quot;, &quot;El salón %s ya tiene un evento en ese horario&quot;),</span>
+<span class="fc" id="L14">    CAPACIDAD_SALON(HttpStatus.UNPROCESSABLE_ENTITY, &quot;EVT-006&quot;, &quot;La capacidad (%s) supera la del salón %s (%s personas)&quot;),</span>
+<span class="fc" id="L15">    CUPO_LLENO(HttpStatus.UNPROCESSABLE_ENTITY, &quot;EVT-007&quot;, &quot;El evento alcanzó su capacidad máxima (%s participantes)&quot;),</span>
+<span class="fc" id="L16">    TRANSICION_INVALIDA(HttpStatus.UNPROCESSABLE_ENTITY, &quot;EVT-008&quot;, &quot;No se puede pasar el evento de %s a %s&quot;),</span>
+<span class="fc" id="L17">    EVENTO_CERRADO(HttpStatus.UNPROCESSABLE_ENTITY, &quot;EVT-009&quot;, &quot;El evento está %s y no admite cambios&quot;),</span>
+<span class="fc" id="L18">    MOTIVO_REQUERIDO(HttpStatus.BAD_REQUEST, &quot;EVT-010&quot;, &quot;Indique el motivo de la cancelación&quot;),</span>
+<span class="fc" id="L19">    PARTICIPANTE_NO_ENCONTRADO(HttpStatus.NOT_FOUND, &quot;EVT-011&quot;, &quot;No se encontró el participante con id %s&quot;),</span>
+<span class="fc" id="L20">    NOMBRE_SALON_DUPLICADO(HttpStatus.CONFLICT, &quot;EVT-012&quot;, &quot;Ya existe un salón llamado %s&quot;),</span>
+<span class="fc" id="L21">    SOLO_HUESPEDES(HttpStatus.UNPROCESSABLE_ENTITY, &quot;EVT-013&quot;, &quot;El evento es exclusivo para huéspedes: seleccione un huésped registrado&quot;),</span>
+<span class="fc" id="L22">    PARTICIPANTE_DUPLICADO(HttpStatus.CONFLICT, &quot;EVT-014&quot;, &quot;%s ya está inscrito en el evento&quot;),</span>
+<span class="fc" id="L23">    NOMBRE_PARTICIPANTE_REQUERIDO(HttpStatus.BAD_REQUEST, &quot;EVT-015&quot;, &quot;Indique el nombre del participante o seleccione un huésped&quot;);</span>
+
+    private final HttpStatus httpStatus;
+    private final String code;
+    private final String messageTemplate;
+
+<span class="fc" id="L29">    EventoErrorCode(HttpStatus httpStatus, String code, String messageTemplate) {</span>
+<span class="fc" id="L30">        this.httpStatus = httpStatus;</span>
+<span class="fc" id="L31">        this.code = code;</span>
+<span class="fc" id="L32">        this.messageTemplate = messageTemplate;</span>
+<span class="fc" id="L33">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

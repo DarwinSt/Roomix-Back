@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PromocionService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.reserva.service</a> &gt; <span class="el_source">PromocionService.java</span></div><h1>PromocionService.java</h1><pre class="source lang-java linenums">package com.example.roomix.reserva.service;
+
+import com.example.roomix.auth.service.UsuarioActual;
+import com.example.roomix.habitacion.domain.Habitacion;
+import com.example.roomix.habitacion.exception.HabitacionNotFoundException;
+import com.example.roomix.habitacion.repository.HabitacionRepository;
+import com.example.roomix.reserva.domain.CanalReserva;
+import com.example.roomix.reserva.domain.Promocion;
+import com.example.roomix.reserva.domain.Promocion.TipoDescuento;
+import com.example.roomix.reserva.dto.PromocionDtos.PromocionAplicableResponse;
+import com.example.roomix.reserva.dto.PromocionDtos.PromocionRequest;
+import com.example.roomix.reserva.dto.PromocionDtos.PromocionResponse;
+import com.example.roomix.reserva.exception.ReservaErrorCode;
+import com.example.roomix.reserva.exception.ReservaException;
+import com.example.roomix.reserva.repository.PromocionRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+
+/** Promociones que el administrador configura y que recepción escoge al reservar (una por reserva). */
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class PromocionService {
+
+    private final PromocionRepository repository;
+    private final HabitacionRepository habitacionRepository;
+    private final TarifaService tarifaService;
+
+    public List&lt;PromocionResponse&gt; listar() {
+<span class="nc" id="L37">        return repository.findAllByOrderByActivaDescNombreAsc().stream().map(PromocionResponse::from).toList();</span>
+    }
+
+    @Transactional
+    public PromocionResponse crear(PromocionRequest request) {
+<span class="fc" id="L42">        Promocion promocion = new Promocion();</span>
+<span class="fc" id="L43">        promocion.setCreadaPor(UsuarioActual.username());</span>
+<span class="fc" id="L44">        aplicar(promocion, request);</span>
+<span class="fc" id="L45">        return PromocionResponse.from(repository.save(promocion));</span>
+    }
+
+    @Transactional
+    public PromocionResponse actualizar(Long id, PromocionRequest request) {
+<span class="nc" id="L50">        Promocion promocion = buscar(id);</span>
+<span class="nc" id="L51">        aplicar(promocion, request);</span>
+<span class="nc" id="L52">        return PromocionResponse.from(repository.save(promocion));</span>
+    }
+
+    @Transactional
+    public PromocionResponse cambiarActiva(Long id, boolean activa) {
+<span class="nc" id="L57">        Promocion promocion = buscar(id);</span>
+<span class="nc" id="L58">        promocion.setActiva(activa);</span>
+<span class="nc" id="L59">        return PromocionResponse.from(repository.save(promocion));</span>
+    }
+
+    /** Promociones activas que cumplen las condiciones de la reserva, con el descuento calculado. */
+    public List&lt;PromocionAplicableResponse&gt; aplicables(Long habitacionId, LocalDate entrada, LocalDate salida, CanalReserva canal) {
+<span class="fc" id="L64">        Habitacion habitacion = habitacionRepository.findById(habitacionId)</span>
+<span class="pc" id="L65">                .orElseThrow(() -&gt; new HabitacionNotFoundException(habitacionId));</span>
+<span class="fc" id="L66">        int noches = noches(entrada, salida);</span>
+<span class="fc" id="L67">        BigDecimal subtotal = tarifa(habitacion).multiply(BigDecimal.valueOf(noches));</span>
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">        CanalReserva c = canal != null ? canal : CanalReserva.PRESENCIAL;</span>
+<span class="fc" id="L69">        return repository.findByActivaTrueOrderByNombreAsc().stream()</span>
+<span class="fc" id="L70">                .filter(p -&gt; p.aplica(noches, habitacion.getTipoHabitacion(), c, entrada))</span>
+<span class="fc" id="L71">                .map(p -&gt; {</span>
+<span class="fc" id="L72">                    BigDecimal descuento = p.descuentoSobre(subtotal);</span>
+<span class="fc" id="L73">                    return new PromocionAplicableResponse(p.getId(), p.getNombre(), p.getDescripcion(),</span>
+<span class="fc" id="L74">                            PromocionResponse.from(p).condiciones(), p.getTipoDescuento(), p.getValor(), subtotal, descuento,</span>
+<span class="fc" id="L75">                            subtotal.subtract(descuento));</span>
+                })
+<span class="pc" id="L77">                .sorted((a, b) -&gt; b.descuento().compareTo(a.descuento()))</span>
+<span class="fc" id="L78">                .toList();</span>
+    }
+
+    /** Valida que la promoción aplique y devuelve la entidad; se usa al crear o editar una reserva. */
+    public Promocion validarAplicable(Long promocionId, Habitacion habitacion, int noches, CanalReserva canal, LocalDate llegada) {
+<span class="fc" id="L83">        Promocion p = buscar(promocionId);</span>
+<span class="pc bpc" id="L84" title="2 of 4 branches missed.">        if (!p.aplica(noches, habitacion.getTipoHabitacion(), canal != null ? canal : CanalReserva.PRESENCIAL, llegada)) {</span>
+<span class="nc" id="L85">            throw new ReservaException(ReservaErrorCode.PROMOCION_NO_APLICA,</span>
+<span class="nc" id="L86">                    &quot;La promoción «&quot; + p.getNombre() + &quot;» no aplica a esta reserva (&quot; + PromocionResponse.from(p).condiciones() + &quot;)&quot;);</span>
+        }
+<span class="fc" id="L88">        return p;</span>
+    }
+
+    private Promocion buscar(Long id) {
+<span class="pc" id="L92">        return repository.findById(id).orElseThrow(() -&gt; new ReservaException(ReservaErrorCode.PROMOCION_NO_ENCONTRADA));</span>
+    }
+
+    private void aplicar(Promocion p, PromocionRequest r) {
+<span class="pc bpc" id="L96" title="3 of 4 branches missed.">        if (r.tipoDescuento() == TipoDescuento.PORCENTAJE &amp;&amp; r.valor().compareTo(BigDecimal.valueOf(100)) &gt; 0) {</span>
+<span class="nc" id="L97">            throw new ReservaException(ReservaErrorCode.PROMOCION_INVALIDA, &quot;El porcentaje de descuento no puede superar 100&quot;);</span>
+        }
+<span class="pc bpc" id="L99" title="5 of 6 branches missed.">        if (r.vigenteDesde() != null &amp;&amp; r.vigenteHasta() != null &amp;&amp; r.vigenteHasta().isBefore(r.vigenteDesde())) {</span>
+<span class="nc" id="L100">            throw new ReservaException(ReservaErrorCode.PROMOCION_INVALIDA, &quot;La vigencia termina antes de comenzar&quot;);</span>
+        }
+<span class="fc" id="L102">        p.setNombre(r.nombre().trim());</span>
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">        p.setDescripcion(StringUtils.hasText(r.descripcion()) ? r.descripcion().trim() : null);</span>
+<span class="fc" id="L104">        p.setMinimoNoches(r.minimoNoches());</span>
+<span class="fc" id="L105">        p.setTipoHabitacion(r.tipoHabitacion());</span>
+<span class="fc" id="L106">        p.setCanal(r.canal());</span>
+<span class="fc" id="L107">        p.setVigenteDesde(r.vigenteDesde());</span>
+<span class="fc" id="L108">        p.setVigenteHasta(r.vigenteHasta());</span>
+<span class="fc" id="L109">        p.setTipoDescuento(r.tipoDescuento());</span>
+<span class="fc" id="L110">        p.setValor(r.valor());</span>
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">        if (r.activa() != null) {</span>
+<span class="nc" id="L112">            p.setActiva(r.activa());</span>
+        }
+<span class="fc" id="L114">    }</span>
+
+    private BigDecimal tarifa(Habitacion h) {
+<span class="pc bpc" id="L117" title="1 of 2 branches missed.">        return h.getPrecioNoche() != null ? h.getPrecioNoche() : tarifaService.obtenerPrecioNoche(h.getTipoHabitacion());</span>
+    }
+
+    private static int noches(LocalDate entrada, LocalDate salida) {
+<span class="pc bpc" id="L121" title="3 of 6 branches missed.">        if (entrada == null || salida == null || !salida.isAfter(entrada)) {</span>
+<span class="nc" id="L122">            throw new ReservaException(ReservaErrorCode.FECHAS_INVALIDAS);</span>
+        }
+<span class="fc" id="L124">        return (int) ChronoUnit.DAYS.between(entrada, salida);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

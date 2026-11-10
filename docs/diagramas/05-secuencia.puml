@@ -1,0 +1,64 @@
+@startuml secuencia
+!include _estilo.iuml
+title Roomix 1.1 — Diagrama de secuencia: registrar check-out y facturar con los abonos de la reserva
+autonumber "<b>0."
+
+actor "Recepcionista" as U
+box "Frontend (Angular)" #F7FBF8
+  participant "ReservaDetalle\nComponent" as UI
+  participant "ReservaService\n(HTTP)" as FS
+  participant "authInterceptor" as INT
+end box
+box "Backend (Spring Boot)" #F1F6FB
+  participant "SecurityFilterChain\n(JWT + rol)" as SEC
+  participant "ReservaController" as CTRL
+  participant "ReservaOperacion\nService" as OPS
+  participant "HabitacionService" as HS
+  participant "IncidenciaService" as IS
+  participant "FacturacionService" as FAC
+  participant "AbonoService" as ABO
+  participant "AuditoriaInterceptor" as AUD
+end box
+database "PostgreSQL\n(Railway)" as DB
+
+U -> UI : Clic en «Check-out» y confirma
+UI -> FS : checkOut(reservaId)
+FS -> INT : POST /api/reservas/{id}/check-out
+INT -> SEC : petición + Authorization: Bearer <JWT>
+SEC -> SEC : validar firma y vigencia del token
+SEC -> DB : consultar usuario (rol y estado activo)
+DB --> SEC : usuario RECEPCION activo
+alt token inválido o rol sin permiso
+  SEC --> INT : 401 / 403 (ProblemDetail)
+  INT --> UI : cerrar sesión (401) o mostrar error
+else autorizado
+  SEC -> CTRL : checkOut(id)
+  CTRL -> OPS : checkOut(id)
+  OPS -> DB : buscar reserva
+  DB --> OPS : reserva EN_CURSO
+  OPS -> HS : actualizarEstado(habitación, LIBRE)
+  HS -> DB : reserva FINALIZADA, hora real de salida
+  HS -> DB : habitación INHABILITADO (POST_CHECKOUT)
+  HS -> IS : crearLimpiezaPostCheckout(habitación)
+  IS -> DB : insertar incidencia + tareas
+  HS --> OPS : habitación actualizada
+  OPS -> FAC : facturarReserva(id)
+  FAC -> DB : consultar alojamiento y servicios no facturados
+  FAC -> FAC : calcular subtotal, IVA 19 %\n(exento: extranjero con pasaporte)
+  FAC -> DB : insertar factura FV-###### e ítems\n(alojamiento con la promoción, servicios)
+  FAC -> ABO : aplicarAFactura(factura)
+  ABO -> DB : abonos vigentes de la reserva
+  ABO -> DB : registrar cada abono como pago de la factura\n(sin nuevo ingreso: ya se registró al recibirlo)
+  ABO --> FAC : total pagado actualizado
+  FAC -> FAC : estado según el saldo\n(PAGADA, PAGADA_PARCIAL o PENDIENTE)
+  FAC --> OPS : factura con abonos aplicados
+  OPS --> CTRL : CheckOutResponse(habitación, reserva, factura)
+  CTRL --> SEC : 200 OK (JSON)
+  SEC -> AUD : afterCompletion(...)
+  AUD -> DB : registrar auditoría\n(usuario, RESERVAS, CHECK_OUT, IP, éxito)
+  SEC --> INT : 200 OK
+  INT --> FS : respuesta
+  FS --> UI : CheckOutResponse
+  UI --> U : «Check-out listo. Factura FV-…»\nsaldo por cobrar y [Ver factura]
+end
+@enduml

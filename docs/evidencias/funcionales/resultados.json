@@ -1,0 +1,253 @@
+{
+ "fecha": "2026-11-02T19:00:47.167Z",
+ "resultados": [
+  {
+   "id": "CP-01",
+   "modulo": "Acceso",
+   "rol": "Todos",
+   "resultado": "OK",
+   "observacion": "Ingreso correcto de los 6 roles (token JWT emitido)",
+   "ms": 5593
+  },
+  {
+   "id": "CP-02",
+   "modulo": "Acceso",
+   "rol": "—",
+   "resultado": "OK",
+   "observacion": "5.º intento: 401; con la clave correcta responde 423 (Cuenta bloqueada por intentos fallidos. Intente de nuevo después de las 14:14)",
+   "ms": 328
+  },
+  {
+   "id": "CP-03",
+   "modulo": "Acceso",
+   "rol": "—",
+   "resultado": "Parcial",
+   "observacion": "la solicitud responde 200 y un token inválido se rechaza (422); la recepción del correo y el uso único del enlace requieren un servidor SMTP, no disponible en el entorno local",
+   "ms": 40
+  },
+  {
+   "id": "CP-04",
+   "modulo": "Acceso",
+   "rol": "Admin",
+   "resultado": "OK",
+   "observacion": "Ingreso con la clave temporal; la sesión exige cambiar la contraseña (debeCambiarPassword = true)",
+   "ms": 134
+  },
+  {
+   "id": "CP-05",
+   "modulo": "Roles",
+   "rol": "Housekeeping",
+   "resultado": "OK",
+   "observacion": "API responde 403; la ruta /finanzas redirige a /inicio",
+   "ms": 5152
+  },
+  {
+   "id": "CP-06",
+   "modulo": "Usuarios",
+   "rol": "Admin",
+   "resultado": "OK",
+   "observacion": "Usuario creado (rol Almacén); desactivado, el ingreso responde 403",
+   "ms": 307
+  },
+  {
+   "id": "CP-07",
+   "modulo": "Auditoría",
+   "rol": "Admin",
+   "resultado": "OK",
+   "observacion": "Último registro: CHECK_IN (RESERVAS) por recepcion, HTTP 200, exitoso, IP 0:0:0:0:0:0:0:1",
+   "ms": 3781
+  },
+  {
+   "id": "CP-08",
+   "modulo": "Dashboard",
+   "rol": "Admin / Recepción / Finanzas",
+   "resultado": "OK",
+   "observacion": "Panel por rol (campos: admin 10, recepcion 10, finanzas 10)",
+   "ms": 12241
+  },
+  {
+   "id": "CP-09",
+   "modulo": "Dashboard",
+   "rol": "Recepción",
+   "resultado": "OK",
+   "observacion": "Check-in realizado; habitación 206 pasa a Ocupada",
+   "ms": 59
+  },
+  {
+   "id": "CP-10",
+   "modulo": "Reservas",
+   "rol": "Recepción",
+   "resultado": "OK",
+   "observacion": "Reserva 419 confirmada, canal WhatsApp, total = 3 noches × 330000",
+   "ms": 60
+  },
+  {
+   "id": "CP-11",
+   "modulo": "Reservas",
+   "rol": "Recepción",
+   "resultado": "OK",
+   "observacion": "Total recalculado al editar fechas (4 noches); una reserva que se cruza se rechaza (422) y una posterior sin cruce en la misma habitación, hoy reservada, se acepta (H-01 corregido)",
+   "ms": 229
+  },
+  {
+   "id": "CP-12",
+   "modulo": "Reservas",
+   "rol": "Recepción",
+   "resultado": "OK",
+   "observacion": "Sin motivo: 400; con motivo queda Cancelada",
+   "ms": 26
+  },
+  {
+   "id": "CP-13",
+   "modulo": "Reservas",
+   "rol": "Recepción",
+   "resultado": "OK",
+   "observacion": "Vista Calendario visible (evidencia CP-13.png)",
+   "ms": 4663
+  },
+  {
+   "id": "CP-14",
+   "modulo": "Reservas",
+   "rol": "Recepción",
+   "resultado": "OK",
+   "observacion": "Detalle de la reserva con acceso al comprobante (evidencia CP-14.png)",
+   "ms": 3809
+  },
+  {
+   "id": "CP-15",
+   "modulo": "Huéspedes",
+   "rol": "Recepción",
+   "resultado": "OK",
+   "observacion": "Sin autorización: 400; con autorización se guarda y registra la fecha y hora",
+   "ms": 56
+  },
+  {
+   "id": "CP-16",
+   "modulo": "Huéspedes",
+   "rol": "Recepción",
+   "resultado": "OK",
+   "observacion": "Historial con 2 reserva(s)",
+   "ms": 4617
+  },
+  {
+   "id": "CP-17",
+   "modulo": "Habitaciones",
+   "rol": "Admin",
+   "resultado": "OK",
+   "observacion": "Habitación 925 creada en el piso 9 con capacidad 2",
+   "ms": 39
+  },
+  {
+   "id": "CP-18",
+   "modulo": "Habitaciones",
+   "rol": "Recepción",
+   "resultado": "OK",
+   "observacion": "Plano por piso con colores por estado (evidencia CP-18.png)",
+   "ms": 3806
+  },
+  {
+   "id": "CP-19",
+   "modulo": "Habitaciones",
+   "rol": "Admin",
+   "resultado": "OK",
+   "observacion": "Foto pequeña aceptada (200); foto de 5 MB rechazada (413)",
+   "ms": 165
+  },
+  {
+   "id": "CP-20",
+   "modulo": "Inventario",
+   "rol": "Almacén",
+   "resultado": "OK",
+   "observacion": "Artículo creado; valor total = 10 × $2.500 = $25.000",
+   "ms": 105
+  },
+  {
+   "id": "CP-21",
+   "modulo": "Inventario",
+   "rol": "Almacén",
+   "resultado": "OK",
+   "observacion": "Stock 10 → 30; egreso de $48.000 registrado en Finanzas (Compras de inventario)",
+   "ms": 36
+  },
+  {
+   "id": "CP-22",
+   "modulo": "Inventario",
+   "rol": "Almacén",
+   "resultado": "OK",
+   "observacion": "Valorización total 49896200; evidencia CP-22.png",
+   "ms": 3766
+  },
+  {
+   "id": "CP-23",
+   "modulo": "Finanzas",
+   "rol": "Finanzas",
+   "resultado": "OK",
+   "observacion": "Egreso de nómina $100.000 reflejado en el resumen (2103700 → 2203700)",
+   "ms": 3707
+  },
+  {
+   "id": "CP-24",
+   "modulo": "Facturación",
+   "rol": "Recepción",
+   "resultado": "OK",
+   "observacion": "Factura FV-000375 con IVA 233700; Pagada parcial → Pagada; habitación queda INHABILITADO",
+   "ms": 166
+  },
+  {
+   "id": "CP-25",
+   "modulo": "Facturación",
+   "rol": "Finanzas",
+   "resultado": "OK",
+   "observacion": "Factura FV-000375 anulada; sus 2 pagos quedan devueltos y se registra el egreso de devolución por $1463700 (H-02 corregido); la anulación sin pagos se verifica en CP-30",
+   "ms": 146
+  },
+  {
+   "id": "CP-26",
+   "modulo": "Servicios",
+   "rol": "Recepción / Housekeeping",
+   "resultado": "OK",
+   "observacion": "Solicitud de «Botella de vino de la casa» ×2: Solicitada → asignada → En proceso → Completada",
+   "ms": 131
+  },
+  {
+   "id": "CP-27",
+   "modulo": "Servicios",
+   "rol": "Recepción",
+   "resultado": "OK",
+   "observacion": "Cuenta con 2 líneas; subtotal 1230000, IVA 233700, saldo 1463700",
+   "ms": 27
+  },
+  {
+   "id": "CP-28",
+   "modulo": "Eventos",
+   "rol": "Eventos",
+   "resultado": "OK",
+   "observacion": "Evento creado en «Sala de juntas Manga»; un segundo evento en el mismo horario se rechaza (409)",
+   "ms": 124
+  },
+  {
+   "id": "CP-29",
+   "modulo": "Eventos",
+   "rol": "Eventos",
+   "resultado": "OK",
+   "observacion": "Inscritos 3, confirmados 2, asistentes 2",
+   "ms": 97
+  },
+  {
+   "id": "CP-30",
+   "modulo": "Eventos",
+   "rol": "Eventos / Finanzas",
+   "resultado": "OK",
+   "observacion": "Programado → En curso → Finalizado; factura FV-000376 por 357000; anulada sin pagos con motivo",
+   "ms": 55
+  },
+  {
+   "id": "CP-31",
+   "modulo": "Reportes",
+   "rol": "Finanzas",
+   "resultado": "OK",
+   "observacion": "Ocupación 39.1 %, ADR 403762, RevPAR 157827; exportación CSV disponible en la pantalla",
+   "ms": 3702
+  }
+ ]
+}

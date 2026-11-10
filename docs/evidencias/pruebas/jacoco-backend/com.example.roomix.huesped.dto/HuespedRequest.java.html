@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HuespedRequest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.huesped.dto</a> &gt; <span class="el_source">HuespedRequest.java</span></div><h1>HuespedRequest.java</h1><pre class="source lang-java linenums">package com.example.roomix.huesped.dto;
+
+import com.example.roomix.huesped.domain.Huesped;
+import com.example.roomix.huesped.domain.TipoDocumento;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
+@Schema(name = &quot;HuespedRequest&quot;)
+<span class="fc" id="L13">public record HuespedRequest(</span>
+        @NotBlank(message = &quot;El nombre es obligatorio&quot;)
+        @Size(max = 80)
+        String nombre,
+
+        @NotBlank(message = &quot;Los apellidos son obligatorios&quot;)
+        @Size(max = 120)
+        String apellidos,
+
+        @NotNull(message = &quot;El tipo de documento es obligatorio&quot;)
+        TipoDocumento tipoDocumento,
+
+        @NotBlank(message = &quot;El número de documento es obligatorio&quot;)
+        @Size(max = 40)
+        String numeroDocumento,
+
+        @NotBlank(message = &quot;El email es obligatorio&quot;)
+        @Email(message = &quot;El email no es válido&quot;)
+        @Size(max = 120)
+        String email,
+
+        @NotBlank(message = &quot;El teléfono es obligatorio&quot;)
+        @Size(max = 30)
+        String telefono,
+
+        @Size(max = 80)
+        String nacionalidad,
+
+        @Schema(format = &quot;date&quot;, nullable = true)
+        java.time.LocalDate fechaNacimiento,
+
+        @Size(max = 500)
+        String notas,
+
+        Boolean activo,
+
+        @Schema(description = &quot;El titular autoriza el tratamiento de sus datos personales (Ley 1581 de 2012)&quot;)
+        @NotNull(message = &quot;Debe indicar la autorización de tratamiento de datos&quot;)
+        @AssertTrue(message = &quot;Se requiere la autorización del titular para el tratamiento de sus datos (Ley 1581 de 2012)&quot;)
+        Boolean autorizaTratamientoDatos
+) {
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

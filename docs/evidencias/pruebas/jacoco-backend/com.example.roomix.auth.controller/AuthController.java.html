@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.auth.controller</a> &gt; <span class="el_source">AuthController.java</span></div><h1>AuthController.java</h1><pre class="source lang-java linenums">package com.example.roomix.auth.controller;
+
+import com.example.roomix.auth.dto.AuthDtos.CambiarPasswordRequest;
+import com.example.roomix.auth.dto.AuthDtos.LoginRequest;
+import com.example.roomix.auth.dto.AuthDtos.LoginResponse;
+import com.example.roomix.auth.dto.AuthDtos.MensajeResponse;
+import com.example.roomix.auth.dto.AuthDtos.RecuperarPasswordRequest;
+import com.example.roomix.auth.dto.AuthDtos.RestablecerPasswordRequest;
+import com.example.roomix.auth.dto.AuthDtos.UsuarioResponse;
+import com.example.roomix.auth.service.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@Tag(name = &quot;Autenticación&quot;, description = &quot;Inicio de sesión, perfil y recuperación de contraseña&quot;)
+@RestController
+@RequestMapping(&quot;/api/auth&quot;)
+@RequiredArgsConstructor
+public class AuthController {
+
+    private final AuthService authService;
+
+    @Operation(summary = &quot;Iniciar sesión&quot;, description = &quot;Devuelve un JWT para enviar en el encabezado Authorization: Bearer &lt;token&gt;&quot;)
+    @SecurityRequirements
+    @PostMapping(&quot;/login&quot;)
+    public LoginResponse login(@Valid @RequestBody LoginRequest request, HttpServletRequest http) {
+<span class="fc" id="L35">        return authService.login(request, http);</span>
+    }
+
+    @Operation(summary = &quot;Perfil del usuario autenticado&quot;)
+    @GetMapping(&quot;/me&quot;)
+    public UsuarioResponse perfil() {
+<span class="fc" id="L41">        return authService.perfil();</span>
+    }
+
+    @Operation(summary = &quot;Cambiar la contraseña propia&quot;)
+    @PostMapping(&quot;/cambiar-password&quot;)
+    public MensajeResponse cambiarPassword(@Valid @RequestBody CambiarPasswordRequest request, HttpServletRequest http) {
+<span class="nc" id="L47">        authService.cambiarPassword(request, http);</span>
+<span class="nc" id="L48">        return new MensajeResponse(&quot;Contraseña actualizada correctamente&quot;);</span>
+    }
+
+    @Operation(summary = &quot;Solicitar enlace de recuperación de contraseña por correo&quot;)
+    @SecurityRequirements
+    @PostMapping(&quot;/recuperar&quot;)
+    public MensajeResponse recuperar(@Valid @RequestBody RecuperarPasswordRequest request, HttpServletRequest http) {
+<span class="nc" id="L55">        boolean correoActivo = authService.solicitarRecuperacion(request.email(), http);</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">        return new MensajeResponse(correoActivo</span>
+<span class="nc" id="L57">                ? &quot;Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.&quot;</span>
+<span class="nc" id="L58">                : &quot;El envío de correos no está habilitado. Solicita al administrador una contraseña temporal.&quot;);</span>
+    }
+
+    @Operation(summary = &quot;Restablecer la contraseña con el enlace de recuperación&quot;)
+    @SecurityRequirements
+    @PostMapping(&quot;/restablecer&quot;)
+    public MensajeResponse restablecer(@Valid @RequestBody RestablecerPasswordRequest request, HttpServletRequest http) {
+<span class="nc" id="L65">        authService.restablecer(request, http);</span>
+<span class="nc" id="L66">        return new MensajeResponse(&quot;Contraseña restablecida. Ya puedes iniciar sesión.&quot;);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

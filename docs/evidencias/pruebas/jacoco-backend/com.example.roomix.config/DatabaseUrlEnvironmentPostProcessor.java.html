@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DatabaseUrlEnvironmentPostProcessor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.config</a> &gt; <span class="el_source">DatabaseUrlEnvironmentPostProcessor.java</span></div><h1>DatabaseUrlEnvironmentPostProcessor.java</h1><pre class="source lang-java linenums">package com.example.roomix.config;
+
+import org.springframework.boot.EnvironmentPostProcessor;
+import org.springframework.boot.SpringApplication;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.MapPropertySource;
+import org.springframework.util.StringUtils;
+
+import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+/**
+ * Convierte {@code DATABASE_URL} (formato {@code postgresql://usuario:clave@host:puerto/db?sslmode=require},
+ * el que entregan Railway, Render y Neon) en las propiedades {@code spring.datasource.*}.
+ * &lt;p&gt;
+ * Solo actúa si no se definió explícitamente {@code DB_URL} ni {@code SPRING_DATASOURCE_URL}.
+ */
+<span class="fc" id="L23">public class DatabaseUrlEnvironmentPostProcessor implements EnvironmentPostProcessor {</span>
+
+    private static final String PROPERTY_SOURCE_NAME = &quot;roomixDatabaseUrl&quot;;
+
+    @Override
+    public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
+<span class="fc" id="L29">        String databaseUrl = environment.getProperty(&quot;DATABASE_URL&quot;);</span>
+<span class="pc bpc" id="L30" title="1 of 2 branches missed.">        if (!StringUtils.hasText(databaseUrl)</span>
+<span class="nc bnc" id="L31" title="All 2 branches missed.">                || StringUtils.hasText(environment.getProperty(&quot;DB_URL&quot;))</span>
+<span class="nc bnc" id="L32" title="All 2 branches missed.">                || StringUtils.hasText(environment.getProperty(&quot;SPRING_DATASOURCE_URL&quot;))) {</span>
+<span class="fc" id="L33">            return;</span>
+        }
+
+<span class="nc" id="L36">        Map&lt;String, Object&gt; props = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L37" title="All 2 branches missed.">        if (databaseUrl.startsWith(&quot;jdbc:&quot;)) {</span>
+<span class="nc" id="L38">            props.put(&quot;spring.datasource.url&quot;, databaseUrl);</span>
+        } else {
+<span class="nc" id="L40">            URI uri = URI.create(databaseUrl);</span>
+<span class="nc" id="L41">            StringBuilder jdbc = new StringBuilder(&quot;jdbc:postgresql://&quot;).append(uri.getHost());</span>
+<span class="nc bnc" id="L42" title="All 2 branches missed.">            if (uri.getPort() &gt; 0) {</span>
+<span class="nc" id="L43">                jdbc.append(':').append(uri.getPort());</span>
+            }
+<span class="nc" id="L45">            jdbc.append(uri.getRawPath());</span>
+<span class="nc" id="L46">            String query = limpiarQuery(uri.getRawQuery());</span>
+<span class="nc bnc" id="L47" title="All 2 branches missed.">            if (StringUtils.hasText(query)) {</span>
+<span class="nc" id="L48">                jdbc.append('?').append(query);</span>
+            }
+<span class="nc" id="L50">            props.put(&quot;spring.datasource.url&quot;, jdbc.toString());</span>
+
+<span class="nc" id="L52">            String userInfo = uri.getRawUserInfo();</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">            if (StringUtils.hasText(userInfo)) {</span>
+<span class="nc" id="L54">                int sep = userInfo.indexOf(':');</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">                String usuario = sep &gt;= 0 ? userInfo.substring(0, sep) : userInfo;</span>
+<span class="nc" id="L56">                props.put(&quot;spring.datasource.username&quot;, decodificar(usuario));</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">                if (sep &gt;= 0) {</span>
+<span class="nc" id="L58">                    props.put(&quot;spring.datasource.password&quot;, decodificar(userInfo.substring(sep + 1)));</span>
+                }
+            }
+        }
+
+<span class="nc" id="L63">        environment.getPropertySources().addFirst(new MapPropertySource(PROPERTY_SOURCE_NAME, props));</span>
+<span class="nc" id="L64">    }</span>
+
+    /** El driver JDBC no reconoce {@code channel_binding} (lo añade Neon); se descarta. */
+    private static String limpiarQuery(String query) {
+<span class="nc bnc" id="L68" title="All 2 branches missed.">        if (!StringUtils.hasText(query)) {</span>
+<span class="nc" id="L69">            return null;</span>
+        }
+<span class="nc" id="L71">        return Arrays.stream(query.split(&quot;&amp;&quot;))</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">                .filter(param -&gt; !param.startsWith(&quot;channel_binding=&quot;))</span>
+<span class="nc" id="L73">                .collect(Collectors.joining(&quot;&amp;&quot;));</span>
+    }
+
+    private static String decodificar(String valor) {
+<span class="nc" id="L77">        return URLDecoder.decode(valor, StandardCharsets.UTF_8);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

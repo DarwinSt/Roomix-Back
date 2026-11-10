@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MetodoPago.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.finanzas.domain</a> &gt; <span class="el_source">MetodoPago.java</span></div><h1>MetodoPago.java</h1><pre class="source lang-java linenums">package com.example.roomix.finanzas.domain;
+
+<span class="fc" id="L3">public enum MetodoPago {</span>
+<span class="fc" id="L4">    EFECTIVO(&quot;Efectivo&quot;),</span>
+<span class="fc" id="L5">    TARJETA_CREDITO(&quot;Tarjeta de crédito&quot;),</span>
+<span class="fc" id="L6">    TARJETA_DEBITO(&quot;Tarjeta débito&quot;),</span>
+<span class="fc" id="L7">    TRANSFERENCIA(&quot;Transferencia bancaria&quot;),</span>
+<span class="fc" id="L8">    PAGO_DIGITAL(&quot;Billetera digital (Nequi, Daviplata)&quot;),</span>
+<span class="fc" id="L9">    OTRO(&quot;Otro&quot;);</span>
+
+    private final String nombre;
+
+<span class="fc" id="L13">    MetodoPago(String nombre) {</span>
+<span class="fc" id="L14">        this.nombre = nombre;</span>
+<span class="fc" id="L15">    }</span>
+
+    public String getNombre() {
+<span class="fc" id="L18">        return nombre;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

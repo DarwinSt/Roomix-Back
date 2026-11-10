@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PersonalService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.personal.service</a> &gt; <span class="el_source">PersonalService.java</span></div><h1>PersonalService.java</h1><pre class="source lang-java linenums">package com.example.roomix.personal.service;
+
+import com.example.roomix.common.exception.ModuloException;
+import com.example.roomix.personal.dto.PersonalRequest;
+import com.example.roomix.personal.exception.PersonalErrorCode;
+
+import com.example.roomix.incidencia.domain.EstadoIncidencia;
+import com.example.roomix.incidencia.repository.IncidenciaRepository;
+import com.example.roomix.personal.domain.Personal;
+import com.example.roomix.personal.dto.PersonalResponse;
+import com.example.roomix.personal.repository.PersonalRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Set;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class PersonalService {
+
+<span class="fc" id="L24">    private static final List&lt;EstadoIncidencia&gt; ESTADOS_PERSONAL_OCUPADO = List.of(</span>
+            EstadoIncidencia.ASIGNADA,
+            EstadoIncidencia.EN_PROGRESO
+    );
+
+    private final PersonalRepository personalRepository;
+    private final IncidenciaRepository incidenciaRepository;
+
+    public List&lt;PersonalResponse&gt; listar(Boolean activo) {
+<span class="nc bnc" id="L33" title="All 2 branches missed.">        List&lt;Personal&gt; personal = activo == null</span>
+<span class="nc" id="L34">                ? personalRepository.findAllByOrderByNombreAsc()</span>
+<span class="nc bnc" id="L35" title="All 2 branches missed.">                : activo</span>
+<span class="nc" id="L36">                        ? personalRepository.findByActivoTrueOrderByNombreAsc()</span>
+<span class="nc" id="L37">                        : personalRepository.findAllByOrderByNombreAsc().stream()</span>
+<span class="nc bnc" id="L38" title="All 2 branches missed.">                                .filter(p -&gt; !p.isActivo())</span>
+<span class="nc" id="L39">                                .toList();</span>
+
+<span class="nc" id="L41">        Set&lt;Long&gt; ocupados = incidenciaRepository.findPersonalIdsOcupados(ESTADOS_PERSONAL_OCUPADO);</span>
+
+<span class="nc" id="L43">        return personal.stream()</span>
+<span class="nc" id="L44">                .map(p -&gt; PersonalResponse.from(p, ocupados.contains(p.getId())))</span>
+<span class="nc" id="L45">                .toList();</span>
+    }
+
+    @Transactional
+    public PersonalResponse crear(PersonalRequest request) {
+<span class="fc" id="L50">        String nombre = request.nombre().trim();</span>
+<span class="fc bfc" id="L51" title="All 2 branches covered.">        if (personalRepository.existsByNombreIgnoreCase(nombre)) {</span>
+<span class="fc" id="L52">            throw new ModuloException(&quot;PERSONAL&quot;, PersonalErrorCode.NOMBRE_DUPLICADO, nombre);</span>
+        }
+<span class="fc" id="L54">        Personal p = personalRepository.save(Personal.builder()</span>
+<span class="fc" id="L55">                .nombre(nombre)</span>
+<span class="fc" id="L56">                .rol(request.rol().trim())</span>
+<span class="fc" id="L57">                .departamento(vacioANull(request.departamento()))</span>
+<span class="pc bpc" id="L58" title="3 of 4 branches missed.">                .activo(request.activo() == null || request.activo())</span>
+<span class="fc" id="L59">                .build());</span>
+<span class="fc" id="L60">        return PersonalResponse.from(p, false);</span>
+    }
+
+    @Transactional
+    public PersonalResponse actualizar(Long id, PersonalRequest request) {
+<span class="fc" id="L65">        Personal p = personalRepository.findById(id)</span>
+<span class="pc" id="L66">                .orElseThrow(() -&gt; new ModuloException(&quot;PERSONAL&quot;, PersonalErrorCode.PERSONAL_NO_ENCONTRADO, id));</span>
+<span class="fc" id="L67">        String nombre = request.nombre().trim();</span>
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">        if (personalRepository.existsByNombreIgnoreCaseAndIdNot(nombre, id)) {</span>
+<span class="nc" id="L69">            throw new ModuloException(&quot;PERSONAL&quot;, PersonalErrorCode.NOMBRE_DUPLICADO, nombre);</span>
+        }
+<span class="fc" id="L71">        p.setNombre(nombre);</span>
+<span class="fc" id="L72">        p.setRol(request.rol().trim());</span>
+<span class="fc" id="L73">        p.setDepartamento(vacioANull(request.departamento()));</span>
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">        if (request.activo() != null) {</span>
+<span class="nc" id="L75">            validarDesactivacion(p, request.activo());</span>
+<span class="nc" id="L76">            p.setActivo(request.activo());</span>
+        }
+<span class="fc" id="L78">        return PersonalResponse.from(p, estaOcupado(p.getId()));</span>
+    }
+
+    @Transactional
+    public PersonalResponse cambiarActivo(Long id, boolean activo) {
+<span class="fc" id="L83">        Personal p = personalRepository.findById(id)</span>
+<span class="pc" id="L84">                .orElseThrow(() -&gt; new ModuloException(&quot;PERSONAL&quot;, PersonalErrorCode.PERSONAL_NO_ENCONTRADO, id));</span>
+<span class="fc" id="L85">        validarDesactivacion(p, activo);</span>
+<span class="fc" id="L86">        p.setActivo(activo);</span>
+<span class="fc" id="L87">        return PersonalResponse.from(p, estaOcupado(p.getId()));</span>
+    }
+
+    private void validarDesactivacion(Personal p, boolean activo) {
+<span class="pc bpc" id="L91" title="3 of 6 branches missed.">        if (!activo &amp;&amp; p.isActivo() &amp;&amp; estaOcupado(p.getId())) {</span>
+<span class="nc" id="L92">            throw new ModuloException(&quot;PERSONAL&quot;, PersonalErrorCode.PERSONAL_OCUPADO, p.getNombre());</span>
+        }
+<span class="fc" id="L94">    }</span>
+
+    private boolean estaOcupado(Long id) {
+<span class="fc" id="L97">        return incidenciaRepository.findPersonalIdsOcupados(ESTADOS_PERSONAL_OCUPADO).contains(id);</span>
+    }
+
+    private static String vacioANull(String v) {
+<span class="pc bpc" id="L101" title="2 of 4 branches missed.">        return v == null || v.isBlank() ? null : v.trim();</span>
+    }
+
+    public Personal buscarEntidad(Long id) {
+<span class="nc" id="L105">        return personalRepository.findById(id)</span>
+<span class="nc" id="L106">                .orElseThrow(() -&gt; new com.example.roomix.incidencia.exception.IncidenciaException(</span>
+                        com.example.roomix.incidencia.exception.IncidenciaErrorCode.PERSONAL_NO_ENCONTRADO,
+                        id
+                ));
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

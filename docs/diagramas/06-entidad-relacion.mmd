@@ -1,0 +1,295 @@
+---
+title: Roomix — Diagrama entidad-relación (PostgreSQL)
+---
+erDiagram
+  usuarios {
+    bigint id PK
+    varchar username UK
+    varchar email UK
+    varchar password_hash
+    varchar rol
+    boolean activo
+    boolean debe_cambiar_password
+    int intentos_fallidos
+    timestamp bloqueado_hasta
+  }
+  tokens_recuperacion {
+    bigint id PK
+    bigint usuario_id FK
+    varchar token_hash
+    timestamp expira_en
+    boolean usado
+  }
+  auditoria {
+    bigint id PK
+    timestamp fecha_hora
+    varchar usuario
+    varchar rol
+    varchar accion
+    varchar modulo
+    varchar entidad_id
+    varchar ip
+    boolean exitoso
+  }
+  huespedes {
+    bigint id PK
+    varchar nombre
+    varchar apellidos
+    varchar tipo_documento
+    varchar numero_documento UK
+    varchar email
+    varchar telefono
+    varchar nacionalidad
+    boolean autoriza_tratamiento_datos
+    timestamp fecha_hora_autorizacion
+  }
+  habitaciones {
+    bigint id PK
+    varchar numero UK
+    varchar tipo_habitacion
+    int piso
+    int capacidad
+    numeric precio_noche
+    varchar estado
+    varchar motivo_inhabilitacion
+    bigint huesped_id FK
+  }
+  habitacion_caracteristicas {
+    bigint habitacion_id FK
+    varchar caracteristica
+  }
+  habitacion_fotos {
+    bigint id PK
+    bigint habitacion_id FK
+    bytea contenido
+    varchar tipo_contenido
+    int orden
+  }
+  tarifas_tipo_habitacion {
+    varchar tipo_habitacion PK
+    numeric precio_noche
+  }
+  reservas {
+    bigint id PK
+    bigint habitacion_id FK
+    bigint huesped_id FK
+    date fecha_entrada
+    date fecha_salida
+    varchar estado_reserva
+    numeric tarifa_noche
+    numeric total_estimado
+    varchar canal
+    varchar motivo_cancelacion
+    bigint promocion_id FK
+    numeric descuento
+    numeric valor_penalidad
+    numeric valor_devuelto
+  }
+  promociones {
+    bigint id PK
+    varchar nombre
+    int minimo_noches
+    varchar tipo_habitacion
+    varchar canal
+    date vigente_desde
+    date vigente_hasta
+    varchar tipo_descuento
+    numeric valor
+    boolean activa
+  }
+  politica_reserva {
+    bigint id PK
+    numeric abono_minimo_pct
+    numeric penalidad_cancelacion_pct
+    varchar actualizada_por
+  }
+  abonos_reserva {
+    bigint id PK
+    bigint reserva_id FK
+    numeric valor
+    varchar metodo
+    varchar referencia
+    timestamp fecha_hora
+    bigint factura_id
+    boolean devuelto
+    numeric valor_devuelto
+  }
+  personal {
+    bigint id PK
+    varchar nombre UK
+    varchar rol
+    varchar departamento
+    boolean activo
+  }
+  incidencias {
+    bigint id PK
+    bigint habitacion_id FK
+    bigint personal_id FK
+    varchar alcance
+    varchar tipo
+    varchar titulo
+    varchar estado
+  }
+  incidencia_tareas {
+    bigint id PK
+    bigint incidencia_id FK
+    varchar descripcion
+    boolean completada
+  }
+  servicios_catalogo {
+    bigint id PK
+    varchar nombre
+    varchar categoria
+    numeric precio
+    boolean activo
+  }
+  solicitudes_servicio {
+    bigint id PK
+    bigint servicio_id FK
+    bigint reserva_id FK
+    bigint habitacion_id FK
+    bigint huesped_id FK
+    bigint responsable_id FK
+    int cantidad
+    numeric total
+    varchar estado
+  }
+  salones {
+    bigint id PK
+    varchar nombre UK
+    int capacidad
+    numeric tarifa_hora
+  }
+  eventos {
+    bigint id PK
+    bigint salon_id FK
+    bigint responsable_id FK
+    varchar nombre
+    varchar tipo_acceso
+    varchar estado
+    timestamp fecha_hora_inicio
+    timestamp fecha_hora_fin
+    numeric valor_base
+  }
+  evento_recursos {
+    bigint id PK
+    bigint evento_id FK
+    varchar tipo
+    int cantidad
+    numeric valor_unitario
+  }
+  evento_participantes {
+    bigint id PK
+    bigint evento_id FK
+    bigint huesped_id FK
+    varchar nombre
+    boolean confirmado
+    boolean asistio
+  }
+  inventario_categorias {
+    bigint id PK
+    varchar nombre UK
+    boolean predefinida
+  }
+  inventario_articulos {
+    bigint id PK
+    bigint categoria_id FK
+    varchar nombre UK
+    int cantidad
+    int cantidad_minima
+    varchar proveedor
+    numeric precio_unitario
+    boolean activo
+  }
+  inventario_movimientos {
+    bigint id PK
+    bigint articulo_id FK
+    varchar tipo
+    int cantidad
+    int stock_resultante
+    numeric costo_unitario
+  }
+  facturas {
+    bigint id PK
+    varchar numero UK
+    bigint reserva_id FK
+    bigint huesped_id FK
+    bigint evento_id
+    numeric subtotal
+    numeric impuesto
+    numeric total
+    numeric total_pagado
+    varchar estado
+  }
+  factura_items {
+    bigint id PK
+    bigint factura_id FK
+    varchar descripcion
+    numeric cantidad
+    numeric total
+    varchar origen
+  }
+  pagos {
+    bigint id PK
+    bigint factura_id FK
+    numeric valor
+    varchar metodo
+    boolean devuelto
+    timestamp fecha_hora_devolucion
+  }
+  movimientos_financieros {
+    bigint id PK
+    varchar tipo
+    varchar categoria
+    numeric valor
+    date fecha
+    bigint factura_id
+    bigint pago_id
+    bigint abono_id
+    bigint gasto_recurrente_id
+    boolean pendiente
+    date fecha_vencimiento
+    boolean anulado
+  }
+  gastos_recurrentes {
+    bigint id PK
+    varchar concepto
+    varchar categoria
+    numeric valor
+    int dia_vencimiento
+    varchar ultimo_periodo
+    boolean activo
+  }
+
+  usuarios ||--o{ tokens_recuperacion : "solicita"
+  huespedes |o--o{ habitaciones : "huésped actual"
+  habitaciones ||--o{ habitacion_caracteristicas : "tiene"
+  habitaciones ||--o{ habitacion_fotos : "tiene"
+  habitaciones ||--o{ reservas : "se reserva en"
+  huespedes ||--o{ reservas : "realiza"
+  habitaciones |o--o{ incidencias : "registra"
+  personal |o--o{ incidencias : "atiende"
+  incidencias ||--|{ incidencia_tareas : "se compone de"
+  servicios_catalogo ||--o{ solicitudes_servicio : "se solicita en"
+  reservas ||--o{ solicitudes_servicio : "carga"
+  habitaciones ||--o{ solicitudes_servicio : "recibe"
+  huespedes ||--o{ solicitudes_servicio : "pide"
+  personal |o--o{ solicitudes_servicio : "responsable"
+  salones ||--o{ eventos : "aloja"
+  personal |o--o{ eventos : "coordina"
+  eventos ||--o{ evento_recursos : "requiere"
+  eventos ||--o{ evento_participantes : "inscribe"
+  huespedes |o--o{ evento_participantes : "participa"
+  inventario_categorias ||--o{ inventario_articulos : "agrupa"
+  inventario_articulos ||--o{ inventario_movimientos : "registra"
+  reservas |o--o{ facturas : "se factura en"
+  huespedes |o--o{ facturas : "cliente"
+  eventos |o..o{ facturas : "evento_id"
+  facturas ||--|{ factura_items : "detalla"
+  facturas ||--o{ pagos : "recibe"
+  pagos |o..o{ movimientos_financieros : "genera"
+  promociones |o--o{ reservas : "se aplica en"
+  reservas ||--o{ abonos_reserva : "recibe"
+  abonos_reserva |o..o{ movimientos_financieros : "genera"
+  facturas |o..o{ abonos_reserva : "aplica"
+  gastos_recurrentes |o..o{ movimientos_financieros : "genera por pagar"

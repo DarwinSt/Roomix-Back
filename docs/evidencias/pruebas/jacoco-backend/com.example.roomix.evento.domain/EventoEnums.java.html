@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EventoEnums.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.evento.domain</a> &gt; <span class="el_source">EventoEnums.java</span></div><h1>EventoEnums.java</h1><pre class="source lang-java linenums">package com.example.roomix.evento.domain;
+
+/**
+ * Enumeraciones del módulo de eventos.
+ */
+public final class EventoEnums {
+
+    private EventoEnums() {
+    }
+
+    /** Accesibilidad del evento (documento de tesis, Tabla 22). */
+<span class="fc" id="L12">    public enum TipoAcceso {</span>
+<span class="fc" id="L13">        PUBLICO(&quot;Público&quot;),</span>
+<span class="fc" id="L14">        PRIVADO(&quot;Privado&quot;),</span>
+<span class="fc" id="L15">        SOLO_HUESPEDES(&quot;Exclusivo para huéspedes&quot;);</span>
+
+        private final String nombre;
+
+<span class="fc" id="L19">        TipoAcceso(String nombre) {</span>
+<span class="fc" id="L20">            this.nombre = nombre;</span>
+<span class="fc" id="L21">        }</span>
+
+        public String getNombre() {
+<span class="nc" id="L24">            return nombre;</span>
+        }
+    }
+
+<span class="fc" id="L28">    public enum EstadoEvento {</span>
+<span class="fc" id="L29">        PROGRAMADO,</span>
+<span class="fc" id="L30">        EN_CURSO,</span>
+<span class="fc" id="L31">        FINALIZADO,</span>
+<span class="fc" id="L32">        CANCELADO</span>
+    }
+
+<span class="fc" id="L35">    public enum TipoEvento {</span>
+<span class="fc" id="L36">        CORPORATIVO(&quot;Corporativo&quot;),</span>
+<span class="fc" id="L37">        SOCIAL(&quot;Social (boda, cumpleaños, aniversario)&quot;),</span>
+<span class="fc" id="L38">        ACADEMICO(&quot;Académico / capacitación&quot;),</span>
+<span class="fc" id="L39">        CULTURAL(&quot;Cultural&quot;),</span>
+<span class="fc" id="L40">        OTRO(&quot;Otro&quot;);</span>
+
+        private final String nombre;
+
+<span class="fc" id="L44">        TipoEvento(String nombre) {</span>
+<span class="fc" id="L45">            this.nombre = nombre;</span>
+<span class="fc" id="L46">        }</span>
+
+        public String getNombre() {
+<span class="nc" id="L49">            return nombre;</span>
+        }
+    }
+
+<span class="fc" id="L53">    public enum TipoRecurso {</span>
+<span class="fc" id="L54">        EQUIPO_AUDIOVISUAL(&quot;Equipo audiovisual&quot;),</span>
+<span class="fc" id="L55">        MOBILIARIO(&quot;Mobiliario&quot;),</span>
+<span class="fc" id="L56">        CATERING(&quot;Catering&quot;),</span>
+<span class="fc" id="L57">        DECORACION(&quot;Decoración&quot;),</span>
+<span class="fc" id="L58">        PERSONAL_APOYO(&quot;Personal de apoyo&quot;),</span>
+<span class="fc" id="L59">        OTRO(&quot;Otro&quot;);</span>
+
+        private final String nombre;
+
+<span class="fc" id="L63">        TipoRecurso(String nombre) {</span>
+<span class="fc" id="L64">            this.nombre = nombre;</span>
+<span class="fc" id="L65">        }</span>
+
+        public String getNombre() {
+<span class="nc" id="L68">            return nombre;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

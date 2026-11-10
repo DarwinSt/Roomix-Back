@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IncidenciaResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.incidencia.dto</a> &gt; <span class="el_source">IncidenciaResponse.java</span></div><h1>IncidenciaResponse.java</h1><pre class="source lang-java linenums">package com.example.roomix.incidencia.dto;
+
+import com.example.roomix.incidencia.domain.AlcanceIncidencia;
+import com.example.roomix.incidencia.domain.ContextoLimpieza;
+import com.example.roomix.incidencia.domain.EstadoIncidencia;
+import com.example.roomix.incidencia.domain.Incidencia;
+import com.example.roomix.incidencia.domain.IncidenciaProgresoCalculator;
+import com.example.roomix.incidencia.domain.TipoIncidencia;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Schema(name = &quot;IncidenciaResponse&quot;)
+@Builder
+<span class="fc" id="L17">public record IncidenciaResponse(</span>
+        Long id,
+        AlcanceIncidencia alcance,
+        Long habitacionId,
+        String habitacionNumero,
+        String ubicacion,
+        String ubicacionEtiqueta,
+        Long personalAsignadoId,
+        String personalAsignadoNombre,
+        TipoIncidencia tipo,
+        ContextoLimpieza contextoLimpieza,
+        String titulo,
+        String descripcion,
+        EstadoIncidencia estado,
+        int progresoPorcentaje,
+        List&lt;IncidenciaTareaResponse&gt; tareas,
+        LocalDateTime fechaHoraCreacion,
+        LocalDateTime fechaHoraUltimaActualizacion,
+        LocalDateTime fechaHoraFinalizacion,
+        LocalDateTime fechaHoraProgramada
+) {
+    public static IncidenciaResponse from(Incidencia incidencia) {
+<span class="pc bpc" id="L39" title="1 of 2 branches missed.">        String habitacionNumero = incidencia.getHabitacion() != null</span>
+<span class="fc" id="L40">                ? incidencia.getHabitacion().getNumero()</span>
+<span class="pc" id="L41">                : null;</span>
+<span class="pc bpc" id="L42" title="1 of 2 branches missed.">        Long habitacionId = incidencia.getHabitacion() != null</span>
+<span class="fc" id="L43">                ? incidencia.getHabitacion().getId()</span>
+<span class="pc" id="L44">                : null;</span>
+
+<span class="fc" id="L46">        return IncidenciaResponse.builder()</span>
+<span class="fc" id="L47">                .id(incidencia.getId())</span>
+<span class="fc" id="L48">                .alcance(incidencia.getAlcance())</span>
+<span class="fc" id="L49">                .habitacionId(habitacionId)</span>
+<span class="fc" id="L50">                .habitacionNumero(habitacionNumero)</span>
+<span class="fc" id="L51">                .ubicacion(incidencia.getUbicacion())</span>
+<span class="fc" id="L52">                .ubicacionEtiqueta(etiquetaUbicacion(incidencia))</span>
+<span class="fc" id="L53">                .personalAsignadoId(</span>
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">                        incidencia.getPersonalAsignado() != null ? incidencia.getPersonalAsignado().getId() : null</span>
+                )
+<span class="fc" id="L56">                .personalAsignadoNombre(</span>
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">                        incidencia.getPersonalAsignado() != null ? incidencia.getPersonalAsignado().getNombre() : null</span>
+                )
+<span class="fc" id="L59">                .tipo(incidencia.getTipo())</span>
+<span class="fc" id="L60">                .contextoLimpieza(incidencia.getContextoLimpieza())</span>
+<span class="fc" id="L61">                .titulo(incidencia.getTitulo())</span>
+<span class="fc" id="L62">                .descripcion(incidencia.getDescripcion())</span>
+<span class="fc" id="L63">                .estado(incidencia.getEstado())</span>
+<span class="fc" id="L64">                .progresoPorcentaje(IncidenciaProgresoCalculator.calcular(</span>
+<span class="fc" id="L65">                        incidencia.getEstado(),</span>
+<span class="fc" id="L66">                        incidencia.getTareas()</span>
+                ))
+<span class="fc" id="L68">                .tareas(incidencia.getTareas().stream().map(IncidenciaTareaResponse::from).toList())</span>
+<span class="fc" id="L69">                .fechaHoraCreacion(incidencia.getFechaHoraCreacion())</span>
+<span class="fc" id="L70">                .fechaHoraUltimaActualizacion(incidencia.getFechaHoraUltimaActualizacion())</span>
+<span class="fc" id="L71">                .fechaHoraFinalizacion(incidencia.getFechaHoraFinalizacion())</span>
+<span class="fc" id="L72">                .fechaHoraProgramada(incidencia.getFechaHoraProgramada())</span>
+<span class="fc" id="L73">                .build();</span>
+    }
+
+    private static String etiquetaUbicacion(Incidencia incidencia) {
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">        if (incidencia.getAlcance() == AlcanceIncidencia.ZONA_COMUN) {</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">            return incidencia.getUbicacion() != null ? incidencia.getUbicacion().trim() : &quot;Zona común&quot;;</span>
+        }
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">        return incidencia.getHabitacion() != null</span>
+<span class="fc" id="L81">                ? &quot;Habitación &quot; + incidencia.getHabitacion().getNumero()</span>
+<span class="nc" id="L82">                : &quot;Habitación&quot;;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

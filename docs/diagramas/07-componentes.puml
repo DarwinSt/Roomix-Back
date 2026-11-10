@@ -1,0 +1,63 @@
+@startuml componentes
+!include _estilo.iuml
+title Roomix — Diagrama de componentes
+
+package "Frontend — Angular 21 (web y APK Android con Capacitor 8)" as FE {
+  component "Shell y navegación\n(menú por rol)" as SHELL
+  component "Módulos de funcionalidad\n(features)" as FEAT
+  note right of FEAT
+    inicio · habitaciones · reservas · huéspedes
+    incidencias · personal · servicios · eventos
+    inventario · finanzas · reportes · usuarios
+    auditoría · ayuda
+  end note
+  component "Guards de ruta\n(authGuard, rolGuard)" as GUARD
+  component "AuthService\n(sesión JWT)" as AUTHFE
+  component "Servicios HTTP\n(core/services)" as HTTPS
+  component "authInterceptor\n(Bearer token, 401)" as INTC
+  component "Componentes compartidos\n(gráficos, paginador, diálogos)" as SHARED
+}
+
+package "Backend — Spring Boot 4 / Java 21" as BE {
+  portin "API REST /api/**\n(JSON)" as API
+  component "SecurityFilterChain\n(Spring Security, JWT HS256,\nBCrypt, CORS)" as SEC
+  component "AuditoriaInterceptor" as AUDI
+  component "Controladores REST" as CTRL
+  note right of CTRL
+    auth · usuarios · auditoría · dashboard
+    habitaciones · reservas · huéspedes
+    incidencias · personal · servicios · eventos
+    inventario · finanzas/facturas · reportes
+  end note
+  component "Servicios de negocio\n(@Service, @Transactional)" as SRV
+  component "Repositorios\n(Spring Data JPA)" as REPO
+  component "GlobalExceptionHandler\n(ProblemDetail)" as EXC
+  component "CorreoService\n(JavaMailSender)" as MAIL
+  component "OpenAPI / Swagger UI" as SWG
+  component "Actuator /health" as ACT
+}
+
+database "PostgreSQL" as DB
+component "Servidor SMTP\n(opcional)" as SMTP
+
+SHELL --> FEAT
+FEAT --> SHARED
+FEAT --> HTTPS
+GUARD --> AUTHFE
+SHELL ..> GUARD
+HTTPS --> INTC
+INTC --> AUTHFE
+INTC --> API : HTTPS + JSON
+
+API --> SEC
+SEC --> CTRL
+CTRL ..> AUDI
+CTRL --> SRV
+CTRL ..> EXC
+SRV --> REPO
+SRV --> MAIL
+AUDI --> REPO
+REPO --> DB : JDBC (Hibernate)
+MAIL --> SMTP : SMTP/TLS
+SWG ..> CTRL
+@enduml

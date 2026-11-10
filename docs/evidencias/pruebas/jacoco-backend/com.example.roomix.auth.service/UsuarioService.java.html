@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UsuarioService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.auth.service</a> &gt; <span class="el_source">UsuarioService.java</span></div><h1>UsuarioService.java</h1><pre class="source lang-java linenums">package com.example.roomix.auth.service;
+
+import com.example.roomix.auth.domain.Rol;
+import com.example.roomix.auth.domain.Usuario;
+import com.example.roomix.auth.dto.AuthDtos.PasswordTemporalResponse;
+import com.example.roomix.auth.dto.AuthDtos.UsuarioRequest;
+import com.example.roomix.auth.dto.AuthDtos.UsuarioResponse;
+import com.example.roomix.auth.exception.AuthErrorCode;
+import com.example.roomix.auth.exception.AuthException;
+import com.example.roomix.auth.repository.UsuarioRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import java.util.List;
+import java.util.Locale;
+
+/**
+ * Administración de cuentas de usuario (rol ADMIN).
+ */
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class UsuarioService {
+
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public List&lt;UsuarioResponse&gt; listar() {
+<span class="nc" id="L32">        return usuarioRepository.findAllByOrderByNombreCompletoAsc().stream()</span>
+<span class="nc" id="L33">                .map(UsuarioResponse::from)</span>
+<span class="nc" id="L34">                .toList();</span>
+    }
+
+    public UsuarioResponse obtener(Long id) {
+<span class="nc" id="L38">        return UsuarioResponse.from(buscar(id));</span>
+    }
+
+    @Transactional
+    public UsuarioResponse crear(UsuarioRequest request) {
+<span class="nc" id="L43">        String username = normalizarUsername(request.username());</span>
+<span class="nc" id="L44">        String email = request.email().trim().toLowerCase(Locale.ROOT);</span>
+<span class="nc bnc" id="L45" title="All 2 branches missed.">        if (usuarioRepository.existsByUsernameIgnoreCase(username)) {</span>
+<span class="nc" id="L46">            throw new AuthException(AuthErrorCode.USERNAME_DUPLICADO, username);</span>
+        }
+<span class="nc bnc" id="L48" title="All 2 branches missed.">        if (usuarioRepository.existsByEmailIgnoreCase(email)) {</span>
+<span class="nc" id="L49">            throw new AuthException(AuthErrorCode.EMAIL_DUPLICADO, email);</span>
+        }
+<span class="nc" id="L51">        PasswordPolicy.validar(request.password());</span>
+
+<span class="nc" id="L53">        Usuario usuario = Usuario.builder()</span>
+<span class="nc" id="L54">                .username(username)</span>
+<span class="nc" id="L55">                .nombreCompleto(request.nombreCompleto().trim())</span>
+<span class="nc" id="L56">                .email(email)</span>
+<span class="nc" id="L57">                .rol(request.rol())</span>
+<span class="nc bnc" id="L58" title="All 4 branches missed.">                .activo(request.activo() == null || request.activo())</span>
+<span class="nc" id="L59">                .passwordHash(passwordEncoder.encode(request.password()))</span>
+                // La contraseña la definió el administrador: el usuario debe cambiarla al ingresar
+<span class="nc" id="L61">                .debeCambiarPassword(true)</span>
+<span class="nc" id="L62">                .build();</span>
+<span class="nc" id="L63">        return UsuarioResponse.from(usuarioRepository.save(usuario));</span>
+    }
+
+    @Transactional
+    public UsuarioResponse actualizar(Long id, UsuarioRequest request) {
+<span class="nc" id="L68">        Usuario usuario = buscar(id);</span>
+<span class="nc" id="L69">        String username = normalizarUsername(request.username());</span>
+<span class="nc" id="L70">        String email = request.email().trim().toLowerCase(Locale.ROOT);</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        if (usuarioRepository.existsByUsernameIgnoreCaseAndIdNot(username, id)) {</span>
+<span class="nc" id="L72">            throw new AuthException(AuthErrorCode.USERNAME_DUPLICADO, username);</span>
+        }
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        if (usuarioRepository.existsByEmailIgnoreCaseAndIdNot(email, id)) {</span>
+<span class="nc" id="L75">            throw new AuthException(AuthErrorCode.EMAIL_DUPLICADO, email);</span>
+        }
+
+<span class="nc bnc" id="L78" title="All 2 branches missed.">        boolean seraActivo = request.activo() == null ? usuario.isActivo() : request.activo();</span>
+<span class="nc" id="L79">        validarNoQuitaUltimoAdmin(usuario, request.rol(), seraActivo);</span>
+
+<span class="nc" id="L81">        usuario.setUsername(username);</span>
+<span class="nc" id="L82">        usuario.setNombreCompleto(request.nombreCompleto().trim());</span>
+<span class="nc" id="L83">        usuario.setEmail(email);</span>
+<span class="nc" id="L84">        usuario.setRol(request.rol());</span>
+<span class="nc" id="L85">        usuario.setActivo(seraActivo);</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">        if (StringUtils.hasText(request.password())) {</span>
+<span class="nc" id="L87">            PasswordPolicy.validar(request.password());</span>
+<span class="nc" id="L88">            usuario.setPasswordHash(passwordEncoder.encode(request.password()));</span>
+<span class="nc" id="L89">            usuario.setDebeCambiarPassword(true);</span>
+        }
+<span class="nc" id="L91">        return UsuarioResponse.from(usuarioRepository.save(usuario));</span>
+    }
+
+    @Transactional
+    public UsuarioResponse cambiarActivo(Long id, boolean activo) {
+<span class="nc" id="L96">        Usuario usuario = buscar(id);</span>
+<span class="nc" id="L97">        validarNoQuitaUltimoAdmin(usuario, usuario.getRol(), activo);</span>
+<span class="nc" id="L98">        usuario.setActivo(activo);</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        if (activo) {</span>
+<span class="nc" id="L100">            usuario.setIntentosFallidos(0);</span>
+<span class="nc" id="L101">            usuario.setBloqueadoHasta(null);</span>
+        }
+<span class="nc" id="L103">        return UsuarioResponse.from(usuarioRepository.save(usuario));</span>
+    }
+
+    /** Genera una contraseña temporal (se muestra una sola vez) y desbloquea la cuenta. */
+    @Transactional
+    public PasswordTemporalResponse restablecerPassword(Long id) {
+<span class="nc" id="L109">        Usuario usuario = buscar(id);</span>
+<span class="nc" id="L110">        String temporal = PasswordPolicy.generarTemporal();</span>
+<span class="nc" id="L111">        usuario.setPasswordHash(passwordEncoder.encode(temporal));</span>
+<span class="nc" id="L112">        usuario.setDebeCambiarPassword(true);</span>
+<span class="nc" id="L113">        usuario.setIntentosFallidos(0);</span>
+<span class="nc" id="L114">        usuario.setBloqueadoHasta(null);</span>
+<span class="nc" id="L115">        usuarioRepository.save(usuario);</span>
+<span class="nc" id="L116">        return new PasswordTemporalResponse(temporal);</span>
+    }
+
+    private void validarNoQuitaUltimoAdmin(Usuario usuario, Rol nuevoRol, boolean seraActivo) {
+<span class="nc bnc" id="L120" title="All 4 branches missed.">        boolean esAdminActivo = usuario.getRol() == Rol.ADMIN &amp;&amp; usuario.isActivo();</span>
+<span class="nc bnc" id="L121" title="All 4 branches missed.">        boolean dejaDeSerlo = nuevoRol != Rol.ADMIN || !seraActivo;</span>
+<span class="nc bnc" id="L122" title="All 6 branches missed.">        if (esAdminActivo &amp;&amp; dejaDeSerlo &amp;&amp; usuarioRepository.countByRolAndActivoTrue(Rol.ADMIN) &lt;= 1) {</span>
+<span class="nc" id="L123">            throw new AuthException(AuthErrorCode.ULTIMO_ADMIN);</span>
+        }
+<span class="nc" id="L125">    }</span>
+
+    private Usuario buscar(Long id) {
+<span class="nc" id="L128">        return usuarioRepository.findById(id)</span>
+<span class="nc" id="L129">                .orElseThrow(() -&gt; new AuthException(AuthErrorCode.USUARIO_NO_ENCONTRADO, id));</span>
+    }
+
+    private static String normalizarUsername(String username) {
+<span class="nc" id="L133">        return username.trim().toLowerCase(Locale.ROOT);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

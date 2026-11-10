@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GastoRecurrenteController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.finanzas.controller</a> &gt; <span class="el_source">GastoRecurrenteController.java</span></div><h1>GastoRecurrenteController.java</h1><pre class="source lang-java linenums">package com.example.roomix.finanzas.controller;
+
+import com.example.roomix.finanzas.dto.GastoDtos.GastoRecurrenteRequest;
+import com.example.roomix.finanzas.dto.GastoDtos.GastoRecurrenteResponse;
+import com.example.roomix.finanzas.service.GastoRecurrenteService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@Tag(name = &quot;Gastos recurrentes&quot;, description = &quot;Plantillas mensuales que generan egresos por pagar&quot;)
+@RestController
+@RequestMapping(&quot;/api/finanzas/gastos-recurrentes&quot;)
+@RequiredArgsConstructor
+public class GastoRecurrenteController {
+
+    private final GastoRecurrenteService service;
+
+    @Operation(summary = &quot;Listar gastos recurrentes (genera los pendientes del mes si faltan)&quot;)
+    @GetMapping
+    public List&lt;GastoRecurrenteResponse&gt; listar() {
+<span class="nc" id="L35">        return service.listar();</span>
+    }
+
+    @Operation(summary = &quot;Crear gasto recurrente&quot;)
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public GastoRecurrenteResponse crear(@Valid @RequestBody GastoRecurrenteRequest request) {
+<span class="fc" id="L42">        return service.crear(request);</span>
+    }
+
+    @Operation(summary = &quot;Editar gasto recurrente&quot;)
+    @PutMapping(&quot;/{id}&quot;)
+    public GastoRecurrenteResponse actualizar(@PathVariable Long id, @Valid @RequestBody GastoRecurrenteRequest request) {
+<span class="fc" id="L48">        return service.actualizar(id, request);</span>
+    }
+
+    @Operation(summary = &quot;Activar o desactivar gasto recurrente&quot;)
+    @PatchMapping(&quot;/{id}/activo&quot;)
+    public GastoRecurrenteResponse cambiarActivo(@PathVariable Long id, @RequestParam boolean valor) {
+<span class="nc" id="L54">        return service.cambiarActivo(id, valor);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

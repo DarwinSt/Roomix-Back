@@ -1,0 +1,64 @@
+@startuml estados
+!include _estilo.iuml
+title Roomix — Diagramas de estados: Habitación, Reserva y Factura
+
+state "Habitación" as H {
+  state "Disponible\n(LIBRE)" as H_LIBRE
+  state "Reservada\n(RESERVADO)" as H_RES
+  state "Ocupada\n(OCUPADO)" as H_OCU
+  state "Inhabilitada\n(INHABILITADO)" as H_INH {
+    state "En limpieza\n(POST_CHECKOUT)" as H_LIMP
+    state "En mantenimiento\n(ADECUACION_PROGRAMADA)" as H_MANT
+  }
+  [*] --> H_LIBRE : alta de habitación
+  H_LIBRE --> H_RES : reserva creada\n[con pago o abono]
+  H_RES --> H_LIBRE : reserva cancelada
+  H_RES --> H_OCU : check-in
+  H_OCU --> H_LIMP : check-out\n/ crear tarea de limpieza
+  H_LIBRE --> H_MANT : programar adecuación
+  H_RES --> H_MANT : (1) programar\nadecuación
+  H_LIMP --> H_LIBRE : tareas finalizadas
+  H_MANT --> H_LIBRE : tareas finalizadas\n[retorno = LIBRE]
+  H_MANT --> H_RES : (2)
+
+  note bottom of H_MANT
+    (1) La adecuación programada inhabilita la habitación ese día.
+    (2) Al finalizar las tareas vuelve a su estado previo
+        [retorno = RESERVADO].
+  end note
+}
+
+state "Reserva" as R {
+  state "Confirmada" as R_CONF
+  state "En curso" as R_CUR
+  state "Finalizada" as R_FIN
+  state "Cancelada" as R_CAN
+  [*] --> R_CONF : registrar reserva\n[sin cruce y con pago ≥ abono mínimo]
+  R_CONF --> R_CONF : editar fechas / canal\n/ registrar abono
+  R_CONF --> R_CUR : check-in\n[fecha de llegada ≤ hoy]
+  R_CUR --> R_CUR : cargar servicios /\nampliar fecha de salida
+  R_CONF --> R_CAN : cancelar\n/ registrar motivo,\nretener penalidad y devolver el resto
+  R_CUR --> R_FIN : check-out\n/ generar factura
+  R_FIN --> [*]
+  R_CAN --> [*]
+}
+
+state "Factura" as F {
+  state "Pendiente" as F_PEN
+  state "Pagada parcial" as F_PAR
+  state "Pagada" as F_PAG
+  state "Anulada" as F_ANU
+  [*] --> F_PEN : emitir
+  F_PEN --> F_PAR : pago [saldo > 0]
+  F_PEN --> F_PAG : pago [saldo = 0]
+  F_PAR --> F_PAR : pago [saldo > 0]
+  F_PAR --> F_PAG : pago [saldo = 0]
+  [*] --> F_PAR : emitir [abonos < total]\n/ aplicar abonos
+  [*] --> F_PAG : emitir [abonos = total]
+  F_PEN --> F_ANU : anular / registrar motivo
+  F_PAR --> F_ANU : anular\n/ devolver pagos
+  F_PAG --> F_ANU : anular\n/ devolver pagos (saldo $0)
+  F_PAG --> [*]
+  F_ANU --> [*]
+}
+@enduml

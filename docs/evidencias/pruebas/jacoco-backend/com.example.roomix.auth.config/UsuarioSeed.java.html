@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UsuarioSeed.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.auth.config</a> &gt; <span class="el_source">UsuarioSeed.java</span></div><h1>UsuarioSeed.java</h1><pre class="source lang-java linenums">package com.example.roomix.auth.config;
+
+import com.example.roomix.auth.domain.Rol;
+import com.example.roomix.auth.domain.Usuario;
+import com.example.roomix.auth.repository.UsuarioRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+/**
+ * Crea las cuentas iniciales cuando la tabla de usuarios está vacía:
+ * el administrador (ADMIN_USERNAME / ADMIN_PASSWORD) y, si APP_DEMO_USERS=true,
+ * un usuario de demostración por cada rol (DEMO_USERS_PASSWORD).
+ */
+@Component
+@Order(5)
+@RequiredArgsConstructor
+<span class="fc" id="L25">@Slf4j</span>
+public class UsuarioSeed implements ApplicationRunner {
+
+    static final String PASSWORD_POR_DEFECTO = &quot;Roomix2026*&quot;;
+
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @Value(&quot;${app.seed.admin-username:admin}&quot;)
+    private String adminUsername;
+
+    @Value(&quot;${app.seed.admin-password:}&quot;)
+    private String adminPassword;
+
+    @Value(&quot;${app.seed.usuarios-demo:true}&quot;)
+    private boolean usuariosDemo;
+
+    @Value(&quot;${app.seed.demo-password:}&quot;)
+    private String demoPassword;
+
+    @Override
+    @Transactional
+    public void run(ApplicationArguments args) {
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">        if (usuarioRepository.count() &gt; 0) {</span>
+<span class="nc" id="L49">            return;</span>
+        }
+
+<span class="pc bpc" id="L52" title="1 of 2 branches missed.">        String passwordAdmin = StringUtils.hasText(adminPassword) ? adminPassword : PASSWORD_POR_DEFECTO;</span>
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">        if (!StringUtils.hasText(adminPassword)) {</span>
+<span class="nc" id="L54">            log.warn(&quot;ADMIN_PASSWORD no está definido: el administrador '{}' usa la contraseña por defecto. &quot;</span>
+                    + &quot;Cámbiela tras el primer ingreso.&quot;, adminUsername);
+        }
+<span class="fc" id="L57">        crear(adminUsername, &quot;Administrador Roomix&quot;, &quot;admin@roomix.test&quot;, Rol.ADMIN, passwordAdmin);</span>
+
+<span class="pc bpc" id="L59" title="1 of 2 branches missed.">        if (usuariosDemo) {</span>
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">            String passwordDemo = StringUtils.hasText(demoPassword) ? demoPassword : PASSWORD_POR_DEFECTO;</span>
+<span class="fc" id="L61">            crear(&quot;recepcion&quot;, &quot;Carmen Rosa Villadiego&quot;, &quot;recepcion@roomix.test&quot;, Rol.RECEPCION, passwordDemo);</span>
+<span class="fc" id="L62">            crear(&quot;housekeeping&quot;, &quot;Luz Marina Cárdenas&quot;, &quot;housekeeping@roomix.test&quot;, Rol.HOUSEKEEPING, passwordDemo);</span>
+<span class="fc" id="L63">            crear(&quot;finanzas&quot;, &quot;Patricia Gómez Salcedo&quot;, &quot;finanzas@roomix.test&quot;, Rol.FINANZAS, passwordDemo);</span>
+<span class="fc" id="L64">            crear(&quot;eventos&quot;, &quot;Mauricio Ruiz Torres&quot;, &quot;eventos@roomix.test&quot;, Rol.EVENTOS, passwordDemo);</span>
+<span class="fc" id="L65">            crear(&quot;almacen&quot;, &quot;Óscar Castillo Mendoza&quot;, &quot;almacen@roomix.test&quot;, Rol.ALMACEN, passwordDemo);</span>
+<span class="fc" id="L66">            log.info(&quot;Usuarios de demostración creados (uno por rol)&quot;);</span>
+        }
+<span class="fc" id="L68">    }</span>
+
+    private void crear(String username, String nombre, String email, Rol rol, String password) {
+<span class="fc" id="L71">        usuarioRepository.save(Usuario.builder()</span>
+<span class="fc" id="L72">                .username(username.toLowerCase())</span>
+<span class="fc" id="L73">                .nombreCompleto(nombre)</span>
+<span class="fc" id="L74">                .email(email)</span>
+<span class="fc" id="L75">                .rol(rol)</span>
+<span class="fc" id="L76">                .passwordHash(passwordEncoder.encode(password))</span>
+<span class="fc" id="L77">                .activo(true)</span>
+<span class="fc" id="L78">                .build());</span>
+<span class="fc" id="L79">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ResumenInventarioResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.inventario.dto</a> &gt; <span class="el_source">ResumenInventarioResponse.java</span></div><h1>ResumenInventarioResponse.java</h1><pre class="source lang-java linenums">package com.example.roomix.inventario.dto;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+@Schema(name = &quot;ResumenInventarioResponse&quot;, description = &quot;Reporte de inventario: valorización, críticos y consumo&quot;)
+<span class="nc" id="L9">public record ResumenInventarioResponse(</span>
+        int articulosActivos,
+        @Schema(description = &quot;Suma de cantidad × precio unitario&quot;) BigDecimal valorTotal,
+        @Schema(description = &quot;Artículos activos sin precio de referencia (no suman a la valorización)&quot;) int articulosSinPrecio,
+        int totalCriticos,
+        List&lt;ArticuloInventarioResponse&gt; criticos,
+        List&lt;ValorCategoria&gt; valorPorCategoria,
+        int diasAnalizados,
+        List&lt;ArticuloConsumo&gt; masUsados
+) {
+    @Schema(name = &quot;ValorCategoriaInventario&quot;)
+<span class="nc" id="L20">    public record ValorCategoria(String categoria, long articulos, long unidades, BigDecimal valor) {</span>
+    }
+
+    @Schema(name = &quot;ArticuloConsumo&quot;)
+<span class="nc" id="L24">    public record ArticuloConsumo(Long articuloId, String nombre, String unidadMedida, long unidadesSalida,</span>
+                                  BigDecimal valorConsumido) {
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

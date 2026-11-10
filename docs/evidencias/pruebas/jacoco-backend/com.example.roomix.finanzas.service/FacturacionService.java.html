@@ -1,0 +1,420 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FacturacionService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.finanzas.service</a> &gt; <span class="el_source">FacturacionService.java</span></div><h1>FacturacionService.java</h1><pre class="source lang-java linenums">package com.example.roomix.finanzas.service;
+
+import com.example.roomix.finanzas.domain.CategoriaFinanciera;
+import com.example.roomix.auth.service.UsuarioActual;
+import com.example.roomix.common.dto.PaginaResponse;
+import com.example.roomix.config.HotelProperties;
+import com.example.roomix.evento.domain.Evento;
+import com.example.roomix.evento.domain.EventoEnums.EstadoEvento;
+import com.example.roomix.evento.domain.EventoRecurso;
+import com.example.roomix.evento.service.EventoService;
+import com.example.roomix.finanzas.domain.EstadoFactura;
+import com.example.roomix.finanzas.domain.Factura;
+import com.example.roomix.finanzas.domain.FacturaItem;
+import com.example.roomix.finanzas.domain.OrigenItem;
+import com.example.roomix.finanzas.domain.Pago;
+import com.example.roomix.finanzas.dto.FacturaDtos.CuentaResponse;
+import com.example.roomix.finanzas.dto.FacturaDtos.FacturaResponse;
+import com.example.roomix.finanzas.dto.FacturaDtos.LineaCuenta;
+import com.example.roomix.finanzas.dto.FacturaDtos.PagoRequest;
+import com.example.roomix.finanzas.exception.FinanzasErrorCode;
+import com.example.roomix.finanzas.exception.FinanzasException;
+import com.example.roomix.finanzas.repository.FacturaItemRepository;
+import com.example.roomix.finanzas.repository.FacturaRepository;
+import com.example.roomix.habitacion.domain.EstadoReserva;
+import com.example.roomix.huesped.domain.Huesped;
+import com.example.roomix.huesped.domain.TipoDocumento;
+import com.example.roomix.reserva.domain.Reserva;
+import com.example.roomix.reserva.repository.ReservaRepository;
+import com.example.roomix.servicio.domain.SolicitudServicio;
+import com.example.roomix.servicio.service.ServicioService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+/**
+ * Cuenta del huésped, emisión de facturas (reservas y eventos), pagos y anulaciones.
+ * Cada pago genera automáticamente los ingresos en el módulo financiero, por categoría.
+ */
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class FacturacionService {
+
+<span class="fc" id="L58">    private static final DateTimeFormatter DIA = DateTimeFormatter.ofPattern(&quot;dd/MM/yyyy&quot;);</span>
+<span class="fc" id="L59">    private static final DateTimeFormatter DIA_HORA = DateTimeFormatter.ofPattern(&quot;dd/MM HH:mm&quot;);</span>
+
+    private final FacturaRepository facturaRepository;
+    private final FacturaItemRepository facturaItemRepository;
+    private final ReservaRepository reservaRepository;
+    private final ServicioService servicioService;
+    private final EventoService eventoService;
+    private final FinanzasService finanzasService;
+    private final AbonoService abonoService;
+    private final HotelProperties hotel;
+
+    // ------------------------------------------------------------------ Consultas
+
+    public PaginaResponse&lt;FacturaResponse&gt; listar(EstadoFactura estado, LocalDate desde, LocalDate hasta, String texto,
+                                                  int pagina, int tamano) {
+<span class="nc" id="L74">        return PaginaResponse.de(</span>
+<span class="nc" id="L75">                facturaRepository.findAll(</span>
+<span class="nc" id="L76">                        FacturaRepository.conFiltros(estado,</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">                                desde != null ? desde.atStartOfDay() : null,</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">                                hasta != null ? hasta.plusDays(1).atStartOfDay() : null,</span>
+                                texto),
+<span class="nc" id="L80">                        PageRequest.of(Math.max(pagina, 0), Math.min(Math.max(tamano, 1), 100),</span>
+<span class="nc" id="L81">                                Sort.by(Sort.Direction.DESC, &quot;fechaEmision&quot;, &quot;id&quot;))),</span>
+                FacturaResponse::from
+        );
+    }
+
+    public FacturaResponse obtener(Long id) {
+<span class="nc" id="L87">        return FacturaResponse.from(buscar(id));</span>
+    }
+
+    public List&lt;FacturaResponse&gt; deHuesped(Long huespedId) {
+<span class="nc" id="L91">        return facturaRepository.findByHuespedIdOrderByFechaEmisionDesc(huespedId).stream()</span>
+<span class="nc" id="L92">                .map(FacturaResponse::from).toList();</span>
+    }
+
+    /** Estado de cuenta: alojamiento + servicios, con lo ya facturado y pagado. */
+    public CuentaResponse cuentaReserva(Long reservaId) {
+<span class="nc" id="L97">        Reserva reserva = buscarReserva(reservaId);</span>
+<span class="nc" id="L98">        List&lt;LineaCuenta&gt; lineas = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L99">        lineas.add(lineaAlojamiento(reserva, facturaItemRepository.estaFacturado(OrigenItem.ALOJAMIENTO, reserva.getId())));</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">        for (SolicitudServicio s : servicioService.cobrablesDeReserva(reserva.getId())) {</span>
+<span class="nc" id="L101">            lineas.add(lineaServicio(s, facturaItemRepository.estaFacturado(OrigenItem.SERVICIO, s.getId())));</span>
+<span class="nc" id="L102">        }</span>
+
+<span class="nc" id="L104">        boolean exento = exentoIva(reserva.getHuesped());</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">        BigDecimal porcentaje = exento ? BigDecimal.ZERO : hotel.ivaPorcentaje();</span>
+<span class="nc" id="L106">        BigDecimal subtotal = lineas.stream().map(LineaCuenta::total).reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+<span class="nc" id="L107">        BigDecimal impuesto = calcularImpuesto(subtotal, porcentaje);</span>
+
+<span class="nc" id="L109">        List&lt;Factura&gt; facturas = facturasVigentesDeReserva(reserva.getId());</span>
+<span class="nc" id="L110">        BigDecimal pagado = facturas.stream().map(Factura::getTotalPagado).reduce(BigDecimal.ZERO, BigDecimal::add)</span>
+<span class="nc" id="L111">                .add(abonoService.abonadoSinAplicar(reserva.getId()));</span>
+<span class="nc" id="L112">        BigDecimal total = subtotal.add(impuesto);</span>
+<span class="nc" id="L113">        return new CuentaResponse(</span>
+<span class="nc" id="L114">                reserva.getId(),</span>
+<span class="nc" id="L115">                reserva.getHabitacion().getNumero(),</span>
+<span class="nc" id="L116">                reserva.getHuesped().nombreCompleto(),</span>
+<span class="nc" id="L117">                reserva.getFechaEntrada(),</span>
+<span class="nc" id="L118">                reserva.getFechaSalida(),</span>
+                lineas,
+                subtotal,
+                porcentaje,
+                impuesto,
+                total,
+                exento,
+                pagado,
+<span class="nc" id="L126">                total.subtract(pagado),</span>
+<span class="nc" id="L127">                facturas.stream().map(FacturaResponse::from).toList()</span>
+        );
+    }
+
+    // ------------------------------------------------------------------ Emisión
+
+    /**
+     * Factura la reserva (alojamiento + servicios no facturados). Si existe una factura sin pagos,
+     * se actualiza con los nuevos consumos; si todo ya está facturado, devuelve la última factura.
+     */
+    @Transactional
+    public FacturaResponse facturarReserva(Long reservaId) {
+<span class="fc" id="L139">        Reserva reserva = buscarReserva(reservaId);</span>
+<span class="pc bpc" id="L140" title="2 of 4 branches missed.">        if (reserva.getEstadoReserva() != EstadoReserva.EN_CURSO &amp;&amp; reserva.getEstadoReserva() != EstadoReserva.FINALIZADA) {</span>
+<span class="nc" id="L141">            throw new FinanzasException(FinanzasErrorCode.RESERVA_NO_FACTURABLE, reserva.getEstadoReserva());</span>
+        }
+
+<span class="fc" id="L144">        Factura editable = liberarFacturaSinPagos(facturasVigentesDeReserva(reserva.getId()));</span>
+
+<span class="fc" id="L146">        List&lt;FacturaItem&gt; items = new ArrayList&lt;&gt;();</span>
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">        if (!facturaItemRepository.estaFacturado(OrigenItem.ALOJAMIENTO, reserva.getId())) {</span>
+<span class="fc" id="L148">            items.add(item(lineaAlojamiento(reserva, false)));</span>
+        }
+<span class="fc bfc" id="L150" title="All 2 branches covered.">        for (SolicitudServicio s : servicioService.cobrablesDeReserva(reserva.getId())) {</span>
+<span class="pc bpc" id="L151" title="1 of 2 branches missed.">            if (!facturaItemRepository.estaFacturado(OrigenItem.SERVICIO, s.getId())) {</span>
+<span class="fc" id="L152">                items.add(item(lineaServicio(s, false)));</span>
+            }
+<span class="fc" id="L154">        }</span>
+
+<span class="pc bpc" id="L156" title="1 of 2 branches missed.">        if (items.isEmpty()) {</span>
+<span class="nc" id="L157">            List&lt;Factura&gt; vigentes = facturasVigentesDeReserva(reserva.getId());</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">            if (!vigentes.isEmpty()) {</span>
+<span class="nc" id="L159">                return FacturaResponse.from(vigentes.getLast());</span>
+            }
+<span class="nc" id="L161">            throw new FinanzasException(FinanzasErrorCode.FACTURA_SIN_ITEMS);</span>
+        }
+
+<span class="fc" id="L164">        Huesped huesped = reserva.getHuesped();</span>
+<span class="pc bpc" id="L165" title="1 of 2 branches missed.">        Factura factura = editable != null ? editable : Factura.builder()</span>
+<span class="fc" id="L166">                .reserva(reserva)</span>
+<span class="fc" id="L167">                .huesped(huesped)</span>
+<span class="fc" id="L168">                .clienteNombre(huesped.nombreCompleto())</span>
+<span class="fc" id="L169">                .clienteDocumento(huesped.getTipoDocumento().name() + &quot; &quot; + huesped.getNumeroDocumento())</span>
+<span class="fc" id="L170">                .clienteEmail(huesped.getEmail())</span>
+<span class="fc" id="L171">                .emitidaPor(UsuarioActual.username())</span>
+<span class="fc" id="L172">                .build();</span>
+<span class="pc bpc" id="L173" title="1 of 2 branches missed.">        BigDecimal porcentaje = exentoIva(huesped) ? BigDecimal.ZERO : hotel.ivaPorcentaje();</span>
+<span class="pc bpc" id="L174" title="1 of 2 branches missed.">        String observacion = porcentaje.signum() == 0</span>
+<span class="nc" id="L175">                ? &quot;Exento de IVA: servicio turístico prestado a no residente (art. 481 lit. d, E.T.)&quot;</span>
+<span class="fc" id="L176">                : null;</span>
+<span class="fc" id="L177">        Factura guardada = guardar(factura, items, porcentaje, observacion);</span>
+<span class="fc" id="L178">        abonoService.aplicarAFactura(guardada);</span>
+<span class="fc" id="L179">        return FacturaResponse.from(facturaRepository.save(guardada));</span>
+    }
+
+    @Transactional
+    public FacturaResponse facturarEvento(Long eventoId) {
+<span class="nc" id="L184">        Evento evento = eventoService.buscar(eventoId);</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">        if (evento.getEstado() == EstadoEvento.CANCELADO) {</span>
+<span class="nc" id="L186">            throw new FinanzasException(FinanzasErrorCode.FACTURA_SIN_ITEMS);</span>
+        }
+<span class="nc" id="L188">        Factura existente = facturaRepository.findFirstByEventoIdAndEstadoNot(eventoId, EstadoFactura.ANULADA).orElse(null);</span>
+<span class="nc bnc" id="L189" title="All 4 branches missed.">        if (existente != null &amp;&amp; existente.getTotalPagado().signum() &gt; 0) {</span>
+<span class="nc" id="L190">            return FacturaResponse.from(existente);</span>
+        }
+<span class="nc bnc" id="L192" title="All 2 branches missed.">        if (existente != null) {</span>
+<span class="nc" id="L193">            existente.getItems().clear();</span>
+<span class="nc" id="L194">            facturaRepository.flush();</span>
+        }
+
+<span class="nc" id="L197">        List&lt;FacturaItem&gt; items = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L198">        items.add(FacturaItem.builder()</span>
+<span class="nc" id="L199">                .descripcion(&quot;Evento \&quot;&quot; + evento.getNombre() + &quot;\&quot; — &quot; + evento.getSalon().getNombre() + &quot; (&quot;</span>
+<span class="nc" id="L200">                        + evento.getFechaHoraInicio().format(DIA_HORA) + &quot; a &quot; + evento.getFechaHoraFin().format(DIA_HORA) + &quot;)&quot;)</span>
+<span class="nc" id="L201">                .cantidad(BigDecimal.ONE)</span>
+<span class="nc" id="L202">                .valorUnitario(evento.getValorBase())</span>
+<span class="nc" id="L203">                .total(evento.getValorBase())</span>
+<span class="nc" id="L204">                .origen(OrigenItem.EVENTO)</span>
+<span class="nc" id="L205">                .referenciaId(evento.getId())</span>
+<span class="nc" id="L206">                .build());</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">        for (EventoRecurso r : evento.getRecursos()) {</span>
+<span class="nc" id="L208">            items.add(FacturaItem.builder()</span>
+<span class="nc" id="L209">                    .descripcion(r.getTipo().getNombre() + &quot;: &quot; + r.getDescripcion())</span>
+<span class="nc" id="L210">                    .cantidad(BigDecimal.valueOf(r.getCantidad()))</span>
+<span class="nc" id="L211">                    .valorUnitario(r.getValorUnitario())</span>
+<span class="nc" id="L212">                    .total(r.getTotal())</span>
+<span class="nc" id="L213">                    .origen(OrigenItem.EVENTO)</span>
+<span class="nc" id="L214">                    .referenciaId(evento.getId())</span>
+<span class="nc" id="L215">                    .build());</span>
+<span class="nc" id="L216">        }</span>
+
+<span class="nc bnc" id="L218" title="All 2 branches missed.">        Factura factura = existente != null ? existente : Factura.builder()</span>
+<span class="nc" id="L219">                .eventoId(evento.getId())</span>
+<span class="nc" id="L220">                .clienteNombre(evento.getOrganizadorNombre())</span>
+<span class="nc" id="L221">                .clienteDocumento(evento.getOrganizadorDocumento())</span>
+<span class="nc" id="L222">                .clienteEmail(evento.getOrganizadorEmail())</span>
+<span class="nc" id="L223">                .emitidaPor(UsuarioActual.username())</span>
+<span class="nc" id="L224">                .build();</span>
+<span class="nc" id="L225">        return FacturaResponse.from(guardar(factura, items, hotel.ivaPorcentaje(), null));</span>
+    }
+
+    // ------------------------------------------------------------------ Pagos y anulación
+
+    @Transactional
+    public FacturaResponse registrarPago(Long facturaId, PagoRequest request) {
+<span class="fc" id="L232">        Factura factura = buscar(facturaId);</span>
+<span class="pc bpc" id="L233" title="1 of 2 branches missed.">        if (factura.getEstado() == EstadoFactura.ANULADA) {</span>
+<span class="nc" id="L234">            throw new FinanzasException(FinanzasErrorCode.FACTURA_ANULADA, factura.getNumero());</span>
+        }
+<span class="pc bpc" id="L236" title="1 of 2 branches missed.">        if (factura.getEstado() == EstadoFactura.PAGADA) {</span>
+<span class="nc" id="L237">            throw new FinanzasException(FinanzasErrorCode.FACTURA_PAGADA, factura.getNumero());</span>
+        }
+<span class="fc" id="L239">        BigDecimal valor = request.valor().setScale(2, RoundingMode.HALF_UP);</span>
+<span class="pc bpc" id="L240" title="1 of 2 branches missed.">        if (valor.compareTo(factura.saldo()) &gt; 0) {</span>
+<span class="nc" id="L241">            throw new FinanzasException(FinanzasErrorCode.PAGO_EXCEDE_SALDO, valor, factura.saldo());</span>
+        }
+
+<span class="fc" id="L244">        Pago pago = Pago.builder()</span>
+<span class="fc" id="L245">                .factura(factura)</span>
+<span class="fc" id="L246">                .valor(valor)</span>
+<span class="fc" id="L247">                .metodo(request.metodo())</span>
+<span class="fc bfc" id="L248" title="All 2 branches covered.">                .referencia(StringUtils.hasText(request.referencia()) ? request.referencia().trim() : null)</span>
+<span class="fc" id="L249">                .fechaHora(LocalDateTime.now())</span>
+<span class="fc" id="L250">                .registradoPor(UsuarioActual.username())</span>
+<span class="fc" id="L251">                .build();</span>
+<span class="fc" id="L252">        factura.getPagos().add(pago);</span>
+<span class="fc" id="L253">        factura.setTotalPagado(factura.getTotalPagado().add(valor));</span>
+<span class="pc bpc" id="L254" title="1 of 2 branches missed.">        factura.setEstado(factura.saldo().signum() == 0 ? EstadoFactura.PAGADA : EstadoFactura.PAGADA_PARCIAL);</span>
+        // flush (no save/merge): la factura ya está gestionada y así el pago persistido es esta misma
+        // instancia, con su id asignado para enlazar los ingresos
+<span class="fc" id="L257">        facturaRepository.flush();</span>
+
+<span class="fc" id="L259">        registrarIngresos(factura, pago);</span>
+<span class="fc" id="L260">        return FacturaResponse.from(factura);</span>
+    }
+
+    @Transactional
+    public FacturaResponse anular(Long facturaId, String motivo) {
+<span class="fc" id="L265">        Factura factura = buscar(facturaId);</span>
+<span class="pc bpc" id="L266" title="1 of 2 branches missed.">        if (factura.getEstado() == EstadoFactura.ANULADA) {</span>
+<span class="nc" id="L267">            throw new FinanzasException(FinanzasErrorCode.FACTURA_ANULADA, factura.getNumero());</span>
+        }
+        // Reversa: cada pago recibido se devuelve al cliente. El ingreso original se conserva (el dinero sí entró)
+        // y se registra un egreso de devolución por el mismo valor y medio de pago, de modo que la caja cuadre.
+<span class="fc" id="L271">        LocalDateTime ahora = LocalDateTime.now();</span>
+<span class="fc bfc" id="L272" title="All 2 branches covered.">        for (Pago pago : factura.getPagos()) {</span>
+<span class="pc bpc" id="L273" title="1 of 2 branches missed.">            if (pago.isDevuelto()) {</span>
+<span class="nc" id="L274">                continue;</span>
+            }
+<span class="fc" id="L276">            finanzasService.registrarAutomatico(</span>
+                    CategoriaFinanciera.OTROS_EGRESOS,
+<span class="fc" id="L278">                    &quot;Devolución del pago de la factura &quot; + factura.getNumero() + &quot; anulada: &quot; + motivo.trim(),</span>
+<span class="fc" id="L279">                    pago.getValor(),</span>
+<span class="fc" id="L280">                    pago.getMetodo(),</span>
+<span class="fc" id="L281">                    factura.getClienteNombre(),</span>
+<span class="fc" id="L282">                    pago.getReferencia(),</span>
+<span class="fc" id="L283">                    factura.getId(),</span>
+<span class="fc" id="L284">                    pago.getId());</span>
+<span class="fc" id="L285">            pago.setDevuelto(true);</span>
+<span class="fc" id="L286">            pago.setFechaHoraDevolucion(ahora);</span>
+<span class="fc" id="L287">        }</span>
+<span class="fc" id="L288">        factura.setEstado(EstadoFactura.ANULADA);</span>
+<span class="fc" id="L289">        factura.setMotivoAnulacion(motivo.trim());</span>
+<span class="fc" id="L290">        return FacturaResponse.from(facturaRepository.save(factura));</span>
+    }
+
+    // ------------------------------------------------------------------ Internos
+
+    /** Reparte el pago entre las categorías de ingreso según el peso de cada tipo de línea. */
+    private void registrarIngresos(Factura factura, Pago pago) {
+<span class="fc" id="L297">        Map&lt;OrigenItem, BigDecimal&gt; porOrigen = new EnumMap&lt;&gt;(OrigenItem.class);</span>
+<span class="fc bfc" id="L298" title="All 2 branches covered.">        for (FacturaItem item : factura.getItems()) {</span>
+<span class="fc" id="L299">            porOrigen.merge(item.getOrigen(), item.getTotal(), BigDecimal::add);</span>
+<span class="fc" id="L300">        }</span>
+<span class="fc" id="L301">        BigDecimal restante = pago.getValor();</span>
+<span class="fc" id="L302">        List&lt;Map.Entry&lt;OrigenItem, BigDecimal&gt;&gt; grupos = new ArrayList&lt;&gt;(porOrigen.entrySet());</span>
+<span class="fc bfc" id="L303" title="All 2 branches covered.">        for (int i = 0; i &lt; grupos.size(); i++) {</span>
+<span class="fc" id="L304">            var grupo = grupos.get(i);</span>
+<span class="fc bfc" id="L305" title="All 2 branches covered.">            BigDecimal parte = i == grupos.size() - 1</span>
+<span class="fc" id="L306">                    ? restante</span>
+<span class="fc" id="L307">                    : pago.getValor().multiply(grupo.getValue()).divide(factura.getSubtotal(), 2, RoundingMode.HALF_UP);</span>
+<span class="fc" id="L308">            restante = restante.subtract(parte);</span>
+<span class="pc bpc" id="L309" title="1 of 2 branches missed.">            if (parte.signum() &lt;= 0) {</span>
+<span class="nc" id="L310">                continue;</span>
+            }
+<span class="fc" id="L312">            finanzasService.registrarAutomatico(</span>
+<span class="fc" id="L313">                    grupo.getKey().getCategoria(),</span>
+<span class="fc" id="L314">                    &quot;Pago &quot; + factura.getNumero() + &quot; — &quot; + grupo.getKey().getCategoria().getNombre()</span>
+<span class="fc" id="L315">                            + &quot; (&quot; + factura.getClienteNombre() + &quot;)&quot;,</span>
+                    parte,
+<span class="fc" id="L317">                    pago.getMetodo(),</span>
+<span class="fc" id="L318">                    factura.getClienteNombre(),</span>
+<span class="fc" id="L319">                    factura.getNumero(),</span>
+<span class="fc" id="L320">                    factura.getId(),</span>
+<span class="fc" id="L321">                    pago.getId()</span>
+            );
+        }
+<span class="fc" id="L324">    }</span>
+
+    private Factura guardar(Factura factura, List&lt;FacturaItem&gt; items, BigDecimal porcentaje, String observacion) {
+<span class="fc" id="L327">        BigDecimal subtotal = items.stream().map(FacturaItem::getTotal).reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+<span class="fc" id="L328">        BigDecimal impuesto = calcularImpuesto(subtotal, porcentaje);</span>
+<span class="fc" id="L329">        items.forEach(i -&gt; i.setFactura(factura));</span>
+<span class="fc" id="L330">        factura.getItems().addAll(items);</span>
+<span class="fc" id="L331">        factura.setSubtotal(subtotal);</span>
+<span class="fc" id="L332">        factura.setPorcentajeImpuesto(porcentaje);</span>
+<span class="fc" id="L333">        factura.setImpuesto(impuesto);</span>
+<span class="fc" id="L334">        factura.setTotal(subtotal.add(impuesto));</span>
+<span class="fc" id="L335">        factura.setFechaEmision(LocalDateTime.now());</span>
+<span class="fc" id="L336">        factura.setObservaciones(observacion);</span>
+<span class="fc" id="L337">        factura.setEstado(EstadoFactura.PENDIENTE);</span>
+
+<span class="pc bpc" id="L339" title="1 of 2 branches missed.">        boolean nueva = factura.getId() == null;</span>
+<span class="pc bpc" id="L340" title="1 of 2 branches missed.">        if (nueva) {</span>
+<span class="fc" id="L341">            factura.setNumero(&quot;TMP&quot; + UUID.randomUUID().toString().replace(&quot;-&quot;, &quot;&quot;).substring(0, 16));</span>
+        }
+<span class="fc" id="L343">        Factura guardada = facturaRepository.saveAndFlush(factura);</span>
+<span class="pc bpc" id="L344" title="1 of 2 branches missed.">        if (nueva) {</span>
+<span class="fc" id="L345">            guardada.setNumero(&quot;%s-%06d&quot;.formatted(hotel.prefijoFactura(), guardada.getId()));</span>
+<span class="fc" id="L346">            guardada = facturaRepository.save(guardada);</span>
+        }
+<span class="fc" id="L348">        return guardada;</span>
+    }
+
+    /** Vacía una factura vigente sin pagos para volver a armarla con los consumos actuales. */
+    private Factura liberarFacturaSinPagos(List&lt;Factura&gt; vigentes) {
+<span class="pc bpc" id="L353" title="1 of 2 branches missed.">        for (Factura f : vigentes) {</span>
+<span class="nc bnc" id="L354" title="All 2 branches missed.">            if (f.getTotalPagado().signum() == 0) {</span>
+<span class="nc" id="L355">                f.getItems().clear();</span>
+<span class="nc" id="L356">                facturaRepository.flush();</span>
+<span class="nc" id="L357">                return f;</span>
+            }
+<span class="nc" id="L359">        }</span>
+<span class="fc" id="L360">        return null;</span>
+    }
+
+    private List&lt;Factura&gt; facturasVigentesDeReserva(Long reservaId) {
+<span class="fc" id="L364">        return facturaRepository.findAll(</span>
+<span class="fc" id="L365">                (root, q, cb) -&gt; cb.and(</span>
+<span class="fc" id="L366">                        cb.equal(root.get(&quot;reserva&quot;).get(&quot;id&quot;), reservaId),</span>
+<span class="fc" id="L367">                        cb.notEqual(root.get(&quot;estado&quot;), EstadoFactura.ANULADA)),</span>
+<span class="fc" id="L368">                Sort.by(&quot;id&quot;));</span>
+    }
+
+    private LineaCuenta lineaAlojamiento(Reserva r, boolean facturado) {
+<span class="fc" id="L372">        String descripcion = &quot;Alojamiento habitación &quot; + r.getHabitacion().getNumero()</span>
+<span class="fc" id="L373">                + &quot; — &quot; + r.getCantidadNoches() + &quot; noche(s) del &quot; + r.getFechaEntrada().format(DIA)</span>
+<span class="fc" id="L374">                + &quot; al &quot; + r.getFechaSalida().format(DIA);</span>
+<span class="pc bpc" id="L375" title="2 of 6 branches missed.">        if (r.getDescuento() != null &amp;&amp; r.getDescuento().signum() &gt; 0 &amp;&amp; r.getPromocion() != null) {</span>
+<span class="fc" id="L376">            descripcion += &quot; — Promoción «&quot; + r.getPromocion().getNombre() + &quot;»: −$&quot;</span>
+<span class="fc" id="L377">                    + String.format(java.util.Locale.forLanguageTag(&quot;es-CO&quot;), &quot;%,.0f&quot;, r.getDescuento());</span>
+        }
+<span class="fc" id="L379">        return new LineaCuenta(descripcion, BigDecimal.valueOf(r.getCantidadNoches()), r.getTarifaNoche(),</span>
+<span class="fc" id="L380">                r.getTotalEstimado(), OrigenItem.ALOJAMIENTO, r.getId(), facturado);</span>
+    }
+
+    private LineaCuenta lineaServicio(SolicitudServicio s, boolean facturado) {
+<span class="pc bpc" id="L384" title="1 of 2 branches missed.">        LocalDateTime fecha = s.getFechaHoraProgramada() != null ? s.getFechaHoraProgramada() : s.getFechaHoraSolicitud();</span>
+<span class="fc" id="L385">        return new LineaCuenta(&quot;Servicio: &quot; + s.getServicio().getNombre() + &quot; (&quot; + fecha.format(DIA_HORA) + &quot;)&quot;,</span>
+<span class="fc" id="L386">                BigDecimal.valueOf(s.getCantidad()), s.getPrecioUnitario(), s.getTotal(), OrigenItem.SERVICIO,</span>
+<span class="fc" id="L387">                s.getId(), facturado);</span>
+    }
+
+    private static FacturaItem item(LineaCuenta l) {
+<span class="fc" id="L391">        return FacturaItem.builder()</span>
+<span class="fc" id="L392">                .descripcion(l.descripcion())</span>
+<span class="fc" id="L393">                .cantidad(l.cantidad())</span>
+<span class="fc" id="L394">                .valorUnitario(l.valorUnitario())</span>
+<span class="fc" id="L395">                .total(l.total())</span>
+<span class="fc" id="L396">                .origen(l.origen())</span>
+<span class="fc" id="L397">                .referenciaId(l.referenciaId())</span>
+<span class="fc" id="L398">                .build();</span>
+    }
+
+    /** Turista extranjero no residente (pasaporte y nacionalidad distinta a Colombia). */
+    boolean exentoIva(Huesped huesped) {
+<span class="fc" id="L403">        return ReglaIva.exento(hotel, huesped);</span>
+    }
+
+    private static BigDecimal calcularImpuesto(BigDecimal subtotal, BigDecimal porcentaje) {
+<span class="fc" id="L407">        return subtotal.multiply(porcentaje).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);</span>
+    }
+
+    private Factura buscar(Long id) {
+<span class="fc" id="L411">        return facturaRepository.findById(id)</span>
+<span class="pc" id="L412">                .orElseThrow(() -&gt; new FinanzasException(FinanzasErrorCode.FACTURA_NO_ENCONTRADA, id));</span>
+    }
+
+    private Reserva buscarReserva(Long id) {
+<span class="fc" id="L416">        return reservaRepository.findById(id)</span>
+<span class="pc" id="L417">                .orElseThrow(() -&gt; new FinanzasException(FinanzasErrorCode.FACTURA_NO_ENCONTRADA, &quot;reserva &quot; + id));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

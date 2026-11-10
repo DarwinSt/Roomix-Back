@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PromocionController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.reserva.controller</a> &gt; <span class="el_source">PromocionController.java</span></div><h1>PromocionController.java</h1><pre class="source lang-java linenums">package com.example.roomix.reserva.controller;
+
+import com.example.roomix.reserva.domain.CanalReserva;
+import com.example.roomix.reserva.dto.PromocionDtos.PoliticaReservaRequest;
+import com.example.roomix.reserva.dto.PromocionDtos.PoliticaReservaResponse;
+import com.example.roomix.reserva.dto.PromocionDtos.PromocionAplicableResponse;
+import com.example.roomix.reserva.dto.PromocionDtos.PromocionRequest;
+import com.example.roomix.reserva.dto.PromocionDtos.PromocionResponse;
+import com.example.roomix.reserva.service.PoliticaReservaService;
+import com.example.roomix.reserva.service.PromocionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDate;
+import java.util.List;
+
+@Tag(name = &quot;Promociones y políticas de reserva&quot;, description = &quot;Descuentos configurables, abono mínimo y penalidad por cancelación&quot;)
+@RestController
+@RequiredArgsConstructor
+public class PromocionController {
+
+    private final PromocionService promocionService;
+    private final PoliticaReservaService politicaService;
+
+    @Operation(summary = &quot;Listar promociones&quot;)
+    @GetMapping(&quot;/api/promociones&quot;)
+    public List&lt;PromocionResponse&gt; listar() {
+<span class="nc" id="L41">        return promocionService.listar();</span>
+    }
+
+    @Operation(summary = &quot;Promociones que aplican a una reserva, con el descuento calculado&quot;)
+    @GetMapping(&quot;/api/promociones/aplicables&quot;)
+    public List&lt;PromocionAplicableResponse&gt; aplicables(
+            @RequestParam Long habitacionId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaEntrada,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaSalida,
+            @RequestParam(required = false) CanalReserva canal
+    ) {
+<span class="fc" id="L52">        return promocionService.aplicables(habitacionId, fechaEntrada, fechaSalida, canal);</span>
+    }
+
+    @Operation(summary = &quot;Crear promoción (administrador)&quot;)
+    @PostMapping(&quot;/api/promociones&quot;)
+    @ResponseStatus(HttpStatus.CREATED)
+    public PromocionResponse crear(@Valid @RequestBody PromocionRequest request) {
+<span class="fc" id="L59">        return promocionService.crear(request);</span>
+    }
+
+    @Operation(summary = &quot;Editar promoción (administrador)&quot;)
+    @PutMapping(&quot;/api/promociones/{id}&quot;)
+    public PromocionResponse actualizar(@PathVariable Long id, @Valid @RequestBody PromocionRequest request) {
+<span class="nc" id="L65">        return promocionService.actualizar(id, request);</span>
+    }
+
+    @Operation(summary = &quot;Activar o desactivar promoción (administrador)&quot;)
+    @PatchMapping(&quot;/api/promociones/{id}/activa&quot;)
+    public PromocionResponse cambiarActiva(@PathVariable Long id, @RequestParam boolean valor) {
+<span class="nc" id="L71">        return promocionService.cambiarActiva(id, valor);</span>
+    }
+
+    @Operation(summary = &quot;Políticas de reserva: abono mínimo y penalidad por cancelación&quot;)
+    @GetMapping(&quot;/api/politicas-reserva&quot;)
+    public PoliticaReservaResponse politicas() {
+<span class="nc" id="L77">        return politicaService.obtener();</span>
+    }
+
+    @Operation(summary = &quot;Actualizar políticas de reserva (administrador)&quot;)
+    @PutMapping(&quot;/api/politicas-reserva&quot;)
+    public PoliticaReservaResponse actualizarPoliticas(@Valid @RequestBody PoliticaReservaRequest request) {
+<span class="fc" id="L83">        return politicaService.actualizar(request);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

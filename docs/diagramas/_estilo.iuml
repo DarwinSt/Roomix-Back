@@ -1,0 +1,80 @@
+' Estilo común de los diagramas de Roomix (colores de la marca, tipografía legible en documento impreso)
+!pragma layout smetana
+skinparam dpi 150
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam roundCorner 10
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #2F5E45
+skinparam ArrowFontColor #2F5E45
+skinparam ArrowFontSize 11
+skinparam TitleFontSize 18
+skinparam TitleFontColor #1F3D2C
+skinparam NoteBackgroundColor #FFF8E1
+skinparam NoteBorderColor #C9A227
+skinparam NoteFontSize 11
+
+skinparam actor {
+  BorderColor #2F5E45
+  BackgroundColor #E7F3EB
+}
+skinparam usecase {
+  BorderColor #397D54
+  BackgroundColor #F1F8F3
+}
+skinparam package {
+  BorderColor #8FB39D
+  BackgroundColor #FBFDFB
+  FontColor #1F3D2C
+}
+skinparam rectangle {
+  BorderColor #8FB39D
+  BackgroundColor #FBFDFB
+}
+skinparam class {
+  BorderColor #397D54
+  BackgroundColor #F7FBF8
+  HeaderBackgroundColor #DDEFE3
+  AttributeFontSize 11
+}
+skinparam entity {
+  BorderColor #397D54
+  BackgroundColor #F7FBF8
+}
+skinparam state {
+  BorderColor #397D54
+  BackgroundColor #F1F8F3
+  StartColor #1F3D2C
+  EndColor #1F3D2C
+}
+skinparam activity {
+  BorderColor #397D54
+  BackgroundColor #F1F8F3
+  DiamondBorderColor #C9A227
+  DiamondBackgroundColor #FFF8E1
+}
+skinparam sequence {
+  LifeLineBorderColor #8FB39D
+  ParticipantBorderColor #397D54
+  ParticipantBackgroundColor #F1F8F3
+  ActorBorderColor #2F5E45
+  ActorBackgroundColor #E7F3EB
+  BoxBorderColor #8FB39D
+}
+skinparam component {
+  BorderColor #397D54
+  BackgroundColor #F1F8F3
+}
+skinparam node {
+  BorderColor #2F5E45
+  BackgroundColor #EEF6F1
+}
+skinparam database {
+  BorderColor #2F5E45
+  BackgroundColor #E3EEF8
+}
+skinparam artifact {
+  BorderColor #397D54
+  BackgroundColor #FFFFFF
+}

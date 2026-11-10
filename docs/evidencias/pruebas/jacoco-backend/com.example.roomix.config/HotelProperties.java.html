@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HotelProperties.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.config</a> &gt; <span class="el_source">HotelProperties.java</span></div><h1>HotelProperties.java</h1><pre class="source lang-java linenums">package com.example.roomix.config;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+import java.math.BigDecimal;
+
+/**
+ * Datos del establecimiento que aparecen en comprobantes y facturas, y reglas de impuestos.
+ * Se configuran con variables de entorno (HOTEL_NOMBRE, HOTEL_NIT, ...), así cada hotel
+ * adapta el sistema sin modificar código.
+ */
+@ConfigurationProperties(prefix = &quot;app.hotel&quot;)
+public record HotelProperties(
+        String nombre,
+        String nit,
+        String direccion,
+        String ciudad,
+        String telefono,
+        String email,
+        String prefijoFactura,
+        BigDecimal ivaPorcentaje,
+        boolean exentoIvaExtranjeros
+) {
+<span class="fc" id="L24">    public HotelProperties {</span>
+<span class="fc" id="L25">        nombre = valor(nombre, &quot;Hotel Roomix&quot;);</span>
+<span class="fc" id="L26">        nit = valor(nit, &quot;900.000.000-0&quot;);</span>
+<span class="fc" id="L27">        direccion = valor(direccion, &quot;Calle del Arsenal # 10-25&quot;);</span>
+<span class="fc" id="L28">        ciudad = valor(ciudad, &quot;Cartagena de Indias, Colombia&quot;);</span>
+<span class="fc" id="L29">        telefono = valor(telefono, &quot;+57 605 000 0000&quot;);</span>
+<span class="fc" id="L30">        email = valor(email, &quot;reservas@roomix.test&quot;);</span>
+<span class="fc" id="L31">        prefijoFactura = valor(prefijoFactura, &quot;FV&quot;);</span>
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">        ivaPorcentaje = ivaPorcentaje != null ? ivaPorcentaje : new BigDecimal(&quot;19&quot;);</span>
+<span class="fc" id="L33">    }</span>
+
+    private static String valor(String v, String porDefecto) {
+<span class="pc bpc" id="L36" title="2 of 4 branches missed.">        return v == null || v.isBlank() ? porDefecto : v;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

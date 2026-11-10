@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ServicioDtos.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.servicio.dto</a> &gt; <span class="el_source">ServicioDtos.java</span></div><h1>ServicioDtos.java</h1><pre class="source lang-java linenums">package com.example.roomix.servicio.dto;
+
+import com.example.roomix.servicio.domain.CategoriaServicio;
+import com.example.roomix.servicio.domain.EstadoSolicitud;
+import com.example.roomix.servicio.domain.ServicioCatalogo;
+import com.example.roomix.servicio.domain.SolicitudServicio;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+public final class ServicioDtos {
+
+    private ServicioDtos() {
+    }
+
+    @Schema(name = &quot;ServicioCatalogoRequest&quot;)
+<span class="fc" id="L24">    public record CatalogoRequest(</span>
+            @NotBlank(message = &quot;El nombre es obligatorio&quot;) @Size(max = 120) String nombre,
+            @Size(max = 400) String descripcion,
+            @NotNull(message = &quot;La categoría es obligatoria&quot;) CategoriaServicio categoria,
+            @NotNull(message = &quot;El precio es obligatorio&quot;)
+            @DecimalMin(value = &quot;0&quot;, message = &quot;El precio no puede ser negativo&quot;)
+            BigDecimal precio,
+            @NotBlank(message = &quot;La unidad de cobro es obligatoria&quot;) @Size(max = 40) String unidad,
+            @Min(1) @Max(1440) Integer duracionMinutos,
+            Boolean activo
+    ) {
+    }
+
+    @Schema(name = &quot;ServicioCatalogoResponse&quot;)
+<span class="fc" id="L38">    public record CatalogoResponse(</span>
+            Long id,
+            String nombre,
+            String descripcion,
+            CategoriaServicio categoria,
+            String categoriaNombre,
+            BigDecimal precio,
+            String unidad,
+            Integer duracionMinutos,
+            boolean activo
+    ) {
+        public static CatalogoResponse from(ServicioCatalogo s) {
+<span class="fc" id="L50">            return new CatalogoResponse(s.getId(), s.getNombre(), s.getDescripcion(), s.getCategoria(),</span>
+<span class="fc" id="L51">                    s.getCategoria().getNombre(), s.getPrecio(), s.getUnidad(), s.getDuracionMinutos(), s.isActivo());</span>
+        }
+    }
+
+    @Schema(name = &quot;SolicitudServicioRequest&quot;)
+<span class="fc" id="L56">    public record SolicitudRequest(</span>
+            @NotNull(message = &quot;La reserva es obligatoria&quot;) Long reservaId,
+            @NotNull(message = &quot;El servicio es obligatorio&quot;) Long servicioId,
+            @NotNull @Min(value = 1, message = &quot;La cantidad mínima es 1&quot;) @Max(99) Integer cantidad,
+            LocalDateTime fechaHoraProgramada,
+            Long responsableId,
+            @Size(max = 400) String notas
+    ) {
+    }
+
+    @Schema(name = &quot;CambiarEstadoSolicitudRequest&quot;)
+<span class="fc" id="L67">    public record CambiarEstadoRequest(</span>
+            @NotNull EstadoSolicitud estado,
+            @Size(max = 200) String motivo
+    ) {
+    }
+
+    @Schema(name = &quot;AsignarSolicitudRequest&quot;)
+<span class="nc" id="L74">    public record AsignarRequest(</span>
+            Long responsableId,
+            LocalDateTime fechaHoraProgramada
+    ) {
+    }
+
+    @Schema(name = &quot;SolicitudServicioResponse&quot;)
+<span class="fc" id="L81">    public record SolicitudResponse(</span>
+            Long id,
+            Long servicioId,
+            String servicioNombre,
+            CategoriaServicio categoria,
+            String unidad,
+            Long reservaId,
+            Long habitacionId,
+            String habitacionNumero,
+            Long huespedId,
+            String huespedNombre,
+            Integer cantidad,
+            BigDecimal precioUnitario,
+            BigDecimal total,
+            LocalDateTime fechaHoraProgramada,
+            Long responsableId,
+            String responsableNombre,
+            EstadoSolicitud estado,
+            String notas,
+            String motivoCancelacion,
+            String solicitadoPor,
+            LocalDateTime fechaHoraSolicitud,
+            LocalDateTime fechaHoraCompletado
+    ) {
+        public static SolicitudResponse from(SolicitudServicio s) {
+<span class="fc" id="L106">            return new SolicitudResponse(</span>
+<span class="fc" id="L107">                    s.getId(),</span>
+<span class="fc" id="L108">                    s.getServicio().getId(),</span>
+<span class="fc" id="L109">                    s.getServicio().getNombre(),</span>
+<span class="fc" id="L110">                    s.getServicio().getCategoria(),</span>
+<span class="fc" id="L111">                    s.getServicio().getUnidad(),</span>
+<span class="fc" id="L112">                    s.getReserva().getId(),</span>
+<span class="fc" id="L113">                    s.getHabitacion().getId(),</span>
+<span class="fc" id="L114">                    s.getHabitacion().getNumero(),</span>
+<span class="fc" id="L115">                    s.getHuesped().getId(),</span>
+<span class="fc" id="L116">                    s.getHuesped().nombreCompleto(),</span>
+<span class="fc" id="L117">                    s.getCantidad(),</span>
+<span class="fc" id="L118">                    s.getPrecioUnitario(),</span>
+<span class="fc" id="L119">                    s.getTotal(),</span>
+<span class="fc" id="L120">                    s.getFechaHoraProgramada(),</span>
+<span class="pc bpc" id="L121" title="1 of 2 branches missed.">                    s.getResponsable() != null ? s.getResponsable().getId() : null,</span>
+<span class="pc bpc" id="L122" title="1 of 2 branches missed.">                    s.getResponsable() != null ? s.getResponsable().getNombre() : null,</span>
+<span class="fc" id="L123">                    s.getEstado(),</span>
+<span class="fc" id="L124">                    s.getNotas(),</span>
+<span class="fc" id="L125">                    s.getMotivoCancelacion(),</span>
+<span class="fc" id="L126">                    s.getSolicitadoPor(),</span>
+<span class="fc" id="L127">                    s.getFechaHoraSolicitud(),</span>
+<span class="fc" id="L128">                    s.getFechaHoraCompletado()</span>
+            );
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

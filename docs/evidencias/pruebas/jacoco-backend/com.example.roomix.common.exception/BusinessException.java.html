@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BusinessException.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.common.exception</a> &gt; <span class="el_source">BusinessException.java</span></div><h1>BusinessException.java</h1><pre class="source lang-java linenums">package com.example.roomix.common.exception;
+
+import org.springframework.http.HttpStatus;
+
+/**
+ * Excepción de negocio cuyo mensaje y código HTTP provienen de un enum.
+ */
+public abstract class BusinessException extends RuntimeException {
+
+    private final String errorCode;
+    private final HttpStatus httpStatus;
+
+    protected BusinessException(String errorCode, HttpStatus httpStatus, String message) {
+<span class="fc" id="L14">        super(message);</span>
+<span class="fc" id="L15">        this.errorCode = errorCode;</span>
+<span class="fc" id="L16">        this.httpStatus = httpStatus;</span>
+<span class="fc" id="L17">    }</span>
+
+    public String getErrorCode() {
+<span class="fc" id="L20">        return errorCode;</span>
+    }
+
+    public HttpStatus getHttpStatus() {
+<span class="fc" id="L24">        return httpStatus;</span>
+    }
+
+    /** Título del ProblemDetail (nombre del código de error). Los módulos nuevos lo sobrescriben. */
+    public String getTitulo() {
+<span class="nc" id="L29">        return errorCode;</span>
+    }
+
+    /** Módulo funcional que originó el error (ej. FINANZAS). */
+    public String getModulo() {
+<span class="nc" id="L34">        return null;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

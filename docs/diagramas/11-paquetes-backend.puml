@@ -1,0 +1,51 @@
+@startuml paquetes-backend
+!include _estilo.iuml
+title Roomix — Estructura del backend (paquetes por módulo de dominio)
+skinparam packageStyle rectangle
+package "com.example.roomix" {
+  package "Transversales" #F3F6F4 {
+    package auth as AUTH
+    package auditoria as AUD
+    package common as COM
+    package config as CFG
+  }
+  package "Operación hotelera" #FBFDFB {
+    package reserva as RES
+    package habitacion as HAB
+    package huesped as HUE
+    package incidencia as INC
+    package personal as PER
+    package servicio as SER
+  }
+  package "Negocio y análisis" #FBFDFB {
+    package finanzas as FIN
+    package evento as EVE
+    package inventario as INV
+    package dashboard as DAS
+    package reporte as REP
+  }
+}
+note as CAPAS
+  **Capas internas de cada módulo**
+  controller → service → repository → domain
+  + dto (contratos de la API)
+  + exception (errores del módulo)
+  + config (semillas y reglas)
+end note
+RES --> HAB
+RES --> HUE
+RES --> FIN : abono al reservar,\ncotización y factura al check-out
+FIN --> RES : abonos, promoción\ny política de la reserva
+RES ..> FIN : ReservaCanceladaEvent\n(penalidad y devolución)
+SER --> RES
+SER --> FIN : cargo a la cuenta
+INV --> FIN : egreso por compra
+EVE --> FIN : factura del evento
+INC --> HAB : limpieza / mantenimiento
+INC --> PER : asignación
+DAS ..> RES
+DAS ..> FIN
+REP ..> RES
+REP ..> HAB
+AUTH --> AUD : registra acciones
+@enduml

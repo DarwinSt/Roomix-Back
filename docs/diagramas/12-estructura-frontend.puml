@@ -1,0 +1,34 @@
+@startuml estructura-frontend
+!include _estilo.iuml
+title Roomix — Estructura del frontend (Angular 21)
+package "src/app" {
+  package "core (singleton)" as CORE {
+    component "services\n(AuthService y servicios HTTP\npor módulo)" as SVC
+    component "guards\n(authGuard, rolGuard)" as GRD
+    component "interceptors\n(authInterceptor: Bearer, 401)" as INT
+    component "models · config · utils" as MOD
+  }
+  package "layout" {
+    component "shell\n(barra lateral y menú por rol)" as SHELL
+  }
+  package "features (páginas lazy-loaded)" as FEAT {
+    component "home · reservas · habitaciones · huéspedes\nincidencias · personal · servicios · eventos\ninventario · finanzas · reportes · admin\nauth · ayuda" as PAGES
+  }
+  package "shared (componentes reutilizables)" as SH {
+    component "charts · dialogs · paginador\nperiodo · pipes" as COMP
+  }
+}
+note right of SH
+  Diseño atómico (Frost, 2016):
+  átomos y moléculas → shared
+  organismos → secciones de cada feature
+  plantilla → shell
+  páginas → features
+end note
+SHELL --> PAGES : router-outlet
+PAGES --> COMP
+PAGES --> SVC
+GRD ..> SVC
+SVC --> INT : HttpClient
+INT --> "API REST" : HTTPS + JWT
+@enduml

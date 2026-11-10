@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DashboardResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.dashboard</a> &gt; <span class="el_source">DashboardResponse.java</span></div><h1>DashboardResponse.java</h1><pre class="source lang-java linenums">package com.example.roomix.dashboard;
+
+import com.example.roomix.evento.dto.EventoDtos.EventoResponse;
+import com.example.roomix.inventario.dto.ArticuloInventarioResponse;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+/**
+ * Panel principal. Cada sección es null si el rol del usuario no tiene acceso a ese módulo.
+ */
+@Schema(name = &quot;DashboardResponse&quot;)
+<span class="nc" id="L15">public record DashboardResponse(</span>
+        LocalDate fecha,
+        String rol,
+        Habitaciones habitaciones,
+        List&lt;MovimientoHuesped&gt; llegadasHoy,
+        List&lt;MovimientoHuesped&gt; salidasHoy,
+        Operacion operacion,
+        Inventario inventario,
+        Finanzas finanzas,
+        List&lt;EventoResponse&gt; eventosProximos,
+        List&lt;Alerta&gt; alertas
+) {
+
+    @Schema(name = &quot;DashboardHabitaciones&quot;)
+<span class="nc" id="L29">    public record Habitaciones(</span>
+            int total,
+            int libres,
+            int reservadas,
+            int ocupadas,
+            int enLimpieza,
+            int enMantenimiento,
+            @Schema(description = &quot;Ocupadas / total&quot;) double ocupacionPct
+    ) {
+    }
+
+    @Schema(name = &quot;DashboardMovimientoHuesped&quot;, description = &quot;Llegada o salida prevista (check-in / check-out rápido)&quot;)
+<span class="nc" id="L41">    public record MovimientoHuesped(</span>
+            Long reservaId,
+            Long habitacionId,
+            String habitacionNumero,
+            String huespedNombre,
+            LocalDate fechaEntrada,
+            LocalDate fechaSalida,
+            int noches,
+            @Schema(description = &quot;La fecha prevista ya pasó&quot;) boolean atrasada
+    ) {
+    }
+
+    @Schema(name = &quot;DashboardOperacion&quot;)
+<span class="nc" id="L54">    public record Operacion(</span>
+            long incidenciasSinAsignar,
+            long incidenciasActivas,
+            long serviciosActivos,
+            long personalOcupado
+    ) {
+    }
+
+    @Schema(name = &quot;DashboardInventario&quot;)
+<span class="nc" id="L63">    public record Inventario(int articulosStockBajo, List&lt;ArticuloInventarioResponse&gt; criticos) {</span>
+    }
+
+    @Schema(name = &quot;DashboardFinanzas&quot;)
+<span class="nc" id="L67">    public record Finanzas(</span>
+            BigDecimal ingresosHoy,
+            BigDecimal ingresosSemana,
+            BigDecimal ingresosMes,
+            BigDecimal egresosMes,
+            BigDecimal saldoPorCobrar
+    ) {
+    }
+
+    @Schema(name = &quot;DashboardAlerta&quot;)
+<span class="nc" id="L77">    public record Alerta(</span>
+            @Schema(description = &quot;INFO, ADVERTENCIA o CRITICA&quot;) String nivel,
+            String modulo,
+            String mensaje,
+            @Schema(description = &quot;Ruta del frontend para atender la alerta&quot;) String ruta
+    ) {
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,119 @@
+@startuml casos-de-uso
+!include _estilo.iuml
+title Roomix — Diagrama de casos de uso
+left to right direction
+
+actor "Usuario autenticado" as U
+actor "Administrador" as ADM
+actor "Recepción" as REC
+actor "Housekeeping" as HK
+actor "Finanzas" as FIN
+actor "Coordinador de eventos" as EVT
+actor "Almacén" as ALM
+actor "Servidor de correo\n(SMTP)" as SMTP <<sistema>>
+
+U <|-- ADM
+U <|-- REC
+U <|-- HK
+U <|-- FIN
+U <|-- EVT
+U <|-- ALM
+
+rectangle "Sistema Roomix" {
+  package "Acceso y seguridad" {
+    usecase "Iniciar sesión" as UC_LOGIN
+    usecase "Recuperar contraseña" as UC_RECUP
+    usecase "Cambiar contraseña" as UC_CAMBIO
+    usecase "Consultar panel del día" as UC_PANEL
+    usecase "Gestionar usuarios y roles" as UC_USR
+    usecase "Consultar auditoría" as UC_AUD
+  }
+  package "Reservas y huéspedes" {
+    usecase "Registrar reserva" as UC_RES
+    usecase "Validar disponibilidad" as UC_DISP
+    usecase "Registrar huésped\n(autorización Ley 1581)" as UC_HUES
+    usecase "Editar / cancelar reserva" as UC_EDIT
+    usecase "Registrar check-in" as UC_IN
+    usecase "Registrar check-out" as UC_OUT
+    usecase "Imprimir comprobante" as UC_COMP
+    usecase "Registrar pago o abono\nal reservar" as UC_ABONO
+    usecase "Aplicar promoción" as UC_PROMO
+    usecase "Configurar promociones\ny políticas de reserva" as UC_POL
+  }
+  package "Habitaciones y operación" {
+    usecase "Gestionar habitaciones\n(fotos, plano por piso)" as UC_HAB
+    usecase "Gestionar limpieza\ny mantenimiento" as UC_INC
+    usecase "Gestionar personal" as UC_PER
+    usecase "Atender solicitudes\nde servicio" as UC_SOL
+  }
+  package "Servicios y eventos" {
+    usecase "Registrar solicitud\nde servicio" as UC_SRV
+    usecase "Gestionar catálogo\nde servicios" as UC_CAT
+    usecase "Gestionar eventos\ny salones" as UC_EVT
+    usecase "Inscribir participantes\ny registrar asistencia" as UC_PART
+  }
+  package "Inventario" {
+    usecase "Gestionar artículos\ny categorías" as UC_ART
+    usecase "Registrar movimiento\nde stock" as UC_MOV
+    usecase "Consultar reporte\nde inventario" as UC_RINV
+  }
+  package "Finanzas y reportes" {
+    usecase "Generar factura" as UC_FAC
+    usecase "Registrar pago" as UC_PAGO
+    usecase "Registrar ingreso / egreso" as UC_EGR
+    usecase "Gestionar gastos por pagar\ny recurrentes" as UC_GASTO
+    usecase "Consultar reportes\n(ocupación, ADR, RevPAR)" as UC_REP
+  }
+}
+
+U --> UC_LOGIN
+U --> UC_RECUP
+U --> UC_CAMBIO
+U --> UC_PANEL
+UC_RECUP --> SMTP
+
+ADM --> UC_USR
+ADM --> UC_AUD
+ADM --> UC_HAB
+ADM --> UC_PER
+ADM --> UC_POL
+
+REC --> UC_RES
+REC --> UC_EDIT
+REC --> UC_IN
+REC --> UC_OUT
+REC --> UC_COMP
+REC --> UC_SRV
+REC --> UC_PAGO
+REC --> UC_ABONO
+
+HK --> UC_INC
+HK --> UC_SOL
+
+EVT --> UC_EVT
+EVT --> UC_PART
+EVT --> UC_CAT
+
+ALM --> UC_ART
+ALM --> UC_MOV
+ALM --> UC_RINV
+
+FIN --> UC_FAC
+FIN --> UC_PAGO
+FIN --> UC_EGR
+FIN --> UC_REP
+FIN --> UC_GASTO
+
+UC_RES ..> UC_DISP : <<include>>
+UC_RES ..> UC_ABONO : <<include>>
+UC_PROMO ..> UC_RES : <<extend>>
+UC_EDIT ..> UC_ABONO : <<extend>>\n(penalidad al cancelar)
+UC_HUES ..> UC_RES : <<extend>>
+UC_EDIT ..> UC_DISP : <<include>>
+UC_OUT ..> UC_FAC : <<include>>
+UC_MOV ..> UC_EGR : <<extend>>\n(compra)
+UC_SRV ..> UC_FAC : <<extend>>\n(cargo a la cuenta)
+
+note "El Administrador tiene acceso a todos\nlos casos de uso del sistema." as N1
+ADM .. N1
+@enduml

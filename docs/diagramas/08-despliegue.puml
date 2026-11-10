@@ -1,0 +1,53 @@
+@startuml despliegue
+!include _estilo.iuml
+title Roomix 1.1 — Diagrama de despliegue (producción)
+
+node "Equipo del usuario\n(PC, tablet o teléfono)" as CLIENTE {
+  node "Navegador web" as NAV {
+    artifact "Aplicación Angular\n(SPA)" as SPA
+  }
+}
+node "Teléfono Android 8+" as ANDROID {
+  artifact "Roomix.apk\n(Capacitor + WebView)" as APK
+}
+
+cloud "Render (render.com)" as RENDER {
+  node "Static Site\n(CDN, HTTPS)" as STATIC {
+    artifact "dist/roomix/browser\n(index.html, JS, CSS)" as DIST
+  }
+}
+
+cloud "Railway (railway.com, plan Hobby)" as RAILWAY {
+  node "Servicio roomix\n(contenedor Docker, HTTPS)" as WEB {
+    node "eclipse-temurin:21-jre-alpine" as JRE {
+      artifact "app.jar\n(Spring Boot, Tomcat :PORT)" as JAR
+    }
+  }
+  database "PostgreSQL\n(servicio del mismo proyecto,\nred privada)" as PG
+}
+
+cloud "Docker Hub" as HUB {
+  artifact "sof220241004/roomix:<versión>" as IMG
+}
+cloud "GitHub" as GH {
+  artifact "Roomix-FRONT" as REPOFE
+  artifact "Roomix-Back" as REPOBE
+}
+node "Servicio de correo\n(opcional)" as SMTP
+
+NAV --> STATIC : HTTPS (descarga la SPA)
+SPA --> JAR : HTTPS · REST/JSON · JWT
+APK --> JAR : HTTPS · REST/JSON · JWT
+JAR --> PG : JDBC (red privada de Railway)
+JAR --> SMTP : envío de correos
+REPOFE ..> STATIC : push → build automático\n(npm run build, API_URL)
+REPOBE ..> IMG : docker build / push
+IMG ..> WEB : despliegue de la imagen
+
+note bottom of WEB
+  Variables de entorno: DATABASE_URL, JWT_SECRET,
+  ADMIN_PASSWORD, CORS_ALLOWED_ORIGINS, FRONTEND_URL,
+  APP_TIMEZONE, HOTEL_*, SPRING_MAIL_*
+  Health check: /actuator/health
+end note
+@enduml

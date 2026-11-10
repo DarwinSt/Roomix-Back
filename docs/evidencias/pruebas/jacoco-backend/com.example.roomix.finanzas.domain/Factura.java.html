@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Factura.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.finanzas.domain</a> &gt; <span class="el_source">Factura.java</span></div><h1>Factura.java</h1><pre class="source lang-java linenums">package com.example.roomix.finanzas.domain;
+
+import com.example.roomix.huesped.domain.Huesped;
+import com.example.roomix.reserva.domain.Reserva;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(
+        name = &quot;facturas&quot;,
+        uniqueConstraints = @UniqueConstraint(name = &quot;uk_factura_numero&quot;, columnNames = &quot;numero&quot;)
+)
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Factura {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    /** Consecutivo con prefijo, ej. FV-000123. */
+    @Column(nullable = false, length = 20)
+    private String numero;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;reserva_id&quot;)
+    private Reserva reserva;
+
+    /** Evento facturado (si la factura proviene de un evento). */
+    @Column(name = &quot;evento_id&quot;)
+    private Long eventoId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;huesped_id&quot;)
+    private Huesped huesped;
+
+    @Column(name = &quot;cliente_nombre&quot;, nullable = false, length = 200)
+    private String clienteNombre;
+
+    @Column(name = &quot;cliente_documento&quot;, length = 60)
+    private String clienteDocumento;
+
+    @Column(name = &quot;cliente_email&quot;, length = 120)
+    private String clienteEmail;
+
+    @Column(name = &quot;fecha_emision&quot;, nullable = false)
+    private LocalDateTime fechaEmision;
+
+    @Column(nullable = false, precision = 14, scale = 2)
+    private BigDecimal subtotal;
+
+    @Column(name = &quot;porcentaje_impuesto&quot;, nullable = false, precision = 5, scale = 2)
+    private BigDecimal porcentajeImpuesto;
+
+    @Column(nullable = false, precision = 14, scale = 2)
+    private BigDecimal impuesto;
+
+    @Column(nullable = false, precision = 14, scale = 2)
+    private BigDecimal total;
+
+    @Column(name = &quot;total_pagado&quot;, nullable = false, precision = 14, scale = 2)
+    @Builder.Default
+    private BigDecimal totalPagado = BigDecimal.ZERO;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private EstadoFactura estado = EstadoFactura.PENDIENTE;
+
+    @Column(length = 300)
+    private String observaciones;
+
+    @Column(name = &quot;motivo_anulacion&quot;, length = 200)
+    private String motivoAnulacion;
+
+    @Column(name = &quot;emitida_por&quot;, nullable = false, length = 50)
+    private String emitidaPor;
+
+    @OneToMany(mappedBy = &quot;factura&quot;, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy(&quot;id ASC&quot;)
+    @Builder.Default
+    private List&lt;FacturaItem&gt; items = new ArrayList&lt;&gt;();
+
+    @OneToMany(mappedBy = &quot;factura&quot;, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy(&quot;fechaHora ASC&quot;)
+    @Builder.Default
+    private List&lt;Pago&gt; pagos = new ArrayList&lt;&gt;();
+
+    @CreationTimestamp
+    @Column(name = &quot;fecha_hora_creacion&quot;, nullable = false, updatable = false)
+    private LocalDateTime fechaHoraCreacion;
+
+    public BigDecimal saldo() {
+<span class="fc" id="L121">        return total.subtract(totalPagado);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

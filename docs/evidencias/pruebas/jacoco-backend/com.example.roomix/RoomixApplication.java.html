@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RoomixApplication.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix</a> &gt; <span class="el_source">RoomixApplication.java</span></div><h1>RoomixApplication.java</h1><pre class="source lang-java linenums">package com.example.roomix;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
+import java.util.TimeZone;
+
+@SpringBootApplication
+@ConfigurationPropertiesScan
+@EnableScheduling
+<span class="fc" id="L13">public class RoomixApplication {</span>
+
+    /** Zona horaria del hotel; define qué es &quot;hoy&quot; para reservas, mantenimientos y check-in/out. */
+    private static final String ZONA_HORARIA_POR_DEFECTO = &quot;America/Bogota&quot;;
+
+    public static void main(String[] args) {
+        // Los servidores en la nube corren en UTC: sin esto el &quot;día&quot; cambiaría a las 7 p. m. hora Colombia
+<span class="nc" id="L20">        String zona = System.getenv().getOrDefault(&quot;APP_TIMEZONE&quot;, ZONA_HORARIA_POR_DEFECTO);</span>
+<span class="nc" id="L21">        TimeZone.setDefault(TimeZone.getTimeZone(zona));</span>
+<span class="nc" id="L22">        SpringApplication.run(RoomixApplication.class, args);</span>
+<span class="nc" id="L23">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

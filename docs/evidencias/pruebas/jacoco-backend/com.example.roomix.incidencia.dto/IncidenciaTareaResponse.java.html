@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IncidenciaTareaResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.incidencia.dto</a> &gt; <span class="el_source">IncidenciaTareaResponse.java</span></div><h1>IncidenciaTareaResponse.java</h1><pre class="source lang-java linenums">package com.example.roomix.incidencia.dto;
+
+import com.example.roomix.incidencia.domain.IncidenciaTarea;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
+
+import java.time.LocalDateTime;
+
+@Schema(name = &quot;IncidenciaTareaResponse&quot;)
+@Builder
+<span class="fc" id="L11">public record IncidenciaTareaResponse(</span>
+        Long id,
+        String descripcion,
+        int orden,
+        boolean completada,
+        LocalDateTime fechaHoraCompletado
+) {
+    public static IncidenciaTareaResponse from(IncidenciaTarea tarea) {
+<span class="fc" id="L19">        return IncidenciaTareaResponse.builder()</span>
+<span class="fc" id="L20">                .id(tarea.getId())</span>
+<span class="fc" id="L21">                .descripcion(tarea.getDescripcion())</span>
+<span class="fc" id="L22">                .orden(tarea.getOrden())</span>
+<span class="fc" id="L23">                .completada(tarea.isCompletada())</span>
+<span class="fc" id="L24">                .fechaHoraCompletado(tarea.getFechaHoraCompletado())</span>
+<span class="fc" id="L25">                .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

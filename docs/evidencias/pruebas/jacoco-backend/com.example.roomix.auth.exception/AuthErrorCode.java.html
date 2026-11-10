@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthErrorCode.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.auth.exception</a> &gt; <span class="el_source">AuthErrorCode.java</span></div><h1>AuthErrorCode.java</h1><pre class="source lang-java linenums">package com.example.roomix.auth.exception;
+
+import com.example.roomix.common.exception.ModuloErrorCode;
+import lombok.Getter;
+import org.springframework.http.HttpStatus;
+
+<span class="fc" id="L7">@Getter</span>
+public enum AuthErrorCode implements ModuloErrorCode {
+<span class="fc" id="L9">    CREDENCIALES_INVALIDAS(HttpStatus.UNAUTHORIZED, &quot;AUT-001&quot;, &quot;Usuario o contraseña incorrectos&quot;),</span>
+<span class="fc" id="L10">    USUARIO_INACTIVO(HttpStatus.FORBIDDEN, &quot;AUT-002&quot;, &quot;El usuario está desactivado. Contacte al administrador&quot;),</span>
+<span class="fc" id="L11">    USUARIO_BLOQUEADO(HttpStatus.LOCKED, &quot;AUT-003&quot;, &quot;Cuenta bloqueada por intentos fallidos. Intente de nuevo después de las %s&quot;),</span>
+<span class="fc" id="L12">    PASSWORD_ACTUAL_INCORRECTA(HttpStatus.UNPROCESSABLE_ENTITY, &quot;AUT-004&quot;, &quot;La contraseña actual no es correcta&quot;),</span>
+<span class="fc" id="L13">    TOKEN_INVALIDO(HttpStatus.UNPROCESSABLE_ENTITY, &quot;AUT-005&quot;, &quot;El enlace de recuperación no es válido o ya expiró&quot;),</span>
+<span class="fc" id="L14">    USUARIO_NO_ENCONTRADO(HttpStatus.NOT_FOUND, &quot;AUT-006&quot;, &quot;No se encontró el usuario con id %s&quot;),</span>
+<span class="fc" id="L15">    USERNAME_DUPLICADO(HttpStatus.CONFLICT, &quot;AUT-007&quot;, &quot;Ya existe un usuario con el nombre de usuario %s&quot;),</span>
+<span class="fc" id="L16">    EMAIL_DUPLICADO(HttpStatus.CONFLICT, &quot;AUT-008&quot;, &quot;Ya existe un usuario con el correo %s&quot;),</span>
+<span class="fc" id="L17">    ULTIMO_ADMIN(HttpStatus.UNPROCESSABLE_ENTITY, &quot;AUT-009&quot;, &quot;Debe existir al menos un administrador activo&quot;),</span>
+<span class="fc" id="L18">    PASSWORD_DEBIL(HttpStatus.BAD_REQUEST, &quot;AUT-010&quot;, &quot;La contraseña debe tener mínimo 8 caracteres e incluir mayúscula, minúscula y número&quot;),</span>
+<span class="fc" id="L19">    PASSWORD_REPETIDA(HttpStatus.UNPROCESSABLE_ENTITY, &quot;AUT-011&quot;, &quot;La nueva contraseña debe ser diferente a la actual&quot;);</span>
+
+    private final HttpStatus httpStatus;
+    private final String code;
+    private final String messageTemplate;
+
+<span class="fc" id="L25">    AuthErrorCode(HttpStatus httpStatus, String code, String messageTemplate) {</span>
+<span class="fc" id="L26">        this.httpStatus = httpStatus;</span>
+<span class="fc" id="L27">        this.code = code;</span>
+<span class="fc" id="L28">        this.messageTemplate = messageTemplate;</span>
+<span class="fc" id="L29">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

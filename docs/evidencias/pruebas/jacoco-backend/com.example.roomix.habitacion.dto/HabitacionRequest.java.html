@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HabitacionRequest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.habitacion.dto</a> &gt; <span class="el_source">HabitacionRequest.java</span></div><h1>HabitacionRequest.java</h1><pre class="source lang-java linenums">package com.example.roomix.habitacion.dto;
+
+import com.example.roomix.habitacion.domain.EstadoHabitacion;
+import com.example.roomix.habitacion.domain.TipoHabitacion;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Builder;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+@Schema(
+        name = &quot;HabitacionRequest&quot;,
+        description = &quot;Cuerpo de solicitud para crear o actualizar una habitación&quot;
+)
+@Builder
+<span class="fc" id="L23">public record HabitacionRequest(</span>
+        @Schema(
+                description = &quot;Número visible de la habitación en el hotel&quot;,
+                example = &quot;101&quot;,
+                maxLength = 20,
+                requiredMode = Schema.RequiredMode.REQUIRED
+        )
+        @NotBlank(message = &quot;El número de habitación es obligatorio&quot;)
+        @Size(max = 20, message = &quot;El número no puede superar 20 caracteres&quot;)
+        String numero,
+
+        @Schema(
+                description = &quot;Lista de amenidades o características (WiFi, TV, minibar, etc.)&quot;,
+                example = &quot;[\&quot;WiFi\&quot;, \&quot;TV\&quot;, \&quot;Aire acondicionado\&quot;, \&quot;Minibar\&quot;]&quot;
+        )
+        List&lt;@NotBlank(message = &quot;Las características no pueden estar vacías&quot;) String&gt; caracteristicas,
+
+        @Schema(
+                description = &quot;Clasificación de la habitación según capacidad o categoría&quot;,
+                example = &quot;DOBLE&quot;,
+                requiredMode = Schema.RequiredMode.REQUIRED
+        )
+        @NotNull(message = &quot;El tipo de habitación es obligatorio&quot;)
+        TipoHabitacion tipoHabitacion,
+
+        @Schema(
+                description = &quot;Descripción comercial o interna de la habitación&quot;,
+                example = &quot;Habitación doble con vista al jardín&quot;,
+                maxLength = 500,
+                requiredMode = Schema.RequiredMode.REQUIRED
+        )
+        @NotBlank(message = &quot;La descripción es obligatoria&quot;)
+        @Size(max = 500, message = &quot;La descripción no puede superar 500 caracteres&quot;)
+        String descripcion,
+
+        @Schema(
+                description = &quot;Tarifa por noche de esta habitación&quot;,
+                example = &quot;120.00&quot;,
+                requiredMode = Schema.RequiredMode.REQUIRED
+        )
+        @NotNull(message = &quot;El precio por noche es obligatorio&quot;)
+        @DecimalMin(value = &quot;0.01&quot;, message = &quot;El precio por noche debe ser mayor que cero&quot;)
+        BigDecimal precioNoche,
+
+        @Schema(description = &quot;Piso o planta (si se omite, se toma el primer dígito del número)&quot;, example = &quot;1&quot;)
+        @Min(value = 0, message = &quot;El piso no puede ser negativo&quot;)
+        @Max(value = 200, message = &quot;Piso no válido&quot;)
+        Integer piso,
+        @Schema(description = &quot;Capacidad máxima de huéspedes (si se omite, se asigna según el tipo)&quot;, example = &quot;2&quot;)
+        @Min(value = 1, message = &quot;La capacidad mínima es 1&quot;)
+        @Max(value = 20, message = &quot;Capacidad no válida&quot;)
+        Integer capacidad,
+        @Schema(
+                description = &quot;Estado operativo inicial. Por defecto `LIBRE` si se omite al crear.&quot;,
+                example = &quot;LIBRE&quot;
+        )
+        EstadoHabitacion estado,
+
+        @Schema(description = &quot;Fecha planificada de entrada (requerida si estado es RESERVADO)&quot;, format = &quot;date&quot;, nullable = true)
+        LocalDate fechaEntrada,
+
+        @Schema(description = &quot;Fecha planificada de salida (requerida si estado es RESERVADO)&quot;, format = &quot;date&quot;, nullable = true)
+        LocalDate fechaSalida,
+
+        @Schema(description = &quot;Huésped asignado (requerido si estado es RESERVADO)&quot;, nullable = true)
+        Long huespedId
+) {
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

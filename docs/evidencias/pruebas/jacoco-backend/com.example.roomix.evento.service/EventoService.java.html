@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EventoService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.evento.service</a> &gt; <span class="el_source">EventoService.java</span></div><h1>EventoService.java</h1><pre class="source lang-java linenums">package com.example.roomix.evento.service;
+
+import com.example.roomix.auth.service.UsuarioActual;
+import com.example.roomix.evento.domain.Evento;
+import com.example.roomix.evento.domain.EventoEnums.EstadoEvento;
+import com.example.roomix.evento.domain.EventoEnums.TipoAcceso;
+import com.example.roomix.evento.domain.EventoParticipante;
+import com.example.roomix.evento.domain.EventoRecurso;
+import com.example.roomix.evento.domain.Salon;
+import com.example.roomix.evento.dto.EventoDtos.CambiarEstadoRequest;
+import com.example.roomix.evento.dto.EventoDtos.EventoRequest;
+import com.example.roomix.evento.dto.EventoDtos.EventoResponse;
+import com.example.roomix.evento.dto.EventoDtos.ParticipanteRequest;
+import com.example.roomix.evento.dto.EventoDtos.RecursoRequest;
+import com.example.roomix.evento.dto.EventoDtos.ReporteEventos;
+import com.example.roomix.evento.dto.EventoDtos.ReporteSalon;
+import com.example.roomix.evento.dto.EventoDtos.SalonRequest;
+import com.example.roomix.evento.dto.EventoDtos.SalonResponse;
+import com.example.roomix.evento.exception.EventoErrorCode;
+import com.example.roomix.evento.exception.EventoException;
+import com.example.roomix.evento.repository.EventoRepository;
+import com.example.roomix.evento.repository.SalonRepository;
+import com.example.roomix.finanzas.domain.EstadoFactura;
+import com.example.roomix.finanzas.domain.Factura;
+import com.example.roomix.finanzas.repository.FacturaRepository;
+import com.example.roomix.huesped.domain.Huesped;
+import com.example.roomix.huesped.service.HuespedService;
+import com.example.roomix.personal.service.PersonalService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * Planificación y seguimiento de eventos en las instalaciones del hotel.
+ */
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class EventoService {
+
+<span class="fc" id="L52">    private static final Set&lt;EstadoEvento&gt; ESTADOS_VIGENTES = Set.of(EstadoEvento.PROGRAMADO, EstadoEvento.EN_CURSO);</span>
+
+<span class="fc" id="L54">    private static final Map&lt;EstadoEvento, Set&lt;EstadoEvento&gt;&gt; TRANSICIONES = Map.of(</span>
+<span class="fc" id="L55">            EstadoEvento.PROGRAMADO, Set.of(EstadoEvento.EN_CURSO, EstadoEvento.CANCELADO),</span>
+<span class="fc" id="L56">            EstadoEvento.EN_CURSO, Set.of(EstadoEvento.FINALIZADO, EstadoEvento.CANCELADO),</span>
+<span class="fc" id="L57">            EstadoEvento.FINALIZADO, Set.of(),</span>
+<span class="fc" id="L58">            EstadoEvento.CANCELADO, Set.of()</span>
+    );
+
+    private final EventoRepository eventoRepository;
+    private final SalonRepository salonRepository;
+    private final PersonalService personalService;
+    private final HuespedService huespedService;
+    private final FacturaRepository facturaRepository;
+
+    // ---------------------------------------------------------------- Salones
+
+    public List&lt;SalonResponse&gt; listarSalones() {
+<span class="nc" id="L70">        return salonRepository.findAllByOrderByNombreAsc().stream().map(SalonResponse::from).toList();</span>
+    }
+
+    @Transactional
+    public SalonResponse guardarSalon(Long id, SalonRequest request) {
+<span class="nc" id="L75">        String nombre = request.nombre().trim();</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        boolean duplicado = id == null</span>
+<span class="nc" id="L77">                ? salonRepository.existsByNombreIgnoreCase(nombre)</span>
+<span class="nc" id="L78">                : salonRepository.existsByNombreIgnoreCaseAndIdNot(nombre, id);</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">        if (duplicado) {</span>
+<span class="nc" id="L80">            throw new EventoException(EventoErrorCode.NOMBRE_SALON_DUPLICADO, nombre);</span>
+        }
+<span class="nc bnc" id="L82" title="All 2 branches missed.">        Salon salon = id == null ? Salon.builder().build() : buscarSalon(id);</span>
+<span class="nc" id="L83">        salon.setNombre(nombre);</span>
+<span class="nc" id="L84">        salon.setCapacidad(request.capacidad());</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        salon.setDescripcion(StringUtils.hasText(request.descripcion()) ? request.descripcion().trim() : null);</span>
+<span class="nc" id="L86">        salon.setTarifaHora(request.tarifaHora());</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">        if (request.activo() != null) {</span>
+<span class="nc" id="L88">            salon.setActivo(request.activo());</span>
+        }
+<span class="nc" id="L90">        return SalonResponse.from(salonRepository.save(salon));</span>
+    }
+
+    // ---------------------------------------------------------------- Eventos
+
+    public List&lt;EventoResponse&gt; listar(LocalDate desde, LocalDate hasta, EstadoEvento estado) {
+<span class="nc bnc" id="L96" title="All 2 branches missed.">        LocalDate inicio = desde != null ? desde : LocalDate.now().minusDays(30);</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        LocalDate fin = hasta != null ? hasta : LocalDate.now().plusDays(90);</span>
+<span class="nc" id="L98">        return eventoRepository.enRango(inicio.atStartOfDay(), fin.plusDays(1).atStartOfDay()).stream()</span>
+<span class="nc bnc" id="L99" title="All 4 branches missed.">                .filter(e -&gt; estado == null || e.getEstado() == estado)</span>
+<span class="nc" id="L100">                .map(this::responder)</span>
+<span class="nc" id="L101">                .toList();</span>
+    }
+
+    public EventoResponse obtener(Long id) {
+<span class="nc" id="L105">        return responder(buscar(id));</span>
+    }
+
+    /** Eventos programados o en curso que inician en los próximos días (alertas del dashboard). */
+    public List&lt;EventoResponse&gt; proximos(int dias) {
+<span class="nc" id="L110">        LocalDateTime ahora = LocalDateTime.now();</span>
+<span class="nc" id="L111">        return eventoRepository.findByEstadoInAndFechaHoraInicioBetweenOrderByFechaHoraInicioAsc(</span>
+<span class="nc" id="L112">                        ESTADOS_VIGENTES, ahora.minusHours(12), ahora.plusDays(dias))</span>
+<span class="nc" id="L113">                .stream().map(this::responder).toList();</span>
+    }
+
+    @Transactional
+    public EventoResponse crear(EventoRequest request) {
+<span class="fc" id="L118">        Evento evento = Evento.builder().creadoPor(UsuarioActual.username()).build();</span>
+<span class="nc" id="L119">        aplicar(evento, request);</span>
+<span class="nc" id="L120">        return responder(eventoRepository.save(evento));</span>
+    }
+
+    @Transactional
+    public EventoResponse actualizar(Long id, EventoRequest request) {
+<span class="nc" id="L125">        Evento evento = buscar(id);</span>
+<span class="nc" id="L126">        validarEditable(evento);</span>
+<span class="nc" id="L127">        aplicar(evento, request);</span>
+<span class="nc" id="L128">        return responder(eventoRepository.save(evento));</span>
+    }
+
+    @Transactional
+    public EventoResponse cambiarEstado(Long id, CambiarEstadoRequest request) {
+<span class="fc" id="L133">        Evento evento = buscar(id);</span>
+<span class="fc" id="L134">        EstadoEvento nuevo = request.estado();</span>
+<span class="fc bfc" id="L135" title="All 2 branches covered.">        if (!TRANSICIONES.get(evento.getEstado()).contains(nuevo)) {</span>
+<span class="fc" id="L136">            throw new EventoException(EventoErrorCode.TRANSICION_INVALIDA, evento.getEstado(), nuevo);</span>
+        }
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">        if (nuevo == EstadoEvento.CANCELADO) {</span>
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">            if (!StringUtils.hasText(request.motivo())) {</span>
+<span class="fc" id="L140">                throw new EventoException(EventoErrorCode.MOTIVO_REQUERIDO);</span>
+            }
+<span class="nc" id="L142">            evento.setMotivoCancelacion(request.motivo().trim());</span>
+        }
+<span class="nc" id="L144">        evento.setEstado(nuevo);</span>
+<span class="nc" id="L145">        return responder(eventoRepository.save(evento));</span>
+    }
+
+    @Transactional
+    public EventoResponse agregarParticipante(Long eventoId, ParticipanteRequest request) {
+<span class="fc" id="L150">        Evento evento = buscar(eventoId);</span>
+<span class="fc" id="L151">        validarEditable(evento);</span>
+<span class="fc bfc" id="L152" title="All 2 branches covered.">        if (evento.getParticipantes().size() &gt;= evento.getCapacidad()) {</span>
+<span class="fc" id="L153">            throw new EventoException(EventoErrorCode.CUPO_LLENO, evento.getCapacidad());</span>
+        }
+
+<span class="fc" id="L156">        EventoParticipante participante = EventoParticipante.builder()</span>
+<span class="fc" id="L157">                .evento(evento)</span>
+<span class="fc" id="L158">                .confirmado(Boolean.TRUE.equals(request.confirmado()))</span>
+<span class="fc" id="L159">                .fechaHoraRegistro(LocalDateTime.now())</span>
+<span class="fc" id="L160">                .build();</span>
+
+<span class="pc bpc" id="L162" title="1 of 2 branches missed.">        if (request.huespedId() != null) {</span>
+<span class="nc" id="L163">            Huesped huesped = huespedService.buscarActivo(request.huespedId());</span>
+<span class="nc" id="L164">            boolean yaInscrito = evento.getParticipantes().stream()</span>
+<span class="nc bnc" id="L165" title="All 4 branches missed.">                    .anyMatch(p -&gt; p.getHuesped() != null &amp;&amp; p.getHuesped().getId().equals(huesped.getId()));</span>
+<span class="nc bnc" id="L166" title="All 2 branches missed.">            if (yaInscrito) {</span>
+<span class="nc" id="L167">                throw new EventoException(EventoErrorCode.PARTICIPANTE_DUPLICADO, huesped.nombreCompleto());</span>
+            }
+<span class="nc" id="L169">            participante.setHuesped(huesped);</span>
+<span class="nc" id="L170">            participante.setNombre(huesped.nombreCompleto());</span>
+<span class="nc" id="L171">            participante.setDocumento(huesped.getNumeroDocumento());</span>
+<span class="nc" id="L172">            participante.setEmail(huesped.getEmail());</span>
+<span class="nc" id="L173">            participante.setTelefono(huesped.getTelefono());</span>
+<span class="nc" id="L174">        } else {</span>
+<span class="pc bpc" id="L175" title="1 of 2 branches missed.">            if (evento.getTipoAcceso() == TipoAcceso.SOLO_HUESPEDES) {</span>
+<span class="fc" id="L176">                throw new EventoException(EventoErrorCode.SOLO_HUESPEDES);</span>
+            }
+<span class="nc bnc" id="L178" title="All 2 branches missed.">            if (!StringUtils.hasText(request.nombre())) {</span>
+<span class="nc" id="L179">                throw new EventoException(EventoErrorCode.NOMBRE_PARTICIPANTE_REQUERIDO);</span>
+            }
+<span class="nc bnc" id="L181" title="All 2 branches missed.">            String documento = StringUtils.hasText(request.documento()) ? request.documento().trim() : null;</span>
+<span class="nc bnc" id="L182" title="All 4 branches missed.">            if (documento != null &amp;&amp; evento.getParticipantes().stream().anyMatch(p -&gt; documento.equalsIgnoreCase(p.getDocumento()))) {</span>
+<span class="nc" id="L183">                throw new EventoException(EventoErrorCode.PARTICIPANTE_DUPLICADO, documento);</span>
+            }
+<span class="nc" id="L185">            participante.setNombre(request.nombre().trim());</span>
+<span class="nc" id="L186">            participante.setDocumento(documento);</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">            participante.setEmail(StringUtils.hasText(request.email()) ? request.email().trim() : null);</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">            participante.setTelefono(StringUtils.hasText(request.telefono()) ? request.telefono().trim() : null);</span>
+        }
+<span class="nc" id="L190">        evento.getParticipantes().add(participante);</span>
+<span class="nc" id="L191">        return responder(eventoRepository.save(evento));</span>
+    }
+
+    /** Marca confirmación (antes del evento) y asistencia (durante o al final). */
+    @Transactional
+    public EventoResponse actualizarParticipante(Long eventoId, Long participanteId, Boolean confirmado, Boolean asistio) {
+<span class="nc" id="L197">        Evento evento = buscar(eventoId);</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">        if (evento.getEstado() == EstadoEvento.CANCELADO) {</span>
+<span class="nc" id="L199">            throw new EventoException(EventoErrorCode.EVENTO_CERRADO, &quot;cancelado&quot;);</span>
+        }
+<span class="nc" id="L201">        EventoParticipante participante = evento.getParticipantes().stream()</span>
+<span class="nc" id="L202">                .filter(p -&gt; p.getId().equals(participanteId))</span>
+<span class="nc" id="L203">                .findFirst()</span>
+<span class="nc" id="L204">                .orElseThrow(() -&gt; new EventoException(EventoErrorCode.PARTICIPANTE_NO_ENCONTRADO, participanteId));</span>
+<span class="nc bnc" id="L205" title="All 2 branches missed.">        if (confirmado != null) {</span>
+<span class="nc" id="L206">            participante.setConfirmado(confirmado);</span>
+        }
+<span class="nc bnc" id="L208" title="All 2 branches missed.">        if (asistio != null) {</span>
+<span class="nc" id="L209">            participante.setAsistio(asistio);</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">            if (asistio) {</span>
+<span class="nc" id="L211">                participante.setConfirmado(true);</span>
+            }
+        }
+<span class="nc" id="L214">        return responder(eventoRepository.save(evento));</span>
+    }
+
+    @Transactional
+    public EventoResponse eliminarParticipante(Long eventoId, Long participanteId) {
+<span class="nc" id="L219">        Evento evento = buscar(eventoId);</span>
+<span class="nc" id="L220">        validarEditable(evento);</span>
+<span class="nc" id="L221">        boolean eliminado = evento.getParticipantes().removeIf(p -&gt; p.getId().equals(participanteId));</span>
+<span class="nc bnc" id="L222" title="All 2 branches missed.">        if (!eliminado) {</span>
+<span class="nc" id="L223">            throw new EventoException(EventoErrorCode.PARTICIPANTE_NO_ENCONTRADO, participanteId);</span>
+        }
+<span class="nc" id="L225">        return responder(eventoRepository.save(evento));</span>
+    }
+
+    public ReporteEventos reporte(LocalDate desde, LocalDate hasta) {
+<span class="nc bnc" id="L229" title="All 2 branches missed.">        LocalDate fin = hasta != null ? hasta : LocalDate.now();</span>
+<span class="nc bnc" id="L230" title="All 2 branches missed.">        LocalDate inicio = desde != null ? desde : fin.withDayOfMonth(1);</span>
+<span class="nc" id="L231">        List&lt;Evento&gt; eventos = eventoRepository.enRango(inicio.atStartOfDay(), fin.plusDays(1).atStartOfDay());</span>
+
+<span class="nc" id="L233">        Map&lt;EstadoEvento, Long&gt; porEstado = new EnumMap&lt;&gt;(EstadoEvento.class);</span>
+<span class="nc bnc" id="L234" title="All 2 branches missed.">        for (EstadoEvento e : EstadoEvento.values()) {</span>
+<span class="nc" id="L235">            porEstado.put(e, 0L);</span>
+        }
+<span class="nc" id="L237">        Map&lt;String, long[]&gt; conteoSalon = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L238">        Map&lt;String, BigDecimal&gt; valorSalon = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L239">        long inscritos = 0;</span>
+<span class="nc" id="L240">        long asistentes = 0;</span>
+<span class="nc" id="L241">        BigDecimal valorTotal = BigDecimal.ZERO;</span>
+<span class="nc" id="L242">        BigDecimal facturado = BigDecimal.ZERO;</span>
+<span class="nc" id="L243">        BigDecimal recaudado = BigDecimal.ZERO;</span>
+
+<span class="nc bnc" id="L245" title="All 2 branches missed.">        for (Evento e : eventos) {</span>
+<span class="nc" id="L246">            porEstado.merge(e.getEstado(), 1L, Long::sum);</span>
+<span class="nc bnc" id="L247" title="All 2 branches missed.">            if (e.getEstado() == EstadoEvento.CANCELADO) {</span>
+<span class="nc" id="L248">                continue;</span>
+            }
+<span class="nc" id="L250">            inscritos += e.getParticipantes().size();</span>
+<span class="nc" id="L251">            asistentes += e.getParticipantes().stream().filter(EventoParticipante::isAsistio).count();</span>
+<span class="nc" id="L252">            valorTotal = valorTotal.add(e.valorTotal());</span>
+<span class="nc" id="L253">            String salon = e.getSalon().getNombre();</span>
+<span class="nc" id="L254">            long[] c = conteoSalon.computeIfAbsent(salon, k -&gt; new long[2]);</span>
+<span class="nc" id="L255">            c[0]++;</span>
+<span class="nc" id="L256">            c[1] += e.getParticipantes().size();</span>
+<span class="nc" id="L257">            valorSalon.merge(salon, e.valorTotal(), BigDecimal::add);</span>
+<span class="nc" id="L258">            Factura factura = facturaRepository.findFirstByEventoIdAndEstadoNot(e.getId(), EstadoFactura.ANULADA).orElse(null);</span>
+<span class="nc bnc" id="L259" title="All 2 branches missed.">            if (factura != null) {</span>
+<span class="nc" id="L260">                facturado = facturado.add(factura.getTotal());</span>
+<span class="nc" id="L261">                recaudado = recaudado.add(factura.getTotalPagado());</span>
+            }
+<span class="nc" id="L263">        }</span>
+
+<span class="nc" id="L265">        List&lt;ReporteSalon&gt; porSalon = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L266">        conteoSalon.forEach((salon, c) -&gt; porSalon.add(new ReporteSalon(salon, c[0], c[1], valorSalon.get(salon))));</span>
+<span class="nc" id="L267">        return new ReporteEventos(inicio, fin, eventos.size(), porEstado, inscritos, asistentes,</span>
+                valorTotal, facturado, recaudado, porSalon);
+    }
+
+    public Evento buscar(Long id) {
+<span class="fc" id="L272">        return eventoRepository.findById(id)</span>
+<span class="pc" id="L273">                .orElseThrow(() -&gt; new EventoException(EventoErrorCode.EVENTO_NO_ENCONTRADO, id));</span>
+    }
+
+    private void aplicar(Evento evento, EventoRequest request) {
+<span class="fc bfc" id="L277" title="All 2 branches covered.">        if (!request.fechaHoraFin().isAfter(request.fechaHoraInicio())) {</span>
+<span class="fc" id="L278">            throw new EventoException(EventoErrorCode.FECHAS_INVALIDAS);</span>
+        }
+<span class="fc" id="L280">        Salon salon = buscarSalon(request.salonId());</span>
+<span class="pc bpc" id="L281" title="1 of 2 branches missed.">        if (!salon.isActivo()) {</span>
+<span class="nc" id="L282">            throw new EventoException(EventoErrorCode.SALON_INACTIVO, salon.getNombre());</span>
+        }
+<span class="fc bfc" id="L284" title="All 2 branches covered.">        if (request.capacidad() &gt; salon.getCapacidad()) {</span>
+<span class="fc" id="L285">            throw new EventoException(EventoErrorCode.CAPACIDAD_SALON, request.capacidad(), salon.getNombre(), salon.getCapacidad());</span>
+        }
+<span class="pc bpc" id="L287" title="1 of 2 branches missed.">        if (request.capacidad() &lt; evento.getParticipantes().size()) {</span>
+<span class="nc" id="L288">            throw new EventoException(EventoErrorCode.CUPO_LLENO, evento.getParticipantes().size());</span>
+        }
+<span class="pc bpc" id="L290" title="1 of 2 branches missed.">        Long excluir = evento.getId() != null ? evento.getId() : -1L;</span>
+<span class="pc bpc" id="L291" title="1 of 2 branches missed.">        if (eventoRepository.existeCruce(salon.getId(), request.fechaHoraInicio(), request.fechaHoraFin(), excluir, ESTADOS_VIGENTES)) {</span>
+<span class="fc" id="L292">            throw new EventoException(EventoErrorCode.SALON_OCUPADO, salon.getNombre());</span>
+        }
+
+<span class="nc" id="L295">        evento.setNombre(request.nombre().trim());</span>
+<span class="nc" id="L296">        evento.setDescripcion(texto(request.descripcion()));</span>
+<span class="nc" id="L297">        evento.setTipo(request.tipo());</span>
+<span class="nc" id="L298">        evento.setTipoAcceso(request.tipoAcceso());</span>
+<span class="nc" id="L299">        evento.setFechaHoraInicio(request.fechaHoraInicio());</span>
+<span class="nc" id="L300">        evento.setFechaHoraFin(request.fechaHoraFin());</span>
+<span class="nc" id="L301">        evento.setSalon(salon);</span>
+<span class="nc bnc" id="L302" title="All 2 branches missed.">        evento.setResponsable(request.responsableId() != null ? personalService.buscarEntidad(request.responsableId()) : null);</span>
+<span class="nc" id="L303">        evento.setCapacidad(request.capacidad());</span>
+<span class="nc" id="L304">        evento.setOrganizadorNombre(request.organizadorNombre().trim());</span>
+<span class="nc" id="L305">        evento.setOrganizadorDocumento(texto(request.organizadorDocumento()));</span>
+<span class="nc" id="L306">        evento.setOrganizadorTelefono(texto(request.organizadorTelefono()));</span>
+<span class="nc" id="L307">        evento.setOrganizadorEmail(texto(request.organizadorEmail()));</span>
+<span class="nc" id="L308">        evento.setValorBase(request.valorBase());</span>
+<span class="nc" id="L309">        evento.setNotas(texto(request.notas()));</span>
+
+<span class="nc" id="L311">        evento.getRecursos().clear();</span>
+<span class="nc bnc" id="L312" title="All 2 branches missed.">        if (request.recursos() != null) {</span>
+<span class="nc bnc" id="L313" title="All 2 branches missed.">            for (RecursoRequest r : request.recursos()) {</span>
+<span class="nc" id="L314">                evento.getRecursos().add(EventoRecurso.builder()</span>
+<span class="nc" id="L315">                        .evento(evento)</span>
+<span class="nc" id="L316">                        .tipo(r.tipo())</span>
+<span class="nc" id="L317">                        .descripcion(r.descripcion().trim())</span>
+<span class="nc" id="L318">                        .cantidad(r.cantidad())</span>
+<span class="nc" id="L319">                        .valorUnitario(r.valorUnitario())</span>
+<span class="nc" id="L320">                        .total(r.valorUnitario().multiply(BigDecimal.valueOf(r.cantidad())))</span>
+<span class="nc" id="L321">                        .build());</span>
+<span class="nc" id="L322">            }</span>
+        }
+<span class="nc" id="L324">    }</span>
+
+    private void validarEditable(Evento evento) {
+<span class="pc bpc" id="L327" title="2 of 4 branches missed.">        if (evento.getEstado() == EstadoEvento.FINALIZADO || evento.getEstado() == EstadoEvento.CANCELADO) {</span>
+<span class="nc" id="L328">            throw new EventoException(EventoErrorCode.EVENTO_CERRADO, evento.getEstado().name().toLowerCase());</span>
+        }
+<span class="fc" id="L330">    }</span>
+
+    private EventoResponse responder(Evento evento) {
+<span class="nc bnc" id="L333" title="All 2 branches missed.">        Factura factura = evento.getId() == null ? null</span>
+<span class="nc" id="L334">                : facturaRepository.findFirstByEventoIdAndEstadoNot(evento.getId(), EstadoFactura.ANULADA).orElse(null);</span>
+<span class="nc" id="L335">        return EventoResponse.from(evento, factura);</span>
+    }
+
+    private Salon buscarSalon(Long id) {
+<span class="fc" id="L339">        return salonRepository.findById(id)</span>
+<span class="pc" id="L340">                .orElseThrow(() -&gt; new EventoException(EventoErrorCode.SALON_NO_ENCONTRADO, id));</span>
+    }
+
+    private static String texto(String valor) {
+<span class="nc bnc" id="L344" title="All 2 branches missed.">        return StringUtils.hasText(valor) ? valor.trim() : null;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

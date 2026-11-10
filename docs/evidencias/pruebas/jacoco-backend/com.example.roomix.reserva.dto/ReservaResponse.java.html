@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReservaResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.reserva.dto</a> &gt; <span class="el_source">ReservaResponse.java</span></div><h1>ReservaResponse.java</h1><pre class="source lang-java linenums">package com.example.roomix.reserva.dto;
+
+import com.example.roomix.habitacion.domain.EstadoReserva;
+import com.example.roomix.habitacion.domain.TipoHabitacion;
+import com.example.roomix.huesped.dto.HuespedResumenResponse;
+import com.example.roomix.reserva.domain.CanalReserva;
+import com.example.roomix.reserva.domain.Reserva;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+@Schema(name = &quot;ReservaResponse&quot;)
+@Builder
+<span class="fc" id="L17">public record ReservaResponse(</span>
+        Long id,
+        Long habitacionId,
+        String habitacionNumero,
+        TipoHabitacion tipoHabitacion,
+        HuespedResumenResponse huesped,
+        LocalDate fechaEntrada,
+        LocalDate fechaSalida,
+        Integer cantidadNoches,
+        EstadoReserva estadoReserva,
+        BigDecimal tarifaNoche,
+        BigDecimal totalEstimado,
+        LocalDateTime horaRealCheckIn,
+        LocalDateTime horaRealCheckOut,
+        CanalReserva canal,
+        String canalNombre,
+        String observaciones,
+        String motivoCancelacion,
+        LocalDateTime fechaHoraCancelacion,
+        String registradaPor,
+        LocalDateTime fechaHoraCreacion,
+        LocalDateTime fechaHoraUltimaActualizacion,
+        @Schema(description = &quot;Noches × tarifa, antes del descuento&quot;) BigDecimal subtotal,
+        BigDecimal descuento,
+        Long promocionId,
+        String promocionNombre,
+        @Schema(description = &quot;Parte del abono retenida como penalidad al cancelar&quot;) BigDecimal valorPenalidad,
+        @Schema(description = &quot;Parte del abono devuelta al huésped al cancelar&quot;) BigDecimal valorDevuelto
+) {
+    public static ReservaResponse from(Reserva reserva) {
+<span class="fc" id="L47">        return ReservaResponse.builder()</span>
+<span class="fc" id="L48">                .id(reserva.getId())</span>
+<span class="fc" id="L49">                .habitacionId(reserva.getHabitacion().getId())</span>
+<span class="fc" id="L50">                .habitacionNumero(reserva.getHabitacion().getNumero())</span>
+<span class="fc" id="L51">                .tipoHabitacion(reserva.getHabitacion().getTipoHabitacion())</span>
+<span class="fc" id="L52">                .huesped(HuespedResumenResponse.from(reserva.getHuesped()))</span>
+<span class="fc" id="L53">                .fechaEntrada(reserva.getFechaEntrada())</span>
+<span class="fc" id="L54">                .fechaSalida(reserva.getFechaSalida())</span>
+<span class="fc" id="L55">                .cantidadNoches(reserva.getCantidadNoches())</span>
+<span class="fc" id="L56">                .estadoReserva(reserva.getEstadoReserva())</span>
+<span class="fc" id="L57">                .tarifaNoche(reserva.getTarifaNoche())</span>
+<span class="fc" id="L58">                .totalEstimado(reserva.getTotalEstimado())</span>
+<span class="fc" id="L59">                .horaRealCheckIn(reserva.getHoraRealCheckIn())</span>
+<span class="fc" id="L60">                .horaRealCheckOut(reserva.getHoraRealCheckOut())</span>
+<span class="fc" id="L61">                .canal(reserva.getCanal())</span>
+<span class="pc bpc" id="L62" title="1 of 2 branches missed.">                .canalNombre(reserva.getCanal() != null ? reserva.getCanal().getNombre() : null)</span>
+<span class="fc" id="L63">                .observaciones(reserva.getObservaciones())</span>
+<span class="fc" id="L64">                .motivoCancelacion(reserva.getMotivoCancelacion())</span>
+<span class="fc" id="L65">                .fechaHoraCancelacion(reserva.getFechaHoraCancelacion())</span>
+<span class="fc" id="L66">                .registradaPor(reserva.getRegistradaPor())</span>
+<span class="fc" id="L67">                .subtotal(reserva.getTarifaNoche().multiply(BigDecimal.valueOf(reserva.getCantidadNoches())))</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">                .descuento(reserva.getDescuento() != null ? reserva.getDescuento() : BigDecimal.ZERO)</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">                .promocionId(reserva.getPromocion() != null ? reserva.getPromocion().getId() : null)</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">                .promocionNombre(reserva.getPromocion() != null ? reserva.getPromocion().getNombre() : null)</span>
+<span class="fc" id="L71">                .valorPenalidad(reserva.getValorPenalidad())</span>
+<span class="fc" id="L72">                .valorDevuelto(reserva.getValorDevuelto())</span>
+<span class="fc" id="L73">                .fechaHoraCreacion(reserva.getFechaHoraCreacion())</span>
+<span class="fc" id="L74">                .fechaHoraUltimaActualizacion(reserva.getFechaHoraUltimaActualizacion())</span>
+<span class="fc" id="L75">                .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

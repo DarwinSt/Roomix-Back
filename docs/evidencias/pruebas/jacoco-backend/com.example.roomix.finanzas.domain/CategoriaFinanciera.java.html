@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CategoriaFinanciera.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.finanzas.domain</a> &gt; <span class="el_source">CategoriaFinanciera.java</span></div><h1>CategoriaFinanciera.java</h1><pre class="source lang-java linenums">package com.example.roomix.finanzas.domain;
+
+/**
+ * Categorías contables simplificadas para ingresos y egresos del hotel.
+ */
+<span class="fc" id="L6">public enum CategoriaFinanciera {</span>
+    // Ingresos
+<span class="fc" id="L8">    ALOJAMIENTO(TipoMovimiento.INGRESO, &quot;Alojamiento&quot;),</span>
+<span class="fc" id="L9">    SERVICIOS(TipoMovimiento.INGRESO, &quot;Servicios adicionales&quot;),</span>
+<span class="fc" id="L10">    EVENTOS(TipoMovimiento.INGRESO, &quot;Eventos&quot;),</span>
+<span class="fc" id="L11">    OTROS_INGRESOS(TipoMovimiento.INGRESO, &quot;Otros ingresos&quot;),</span>
+    // Egresos
+<span class="fc" id="L13">    COMPRAS_INVENTARIO(TipoMovimiento.EGRESO, &quot;Compras de inventario&quot;),</span>
+<span class="fc" id="L14">    NOMINA(TipoMovimiento.EGRESO, &quot;Nómina&quot;),</span>
+<span class="fc" id="L15">    SERVICIOS_PUBLICOS(TipoMovimiento.EGRESO, &quot;Servicios públicos&quot;),</span>
+<span class="fc" id="L16">    MANTENIMIENTO(TipoMovimiento.EGRESO, &quot;Mantenimiento&quot;),</span>
+<span class="fc" id="L17">    PROVEEDORES(TipoMovimiento.EGRESO, &quot;Proveedores&quot;),</span>
+<span class="fc" id="L18">    ARRIENDO(TipoMovimiento.EGRESO, &quot;Arriendo&quot;),</span>
+<span class="fc" id="L19">    IMPUESTOS(TipoMovimiento.EGRESO, &quot;Impuestos&quot;),</span>
+<span class="fc" id="L20">    MARKETING(TipoMovimiento.EGRESO, &quot;Publicidad y comisiones&quot;),</span>
+<span class="fc" id="L21">    OTROS_EGRESOS(TipoMovimiento.EGRESO, &quot;Otros egresos&quot;);</span>
+
+    private final TipoMovimiento tipo;
+    private final String nombre;
+
+<span class="fc" id="L26">    CategoriaFinanciera(TipoMovimiento tipo, String nombre) {</span>
+<span class="fc" id="L27">        this.tipo = tipo;</span>
+<span class="fc" id="L28">        this.nombre = nombre;</span>
+<span class="fc" id="L29">    }</span>
+
+    public TipoMovimiento getTipo() {
+<span class="fc" id="L32">        return tipo;</span>
+    }
+
+    public String getNombre() {
+<span class="fc" id="L36">        return nombre;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

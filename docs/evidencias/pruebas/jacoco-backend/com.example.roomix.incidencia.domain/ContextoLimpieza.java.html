@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ContextoLimpieza.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.incidencia.domain</a> &gt; <span class="el_source">ContextoLimpieza.java</span></div><h1>ContextoLimpieza.java</h1><pre class="source lang-java linenums">package com.example.roomix.incidencia.domain;
+
+/**
+ * Subtipo de limpieza. Solo aplica cuando {@link TipoIncidencia} es LIMPIEZA.
+ * &lt;ul&gt;
+ *   &lt;li&gt;POST_CHECKOUT — automática tras check-out; bloquea reservas hasta finalizar.&lt;/li&gt;
+ *   &lt;li&gt;URGENCIA — huésped presente; situación urgente (daño, derrame, etc.).&lt;/li&gt;
+ *   &lt;li&gt;HUESPED_AUSENTE — huésped salió temporalmente; reserva sigue activa.&lt;/li&gt;
+ * &lt;/ul&gt;
+ */
+<span class="fc" id="L11">public enum ContextoLimpieza {</span>
+<span class="fc" id="L12">    POST_CHECKOUT,</span>
+<span class="fc" id="L13">    URGENCIA,</span>
+<span class="fc" id="L14">    HUESPED_AUSENTE</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InventarioService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.inventario.service</a> &gt; <span class="el_source">InventarioService.java</span></div><h1>InventarioService.java</h1><pre class="source lang-java linenums">package com.example.roomix.inventario.service;
+
+import com.example.roomix.auth.service.UsuarioActual;
+import com.example.roomix.common.dto.PaginaResponse;
+import com.example.roomix.finanzas.domain.CategoriaFinanciera;
+import com.example.roomix.finanzas.service.FinanzasService;
+import com.example.roomix.inventario.domain.MovimientoInventario;
+import com.example.roomix.inventario.domain.TipoMovimientoStock;
+import com.example.roomix.inventario.dto.MovimientoInventarioResponse;
+import com.example.roomix.inventario.dto.ResumenInventarioResponse;
+import com.example.roomix.inventario.repository.MovimientoInventarioRepository;
+import org.springframework.data.domain.PageRequest;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Map;
+import com.example.roomix.inventario.domain.ArticuloInventario;
+import com.example.roomix.inventario.domain.CategoriaInventario;
+import com.example.roomix.inventario.dto.AjustarStockRequest;
+import com.example.roomix.inventario.dto.ArticuloInventarioRequest;
+import com.example.roomix.inventario.dto.ArticuloInventarioResponse;
+import com.example.roomix.inventario.exception.InventarioErrorCode;
+import com.example.roomix.inventario.exception.InventarioException;
+import com.example.roomix.inventario.repository.ArticuloInventarioRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class InventarioService {
+
+    private final ArticuloInventarioRepository articuloInventarioRepository;
+    private final CategoriaInventarioService categoriaInventarioService;
+    private final MovimientoInventarioRepository movimientoRepository;
+    private final FinanzasService finanzasService;
+
+    public List&lt;ArticuloInventarioResponse&gt; listar(
+            Long categoriaId,
+            Boolean activo,
+            Boolean stockBajo
+    ) {
+<span class="fc" id="L47">        List&lt;ArticuloInventario&gt; articulos = resolverListado(categoriaId, activo, stockBajo);</span>
+<span class="fc" id="L48">        return articulos.stream().map(ArticuloInventarioResponse::from).toList();</span>
+    }
+
+    public ArticuloInventarioResponse obtenerPorId(Long id) {
+<span class="nc" id="L52">        return ArticuloInventarioResponse.from(buscarConCategoria(id));</span>
+    }
+
+    @Transactional
+    public ArticuloInventarioResponse crear(ArticuloInventarioRequest request) {
+<span class="nc" id="L57">        validarNombreUnico(request.nombre(), null);</span>
+<span class="nc" id="L58">        validarCantidadMinima(request.cantidad(), request.cantidadMinima());</span>
+<span class="nc" id="L59">        CategoriaInventario categoria = categoriaInventarioService.buscarActiva(request.categoriaId());</span>
+
+<span class="nc" id="L61">        ArticuloInventario articulo = ArticuloInventario.builder()</span>
+<span class="nc" id="L62">                .nombre(normalizarNombre(request.nombre()))</span>
+<span class="nc" id="L63">                .descripcion(request.descripcion().trim())</span>
+<span class="nc" id="L64">                .categoria(categoria)</span>
+<span class="nc" id="L65">                .cantidad(request.cantidad())</span>
+<span class="nc" id="L66">                .cantidadMinima(request.cantidadMinima())</span>
+<span class="nc" id="L67">                .unidadMedida(request.unidadMedida())</span>
+<span class="nc" id="L68">                .ubicacion(normalizarUbicacion(request.ubicacion()))</span>
+<span class="nc" id="L69">                .proveedor(normalizarUbicacion(request.proveedor()))</span>
+<span class="nc" id="L70">                .precioUnitario(request.precioUnitario())</span>
+<span class="nc bnc" id="L71" title="All 4 branches missed.">                .activo(request.activo() == null || request.activo())</span>
+<span class="nc" id="L72">                .build();</span>
+
+<span class="nc" id="L74">        ArticuloInventario guardado = articuloInventarioRepository.save(articulo);</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        if (guardado.getCantidad() &gt; 0) {</span>
+<span class="nc" id="L76">            registrarMovimiento(guardado, TipoMovimientoStock.ENTRADA, guardado.getCantidad(), 0,</span>
+<span class="nc" id="L77">                    guardado.getCantidad(), guardado.getPrecioUnitario(), &quot;Stock inicial&quot;, guardado.getProveedor());</span>
+        }
+<span class="nc" id="L79">        return ArticuloInventarioResponse.from(guardado);</span>
+    }
+
+    @Transactional
+    public ArticuloInventarioResponse actualizar(Long id, ArticuloInventarioRequest request) {
+<span class="nc" id="L84">        ArticuloInventario articulo = buscarConCategoria(id);</span>
+<span class="nc" id="L85">        validarNombreUnico(request.nombre(), id);</span>
+<span class="nc" id="L86">        validarCantidadMinima(request.cantidad(), request.cantidadMinima());</span>
+<span class="nc" id="L87">        CategoriaInventario categoria = categoriaInventarioService.buscarActiva(request.categoriaId());</span>
+
+<span class="nc" id="L89">        articulo.setNombre(normalizarNombre(request.nombre()));</span>
+<span class="nc" id="L90">        articulo.setDescripcion(request.descripcion().trim());</span>
+<span class="nc" id="L91">        articulo.setCategoria(categoria);</span>
+<span class="nc" id="L92">        int stockAnterior = articulo.getCantidad();</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">        if (stockAnterior != request.cantidad()) {</span>
+<span class="nc" id="L94">            registrarMovimiento(articulo, TipoMovimientoStock.AJUSTE, request.cantidad() - stockAnterior,</span>
+<span class="nc" id="L95">                    stockAnterior, request.cantidad(), null, &quot;Ajuste desde la edición del artículo&quot;, null);</span>
+        }
+<span class="nc" id="L97">        articulo.setCantidad(request.cantidad());</span>
+<span class="nc" id="L98">        articulo.setCantidadMinima(request.cantidadMinima());</span>
+<span class="nc" id="L99">        articulo.setUnidadMedida(request.unidadMedida());</span>
+<span class="nc" id="L100">        articulo.setUbicacion(normalizarUbicacion(request.ubicacion()));</span>
+<span class="nc" id="L101">        articulo.setProveedor(normalizarUbicacion(request.proveedor()));</span>
+<span class="nc" id="L102">        articulo.setPrecioUnitario(request.precioUnitario());</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">        if (request.activo() != null) {</span>
+<span class="nc" id="L104">            articulo.setActivo(request.activo());</span>
+        }
+
+<span class="nc" id="L107">        return ArticuloInventarioResponse.from(articuloInventarioRepository.save(articulo));</span>
+    }
+
+    @Transactional
+    public ArticuloInventarioResponse ajustarStock(Long id, AjustarStockRequest request) {
+<span class="nc" id="L112">        ArticuloInventario articulo = buscarActivo(id);</span>
+<span class="nc" id="L113">        int anterior = articulo.getCantidad();</span>
+<span class="nc" id="L114">        int cantidad = request.cantidad();</span>
+<span class="nc bnc" id="L115" title="All 4 branches missed.">        String motivo = request.motivo() != null &amp;&amp; !request.motivo().isBlank() ? request.motivo().trim() : null;</span>
+<span class="nc" id="L116">        String proveedor = normalizarUbicacion(request.proveedor());</span>
+
+        int nuevo;
+        int movido;
+<span class="nc bnc" id="L120" title="All 3 branches missed.">        switch (request.tipo()) {</span>
+            case ENTRADA -&gt; {
+<span class="nc" id="L122">                validarCantidadPositiva(cantidad);</span>
+<span class="nc" id="L123">                nuevo = anterior + cantidad;</span>
+<span class="nc" id="L124">                movido = cantidad;</span>
+<span class="nc" id="L125">            }</span>
+            case SALIDA -&gt; {
+<span class="nc" id="L127">                validarCantidadPositiva(cantidad);</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">                if (anterior &lt; cantidad) {</span>
+<span class="nc" id="L129">                    throw new InventarioException(</span>
+<span class="nc" id="L130">                            InventarioErrorCode.STOCK_INSUFICIENTE, articulo.getNombre(), anterior, cantidad);</span>
+                }
+<span class="nc" id="L132">                nuevo = anterior - cantidad;</span>
+<span class="nc" id="L133">                movido = cantidad;</span>
+<span class="nc" id="L134">            }</span>
+            default -&gt; {
+                // AJUSTE: la cantidad es el conteo físico real
+<span class="nc" id="L137">                nuevo = cantidad;</span>
+<span class="nc" id="L138">                movido = cantidad - anterior;</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">                if (motivo == null) {</span>
+<span class="nc" id="L140">                    motivo = &quot;Ajuste por conteo físico&quot;;</span>
+                }
+            }
+        }
+
+<span class="nc bnc" id="L145" title="All 4 branches missed.">        if (request.tipo() == TipoMovimientoStock.ENTRADA &amp;&amp; request.costoUnitario() != null) {</span>
+<span class="nc" id="L146">            articulo.setPrecioUnitario(request.costoUnitario());</span>
+        }
+<span class="nc bnc" id="L148" title="All 4 branches missed.">        if (request.tipo() == TipoMovimientoStock.ENTRADA &amp;&amp; proveedor != null) {</span>
+<span class="nc" id="L149">            articulo.setProveedor(proveedor);</span>
+        }
+<span class="nc" id="L151">        articulo.setCantidad(nuevo);</span>
+<span class="nc" id="L152">        ArticuloInventario guardado = articuloInventarioRepository.save(articulo);</span>
+<span class="nc" id="L153">        registrarMovimiento(guardado, request.tipo(), movido, anterior, nuevo,</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">                request.tipo() == TipoMovimientoStock.ENTRADA ? request.costoUnitario() : guardado.getPrecioUnitario(),</span>
+                motivo, proveedor);
+
+<span class="nc bnc" id="L157" title="All 2 branches missed.">        if (request.tipo() == TipoMovimientoStock.ENTRADA</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">                &amp;&amp; Boolean.TRUE.equals(request.registrarCompra())</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">                &amp;&amp; request.costoUnitario() != null</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">                &amp;&amp; request.costoUnitario().signum() &gt; 0) {</span>
+<span class="nc" id="L161">            finanzasService.registrarAutomatico(</span>
+                    CategoriaFinanciera.COMPRAS_INVENTARIO,
+<span class="nc" id="L163">                    &quot;Compra: &quot; + cantidad + &quot; &quot; + guardado.getUnidadMedida().name().toLowerCase() + &quot; de &quot; + guardado.getNombre(),</span>
+<span class="nc" id="L164">                    request.costoUnitario().multiply(BigDecimal.valueOf(cantidad)),</span>
+                    null,
+<span class="nc bnc" id="L166" title="All 2 branches missed.">                    proveedor != null ? proveedor : guardado.getProveedor(),</span>
+<span class="nc" id="L167">                    &quot;INV-&quot; + guardado.getId(),</span>
+                    null,
+                    null
+            );
+        }
+<span class="nc" id="L172">        return ArticuloInventarioResponse.from(guardado);</span>
+    }
+
+    public List&lt;MovimientoInventarioResponse&gt; movimientosDeArticulo(Long articuloId) {
+<span class="nc" id="L176">        buscarConCategoria(articuloId);</span>
+<span class="nc" id="L177">        return movimientoRepository.deArticulo(articuloId).stream().map(MovimientoInventarioResponse::from).toList();</span>
+    }
+
+    public PaginaResponse&lt;MovimientoInventarioResponse&gt; movimientos(
+            LocalDate desde, LocalDate hasta, TipoMovimientoStock tipo, int pagina, int tamano) {
+<span class="nc bnc" id="L182" title="All 2 branches missed.">        LocalDate fin = hasta != null ? hasta : LocalDate.now();</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">        LocalDate inicio = desde != null ? desde : fin.minusDays(30);</span>
+<span class="nc" id="L184">        return PaginaResponse.de(</span>
+<span class="nc" id="L185">                movimientoRepository.enRango(inicio.atStartOfDay(), fin.plusDays(1).atStartOfDay(), tipo,</span>
+<span class="nc" id="L186">                        PageRequest.of(Math.max(pagina, 0), Math.min(Math.max(tamano, 1), 200))),</span>
+                MovimientoInventarioResponse::from);
+    }
+
+    /** Valorización del stock, productos críticos y artículos más usados (últimos N días). */
+    public ResumenInventarioResponse resumen(int dias) {
+<span class="nc" id="L192">        List&lt;ArticuloInventario&gt; activos = articuloInventarioRepository.findByActivo(true);</span>
+<span class="nc" id="L193">        BigDecimal valorTotal = BigDecimal.ZERO;</span>
+<span class="nc" id="L194">        Map&lt;String, Object[]&gt; porCategoria = new java.util.TreeMap&lt;&gt;();</span>
+<span class="nc" id="L195">        List&lt;ArticuloInventarioResponse&gt; criticos = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L196">        int sinPrecio = 0;</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">        for (ArticuloInventario a : activos) {</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">            BigDecimal valor = a.getPrecioUnitario() != null</span>
+<span class="nc" id="L199">                    ? a.getPrecioUnitario().multiply(BigDecimal.valueOf(a.getCantidad()))</span>
+<span class="nc" id="L200">                    : BigDecimal.ZERO;</span>
+<span class="nc bnc" id="L201" title="All 2 branches missed.">            if (a.getPrecioUnitario() == null) {</span>
+<span class="nc" id="L202">                sinPrecio++;</span>
+            }
+<span class="nc" id="L204">            valorTotal = valorTotal.add(valor);</span>
+<span class="nc" id="L205">            Object[] acc = porCategoria.computeIfAbsent(a.getCategoria().getNombre(),</span>
+<span class="nc" id="L206">                    k -&gt; new Object[]{0L, 0L, BigDecimal.ZERO});</span>
+<span class="nc" id="L207">            acc[0] = (Long) acc[0] + 1;</span>
+<span class="nc" id="L208">            acc[1] = (Long) acc[1] + a.getCantidad();</span>
+<span class="nc" id="L209">            acc[2] = ((BigDecimal) acc[2]).add(valor);</span>
+<span class="nc bnc" id="L210" title="All 4 branches missed.">            if (a.getCantidadMinima() != null &amp;&amp; a.getCantidad() &lt;= a.getCantidadMinima()) {</span>
+<span class="nc" id="L211">                criticos.add(ArticuloInventarioResponse.from(a));</span>
+            }
+<span class="nc" id="L213">        }</span>
+<span class="nc" id="L214">        List&lt;ResumenInventarioResponse.ValorCategoria&gt; categorias = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L215">        porCategoria.forEach((nombre, acc) -&gt; categorias.add(</span>
+<span class="nc" id="L216">                new ResumenInventarioResponse.ValorCategoria(nombre, (Long) acc[0], (Long) acc[1], (BigDecimal) acc[2])));</span>
+
+<span class="nc" id="L218">        LocalDateTime hasta = LocalDate.now().plusDays(1).atStartOfDay();</span>
+<span class="nc" id="L219">        LocalDateTime desde = hasta.minusDays(Math.max(dias, 1));</span>
+<span class="nc" id="L220">        List&lt;ResumenInventarioResponse.ArticuloConsumo&gt; masUsados = movimientoRepository.masUsados(desde, hasta).stream()</span>
+<span class="nc" id="L221">                .limit(10)</span>
+<span class="nc" id="L222">                .map(f -&gt; {</span>
+<span class="nc" id="L223">                    long unidades = ((Number) f[3]).longValue();</span>
+<span class="nc" id="L224">                    BigDecimal precio = (BigDecimal) f[4];</span>
+<span class="nc" id="L225">                    return new ResumenInventarioResponse.ArticuloConsumo(</span>
+<span class="nc" id="L226">                            (Long) f[0], (String) f[1], f[2].toString(), unidades,</span>
+<span class="nc bnc" id="L227" title="All 2 branches missed.">                            precio != null ? precio.multiply(BigDecimal.valueOf(unidades)) : null);</span>
+                })
+<span class="nc" id="L229">                .toList();</span>
+
+<span class="nc" id="L231">        criticos.sort(java.util.Comparator.comparing(ArticuloInventarioResponse::nombre));</span>
+<span class="nc" id="L232">        return new ResumenInventarioResponse(activos.size(), valorTotal, sinPrecio, criticos.size(), criticos,</span>
+                categorias, dias, masUsados);
+    }
+
+    private void registrarMovimiento(ArticuloInventario articulo, TipoMovimientoStock tipo, int cantidad,
+                                     int anterior, int resultante, BigDecimal costo, String motivo, String proveedor) {
+<span class="nc" id="L238">        movimientoRepository.save(MovimientoInventario.builder()</span>
+<span class="nc" id="L239">                .articulo(articulo)</span>
+<span class="nc" id="L240">                .tipo(tipo)</span>
+<span class="nc" id="L241">                .cantidad(cantidad)</span>
+<span class="nc" id="L242">                .stockAnterior(anterior)</span>
+<span class="nc" id="L243">                .stockResultante(resultante)</span>
+<span class="nc" id="L244">                .costoUnitario(costo)</span>
+<span class="nc" id="L245">                .motivo(motivo)</span>
+<span class="nc" id="L246">                .proveedor(proveedor)</span>
+<span class="nc" id="L247">                .registradoPor(UsuarioActual.username())</span>
+<span class="nc" id="L248">                .fechaHora(LocalDateTime.now())</span>
+<span class="nc" id="L249">                .build());</span>
+<span class="nc" id="L250">    }</span>
+
+    private void validarCantidadPositiva(int cantidad) {
+<span class="nc bnc" id="L253" title="All 2 branches missed.">        if (cantidad &lt; 1) {</span>
+<span class="nc" id="L254">            throw new InventarioException(InventarioErrorCode.CANTIDAD_MOVIMIENTO_INVALIDA);</span>
+        }
+<span class="nc" id="L256">    }</span>
+
+    @Transactional
+    public void eliminar(Long id) {
+<span class="nc" id="L260">        ArticuloInventario articulo = buscarConCategoria(id);</span>
+<span class="nc" id="L261">        articulo.setActivo(false);</span>
+<span class="nc" id="L262">        articuloInventarioRepository.save(articulo);</span>
+<span class="nc" id="L263">    }</span>
+
+    private List&lt;ArticuloInventario&gt; resolverListado(Long categoriaId, Boolean activo, Boolean stockBajo) {
+<span class="pc bpc" id="L266" title="1 of 2 branches missed.">        if (Boolean.TRUE.equals(stockBajo)) {</span>
+<span class="nc" id="L267">            return filtrarPorActivo(articuloInventarioRepository.findConStockBajo(), activo);</span>
+        }
+<span class="pc bpc" id="L269" title="1 of 2 branches missed.">        if (categoriaId != null) {</span>
+<span class="nc" id="L270">            return filtrarPorActivo(articuloInventarioRepository.findByCategoriaId(categoriaId), activo);</span>
+        }
+<span class="pc bpc" id="L272" title="1 of 2 branches missed.">        if (activo != null) {</span>
+<span class="nc" id="L273">            return articuloInventarioRepository.findByActivo(activo);</span>
+        }
+<span class="fc" id="L275">        return articuloInventarioRepository.findAllWithCategoria();</span>
+    }
+
+    private List&lt;ArticuloInventario&gt; filtrarPorActivo(List&lt;ArticuloInventario&gt; articulos, Boolean activo) {
+<span class="nc bnc" id="L279" title="All 2 branches missed.">        if (activo == null) {</span>
+<span class="nc" id="L280">            return articulos;</span>
+        }
+<span class="nc bnc" id="L282" title="All 2 branches missed.">        return articulos.stream().filter(a -&gt; a.isActivo() == activo).toList();</span>
+    }
+
+    private ArticuloInventario buscarActivo(Long id) {
+<span class="nc" id="L286">        ArticuloInventario articulo = buscarConCategoria(id);</span>
+<span class="nc bnc" id="L287" title="All 2 branches missed.">        if (!articulo.isActivo()) {</span>
+<span class="nc" id="L288">            throw new InventarioException(InventarioErrorCode.ARTICULO_INACTIVO, articulo.getNombre());</span>
+        }
+<span class="nc" id="L290">        return articulo;</span>
+    }
+
+    private ArticuloInventario buscarConCategoria(Long id) {
+<span class="nc" id="L294">        return articuloInventarioRepository.findByIdWithCategoria(id)</span>
+<span class="nc" id="L295">                .orElseThrow(() -&gt; new InventarioException(InventarioErrorCode.ARTICULO_NO_ENCONTRADO, id));</span>
+    }
+
+    private void validarNombreUnico(String nombre, Long idExcluido) {
+<span class="nc" id="L299">        String nombreNormalizado = normalizarNombre(nombre);</span>
+<span class="nc bnc" id="L300" title="All 2 branches missed.">        if (idExcluido == null) {</span>
+<span class="nc" id="L301">            articuloInventarioRepository.findByNombreIgnoreCase(nombreNormalizado)</span>
+<span class="nc" id="L302">                    .ifPresent(a -&gt; {</span>
+<span class="nc" id="L303">                        throw new InventarioException(InventarioErrorCode.NOMBRE_DUPLICADO, nombreNormalizado);</span>
+                    });
+<span class="nc" id="L305">            return;</span>
+        }
+<span class="nc bnc" id="L307" title="All 2 branches missed.">        if (articuloInventarioRepository.existsByNombreIgnoreCaseAndIdNot(nombreNormalizado, idExcluido)) {</span>
+<span class="nc" id="L308">            throw new InventarioException(InventarioErrorCode.NOMBRE_DUPLICADO, nombreNormalizado);</span>
+        }
+<span class="nc" id="L310">    }</span>
+
+    private void validarCantidadMinima(Integer cantidad, Integer cantidadMinima) {
+<span class="nc bnc" id="L313" title="All 4 branches missed.">        if (cantidadMinima != null &amp;&amp; cantidadMinima &gt; cantidad) {</span>
+<span class="nc" id="L314">            throw new InventarioException(InventarioErrorCode.CANTIDAD_MINIMA_INVALIDA, cantidad);</span>
+        }
+<span class="nc" id="L316">    }</span>
+
+    private String normalizarNombre(String nombre) {
+<span class="nc" id="L319">        return nombre.trim();</span>
+    }
+
+    private String normalizarUbicacion(String ubicacion) {
+<span class="nc bnc" id="L323" title="All 4 branches missed.">        if (ubicacion == null || ubicacion.isBlank()) {</span>
+<span class="nc" id="L324">            return null;</span>
+        }
+<span class="nc" id="L326">        return ubicacion.trim();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

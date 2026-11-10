@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HabitacionService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.habitacion.service</a> &gt; <span class="el_source">HabitacionService.java</span></div><h1>HabitacionService.java</h1><pre class="source lang-java linenums">package com.example.roomix.habitacion.service;
+
+import com.example.roomix.habitacion.domain.EstadoHabitacion;
+import com.example.roomix.habitacion.domain.EstadoReserva;
+import com.example.roomix.habitacion.domain.Habitacion;
+import com.example.roomix.habitacion.domain.TipoHabitacion;
+import com.example.roomix.habitacion.domain.HabitacionEstadoTransicion;
+import com.example.roomix.habitacion.domain.MotivoInhabilitacion;
+import com.example.roomix.habitacion.dto.ActualizarEstadoRequest;
+import com.example.roomix.habitacion.dto.HabitacionRequest;
+import com.example.roomix.habitacion.dto.HabitacionResponse;
+import com.example.roomix.habitacion.exception.HabitacionNoDisponibleException;
+import com.example.roomix.habitacion.exception.HabitacionNotFoundException;
+import com.example.roomix.habitacion.exception.NumeroHabitacionDuplicadoException;
+import com.example.roomix.habitacion.exception.ReservaInvalidaException;
+import com.example.roomix.habitacion.repository.HabitacionRepository;
+import com.example.roomix.huesped.exception.HuespedErrorCode;
+import com.example.roomix.huesped.exception.HuespedException;
+import com.example.roomix.huesped.service.HuespedService;
+import com.example.roomix.incidencia.repository.IncidenciaRepository;
+import com.example.roomix.incidencia.service.IncidenciaService;
+import com.example.roomix.reserva.service.ReservaService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class HabitacionService {
+
+    private final HabitacionRepository habitacionRepository;
+    private final HabitacionInhabilitacionService inhabilitacionService;
+    private final IncidenciaRepository incidenciaRepository;
+    private final HuespedService huespedService;
+    private final ReservaService reservaService;
+    private final HabitacionFotoService fotoService;
+    private final com.example.roomix.habitacion.repository.HabitacionFotoRepository fotoRepository;
+    @Lazy
+    private final IncidenciaService incidenciaService;
+
+    public List&lt;HabitacionResponse&gt; listar(EstadoHabitacion estado) {
+<span class="nc bnc" id="L50" title="All 2 branches missed.">        List&lt;Habitacion&gt; habitaciones = estado == null</span>
+<span class="nc" id="L51">                ? habitacionRepository.findAll()</span>
+<span class="nc" id="L52">                : habitacionRepository.findByEstado(estado);</span>
+
+<span class="nc bnc" id="L54" title="All 2 branches missed.">        for (Habitacion habitacion : habitaciones) {</span>
+<span class="nc" id="L55">            inhabilitacionService.sincronizar(habitacion);</span>
+<span class="nc" id="L56">        }</span>
+<span class="nc" id="L57">        habitacionRepository.saveAll(habitaciones);</span>
+
+<span class="nc" id="L59">        java.util.Map&lt;Long, List&lt;Long&gt;&gt; fotos = fotoService.idsPorHabitacion(</span>
+<span class="nc" id="L60">                habitaciones.stream().map(Habitacion::getId).toList());</span>
+<span class="nc" id="L61">        return habitaciones.stream()</span>
+<span class="nc" id="L62">                .map(h -&gt; HabitacionResponse.from(h).conFotos(fotos.get(h.getId())))</span>
+<span class="nc" id="L63">                .toList();</span>
+    }
+
+    public HabitacionResponse obtenerPorId(Long id) {
+<span class="fc" id="L67">        Habitacion habitacion = buscarEntidad(id);</span>
+<span class="fc" id="L68">        inhabilitacionService.sincronizar(habitacion);</span>
+<span class="fc" id="L69">        return responder(habitacionRepository.save(habitacion));</span>
+    }
+
+    @Transactional
+    public HabitacionResponse crear(HabitacionRequest request) {
+<span class="fc" id="L74">        validarNumeroUnico(request.numero(), null);</span>
+
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">        EstadoHabitacion estado = request.estado() != null ? request.estado() : EstadoHabitacion.LIBRE;</span>
+
+<span class="fc" id="L78">        Habitacion habitacion = Habitacion.builder()</span>
+<span class="fc" id="L79">                .numero(request.numero().trim())</span>
+<span class="fc" id="L80">                .caracteristicas(normalizarCaracteristicas(request.caracteristicas()))</span>
+<span class="fc" id="L81">                .tipoHabitacion(request.tipoHabitacion())</span>
+<span class="fc" id="L82">                .descripcion(request.descripcion().trim())</span>
+<span class="fc" id="L83">                .precioNoche(request.precioNoche())</span>
+<span class="fc" id="L84">                .piso(resolverPiso(request.piso(), request.numero()))</span>
+<span class="fc" id="L85">                .capacidad(resolverCapacidad(request.capacidad(), request.tipoHabitacion()))</span>
+<span class="fc" id="L86">                .estado(estado)</span>
+<span class="fc" id="L87">                .build();</span>
+
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">        if (estado != EstadoHabitacion.LIBRE) {</span>
+<span class="nc" id="L90">            HabitacionEstadoTransicion.validar(EstadoHabitacion.LIBRE, estado, null);</span>
+        }
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">        if (estado == EstadoHabitacion.RESERVADO) {</span>
+<span class="nc" id="L93">            validarDisponibleParaReserva(habitacion, request.fechaEntrada(), request.fechaSalida());</span>
+<span class="nc" id="L94">            aplicarNuevaReserva(habitacion, request.fechaEntrada(), request.fechaSalida(), request.huespedId());</span>
+        }
+
+<span class="fc" id="L97">        return responder(habitacionRepository.save(habitacion));</span>
+    }
+
+    @Transactional
+    public HabitacionResponse actualizar(Long id, HabitacionRequest request) {
+<span class="nc" id="L102">        Habitacion habitacion = buscarEntidad(id);</span>
+<span class="nc" id="L103">        validarNumeroUnico(request.numero(), id);</span>
+
+<span class="nc" id="L105">        habitacion.setNumero(request.numero().trim());</span>
+<span class="nc" id="L106">        habitacion.getCaracteristicas().clear();</span>
+<span class="nc" id="L107">        habitacion.getCaracteristicas().addAll(normalizarCaracteristicas(request.caracteristicas()));</span>
+<span class="nc" id="L108">        habitacion.setTipoHabitacion(request.tipoHabitacion());</span>
+<span class="nc" id="L109">        habitacion.setDescripcion(request.descripcion().trim());</span>
+<span class="nc" id="L110">        habitacion.setPrecioNoche(request.precioNoche());</span>
+<span class="nc" id="L111">        habitacion.setPiso(resolverPiso(request.piso(), request.numero()));</span>
+<span class="nc" id="L112">        habitacion.setCapacidad(resolverCapacidad(request.capacidad(), request.tipoHabitacion()));</span>
+
+<span class="nc bnc" id="L114" title="All 2 branches missed.">        if (request.estado() != null) {</span>
+<span class="nc" id="L115">            inhabilitacionService.sincronizar(habitacion);</span>
+<span class="nc" id="L116">            EstadoHabitacion estadoAnterior = habitacion.getEstado();</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">            if (request.estado() == EstadoHabitacion.RESERVADO) {</span>
+<span class="nc" id="L118">                validarDisponibleParaReserva(habitacion, request.fechaEntrada(), request.fechaSalida());</span>
+            }
+<span class="nc" id="L120">            HabitacionEstadoTransicion.validar(</span>
+                    estadoAnterior,
+<span class="nc" id="L122">                    request.estado(),</span>
+                    null,
+<span class="nc bnc" id="L124" title="All 4 branches missed.">                    request.estado() == EstadoHabitacion.RESERVADO</span>
+                            &amp;&amp; estadoAnterior == EstadoHabitacion.INHABILITADO
+            );
+<span class="nc" id="L127">            aplicarTransicionReserva(</span>
+                    habitacion,
+                    estadoAnterior,
+<span class="nc" id="L130">                    request.estado(),</span>
+<span class="nc" id="L131">                    request.fechaEntrada(),</span>
+<span class="nc" id="L132">                    request.fechaSalida(),</span>
+<span class="nc" id="L133">                    request.huespedId()</span>
+            );
+<span class="nc bnc" id="L135" title="All 2 branches missed.">            if (request.estado() == EstadoHabitacion.RESERVADO) {</span>
+<span class="nc" id="L136">                habitacion.setEstadoRetorno(null);</span>
+<span class="nc" id="L137">                habitacion.setMotivoInhabilitacion(null);</span>
+            }
+<span class="nc" id="L139">            habitacion.setEstado(request.estado());</span>
+<span class="nc bnc" id="L140" title="All 4 branches missed.">        } else if (request.fechaEntrada() != null &amp;&amp; request.fechaSalida() != null</span>
+<span class="nc bnc" id="L141" title="All 2 branches missed.">                &amp;&amp; habitacion.getEstado() == EstadoHabitacion.RESERVADO) {</span>
+<span class="nc" id="L142">            validarDisponibleParaReserva(habitacion, request.fechaEntrada(), request.fechaSalida());</span>
+<span class="nc" id="L143">            aplicarNuevaReserva(habitacion, request.fechaEntrada(), request.fechaSalida(), request.huespedId());</span>
+        }
+
+<span class="nc" id="L146">        inhabilitacionService.sincronizar(habitacion);</span>
+<span class="nc" id="L147">        return responder(habitacionRepository.save(habitacion));</span>
+    }
+
+    @Transactional
+    public HabitacionResponse actualizarEstado(Long id, ActualizarEstadoRequest request) {
+<span class="fc" id="L152">        Habitacion habitacion = buscarEntidad(id);</span>
+<span class="fc" id="L153">        inhabilitacionService.sincronizar(habitacion);</span>
+
+<span class="fc" id="L155">        EstadoHabitacion estadoActual = habitacion.getEstado();</span>
+<span class="fc bfc" id="L156" title="All 2 branches covered.">        boolean esCheckOut = estadoActual == EstadoHabitacion.OCUPADO</span>
+<span class="pc bpc" id="L157" title="1 of 2 branches missed.">                &amp;&amp; request.estado() == EstadoHabitacion.LIBRE;</span>
+
+<span class="fc bfc" id="L159" title="All 2 branches covered.">        if (request.estado() == EstadoHabitacion.RESERVADO) {</span>
+<span class="fc" id="L160">            validarDisponibleParaReserva(habitacion, request.fechaEntrada(), request.fechaSalida());</span>
+        }
+
+<span class="fc bfc" id="L163" title="All 2 branches covered.">        if (esCheckOut) {</span>
+<span class="fc" id="L164">            aplicarTransicionReserva(</span>
+                    habitacion,
+                    estadoActual,
+                    EstadoHabitacion.LIBRE,
+<span class="fc" id="L168">                    request.fechaEntrada(),</span>
+<span class="fc" id="L169">                    request.fechaSalida(),</span>
+                    null
+            );
+<span class="fc" id="L172">            habitacion.setEstado(EstadoHabitacion.INHABILITADO);</span>
+<span class="fc" id="L173">            habitacion.setMotivoInhabilitacion(MotivoInhabilitacion.POST_CHECKOUT);</span>
+<span class="fc" id="L174">            habitacion.setEstadoRetorno(EstadoHabitacion.LIBRE);</span>
+<span class="fc" id="L175">            reservaService.sincronizarReservaVigente(habitacion);</span>
+<span class="fc" id="L176">            Habitacion guardada = habitacionRepository.save(habitacion);</span>
+<span class="fc" id="L177">            incidenciaService.crearLimpiezaPostCheckout(guardada);</span>
+<span class="fc" id="L178">            return responder(guardada);</span>
+        }
+
+<span class="pc bpc" id="L181" title="1 of 2 branches missed.">        boolean reservaDesdeInhabilitado = estadoActual == EstadoHabitacion.INHABILITADO</span>
+<span class="pc bnc" id="L182" title="All 2 branches missed.">                &amp;&amp; request.estado() == EstadoHabitacion.RESERVADO;</span>
+
+<span class="fc" id="L184">        HabitacionEstadoTransicion.validar(</span>
+                estadoActual,
+<span class="fc" id="L186">                request.estado(),</span>
+<span class="fc" id="L187">                request.motivoInhabilitacion(),</span>
+                reservaDesdeInhabilitado
+        );
+
+<span class="fc" id="L191">        aplicarTransicionReserva(</span>
+                habitacion,
+                estadoActual,
+<span class="fc" id="L194">                request.estado(),</span>
+<span class="fc" id="L195">                request.fechaEntrada(),</span>
+<span class="fc" id="L196">                request.fechaSalida(),</span>
+<span class="fc" id="L197">                request.huespedId()</span>
+        );
+
+<span class="pc bpc" id="L200" title="1 of 2 branches missed.">        if (request.estado() == EstadoHabitacion.RESERVADO) {</span>
+<span class="nc" id="L201">            habitacion.setEstadoRetorno(null);</span>
+<span class="nc" id="L202">            habitacion.setMotivoInhabilitacion(null);</span>
+        }
+
+<span class="fc" id="L205">        habitacion.setEstado(request.estado());</span>
+<span class="pc bpc" id="L206" title="1 of 2 branches missed.">        if (request.estado() == EstadoHabitacion.LIBRE) {</span>
+<span class="nc" id="L207">            reservaService.sincronizarReservaVigente(habitacion);</span>
+        }
+<span class="fc" id="L209">        Habitacion guardada = habitacionRepository.save(habitacion);</span>
+<span class="fc" id="L210">        inhabilitacionService.sincronizar(guardada);</span>
+<span class="fc" id="L211">        return responder(habitacionRepository.save(guardada));</span>
+    }
+
+    @Transactional
+    public void eliminar(Long id) {
+<span class="nc" id="L216">        Habitacion habitacion = buscarEntidad(id);</span>
+<span class="nc" id="L217">        incidenciaRepository.deleteTareasByHabitacionId(id);</span>
+<span class="nc" id="L218">        incidenciaRepository.deleteByHabitacionId(id);</span>
+<span class="nc" id="L219">        fotoRepository.deleteByHabitacionId(id);</span>
+<span class="nc" id="L220">        habitacionRepository.delete(habitacion);</span>
+<span class="nc" id="L221">    }</span>
+
+    public void limpiarReserva(Habitacion habitacion) {
+<span class="fc" id="L224">        habitacion.setFechaEntrada(null);</span>
+<span class="fc" id="L225">        habitacion.setFechaSalida(null);</span>
+<span class="fc" id="L226">        habitacion.setCantidadNoches(null);</span>
+<span class="fc" id="L227">        habitacion.setEstadoReserva(null);</span>
+<span class="fc" id="L228">        habitacion.setHoraRealCheckIn(null);</span>
+<span class="fc" id="L229">        habitacion.setHoraRealCheckOut(null);</span>
+<span class="fc" id="L230">        habitacion.setHuesped(null);</span>
+<span class="fc" id="L231">    }</span>
+
+    public boolean tieneReservaVigente(Habitacion habitacion) {
+<span class="nc bnc" id="L234" title="All 2 branches missed.">        return habitacion.getEstadoReserva() == EstadoReserva.CONFIRMADA</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">                &amp;&amp; habitacion.getFechaEntrada() != null;</span>
+    }
+
+    private Habitacion buscarEntidad(Long id) {
+<span class="fc" id="L239">        return habitacionRepository.findById(id)</span>
+<span class="pc" id="L240">                .orElseThrow(() -&gt; new HabitacionNotFoundException(id));</span>
+    }
+
+    private void validarDisponibleParaReserva(
+            Habitacion habitacion,
+            LocalDate fechaEntrada,
+            LocalDate fechaSalida
+    ) {
+<span class="pc bpc" id="L248" title="1 of 2 branches missed.">        if (inhabilitacionService.tieneLimpiezaPendiente(habitacion.getId())) {</span>
+<span class="nc" id="L249">            throw new HabitacionNoDisponibleException(</span>
+                    &quot;La habitación tiene limpieza pendiente tras el último check-out&quot;
+            );
+        }
+
+<span class="pc bpc" id="L254" title="1 of 2 branches missed.">        LocalDate entrada = fechaEntrada != null ? fechaEntrada : LocalDate.now();</span>
+<span class="pc bpc" id="L255" title="1 of 2 branches missed.">        LocalDate salida = fechaSalida != null ? fechaSalida : entrada.plusDays(1);</span>
+
+<span class="pc bpc" id="L257" title="1 of 2 branches missed.">        if (!salida.isAfter(entrada)) {</span>
+<span class="nc" id="L258">            throw new ReservaInvalidaException(&quot;La fecha de salida debe ser posterior a la de entrada&quot;);</span>
+        }
+
+<span class="pc bpc" id="L261" title="1 of 2 branches missed.">        if (inhabilitacionService.tieneMantenimientoEnRango(habitacion.getId(), entrada, salida)) {</span>
+<span class="nc" id="L262">            throw new HabitacionNoDisponibleException(</span>
+                    &quot;No se puede reservar: hay mantenimiento programado entre el &quot;
+<span class="nc" id="L264">                            + entrada + &quot; y el &quot; + salida.minusDays(1)</span>
+                            + &quot; (noches de la estadía)&quot;
+            );
+        }
+
+<span class="fc" id="L269">        reservaService.validarSinSolapamiento(habitacion.getId(), entrada, salida);</span>
+<span class="fc" id="L270">    }</span>
+
+    private void validarNumeroUnico(String numero, Long idExcluido) {
+<span class="pc bpc" id="L273" title="1 of 2 branches missed.">        if (idExcluido == null) {</span>
+<span class="fc" id="L274">            habitacionRepository.findByNumero(numero.trim())</span>
+<span class="fc" id="L275">                    .ifPresent(h -&gt; {</span>
+<span class="nc" id="L276">                        throw new NumeroHabitacionDuplicadoException(numero);</span>
+                    });
+<span class="fc" id="L278">            return;</span>
+        }
+<span class="nc bnc" id="L280" title="All 2 branches missed.">        if (habitacionRepository.existsByNumeroAndIdNot(numero.trim(), idExcluido)) {</span>
+<span class="nc" id="L281">            throw new NumeroHabitacionDuplicadoException(numero);</span>
+        }
+<span class="nc" id="L283">    }</span>
+
+    private void aplicarTransicionReserva(
+            Habitacion habitacion,
+            EstadoHabitacion estadoActual,
+            EstadoHabitacion nuevoEstado,
+            LocalDate fechaEntrada,
+            LocalDate fechaSalida,
+            Long huespedId
+    ) {
+<span class="fc bfc" id="L293" title="All 2 branches covered.">        if (nuevoEstado == EstadoHabitacion.RESERVADO) {</span>
+<span class="nc" id="L294">            aplicarNuevaReserva(habitacion, fechaEntrada, fechaSalida, huespedId);</span>
+<span class="nc" id="L295">            return;</span>
+        }
+
+<span class="pc bpc" id="L298" title="1 of 4 branches missed.">        if (estadoActual == EstadoHabitacion.RESERVADO &amp;&amp; nuevoEstado == EstadoHabitacion.OCUPADO) {</span>
+<span class="pc bpc" id="L299" title="1 of 2 branches missed.">            if (habitacion.getHuesped() == null) {</span>
+<span class="nc" id="L300">                throw new HuespedException(HuespedErrorCode.HUESPED_SIN_ASIGNAR_CHECKIN);</span>
+            }
+<span class="fc" id="L302">            habitacion.setHoraRealCheckIn(LocalDateTime.now());</span>
+<span class="fc" id="L303">            habitacion.setEstadoReserva(EstadoReserva.EN_CURSO);</span>
+<span class="fc" id="L304">            reservaService.marcarEnCurso(habitacion);</span>
+<span class="fc" id="L305">            return;</span>
+        }
+
+<span class="pc bpc" id="L308" title="2 of 4 branches missed.">        if (estadoActual == EstadoHabitacion.OCUPADO &amp;&amp; nuevoEstado == EstadoHabitacion.LIBRE) {</span>
+<span class="fc" id="L309">            LocalDateTime horaCheckOut = LocalDateTime.now();</span>
+<span class="fc" id="L310">            habitacion.setHoraRealCheckOut(horaCheckOut);</span>
+<span class="fc" id="L311">            habitacion.setEstadoReserva(EstadoReserva.FINALIZADA);</span>
+<span class="fc" id="L312">            reservaService.finalizar(habitacion, horaCheckOut);</span>
+<span class="fc" id="L313">            limpiarReserva(habitacion);</span>
+<span class="fc" id="L314">            return;</span>
+        }
+
+<span class="nc bnc" id="L317" title="All 4 branches missed.">        if (estadoActual == EstadoHabitacion.RESERVADO &amp;&amp; nuevoEstado == EstadoHabitacion.LIBRE) {</span>
+<span class="nc" id="L318">            habitacion.setEstadoReserva(EstadoReserva.CANCELADA);</span>
+<span class="nc" id="L319">            reservaService.cancelar(habitacion);</span>
+<span class="nc" id="L320">            limpiarReserva(habitacion);</span>
+<span class="nc" id="L321">            return;</span>
+        }
+
+<span class="nc bnc" id="L324" title="All 2 branches missed.">        if (nuevoEstado == EstadoHabitacion.LIBRE) {</span>
+<span class="nc" id="L325">            limpiarReserva(habitacion);</span>
+        }
+<span class="nc" id="L327">    }</span>
+
+    private void aplicarNuevaReserva(
+            Habitacion habitacion,
+            LocalDate fechaEntrada,
+            LocalDate fechaSalida,
+            Long huespedId
+    ) {
+<span class="pc bpc" id="L335" title="1 of 2 branches missed.">        LocalDate entrada = fechaEntrada != null ? fechaEntrada : LocalDate.now();</span>
+<span class="pc bpc" id="L336" title="1 of 2 branches missed.">        LocalDate salida = fechaSalida != null ? fechaSalida : entrada.plusDays(1);</span>
+
+<span class="pc bpc" id="L338" title="1 of 2 branches missed.">        if (!salida.isAfter(entrada)) {</span>
+<span class="nc" id="L339">            throw new ReservaInvalidaException(&quot;La fecha de salida debe ser posterior a la de entrada&quot;);</span>
+        }
+
+        // Una reserva siempre se registra con su pago (completo o abono) desde POST /api/reservas;
+        // el cambio de estado de la habitación no crea reservas para no saltarse ese requisito.
+<span class="fc" id="L344">        throw new com.example.roomix.reserva.exception.ReservaException(</span>
+                com.example.roomix.reserva.exception.ReservaErrorCode.RESERVA_REQUIERE_PAGO,
+<span class="fc" id="L346">                &quot;Para reservar la habitación &quot; + habitacion.getNumero() + &quot; use «Reservar»: allí se registra el pago completo o el abono&quot;);</span>
+    }
+
+    private HabitacionResponse responder(Habitacion habitacion) {
+<span class="fc" id="L350">        return HabitacionResponse.from(habitacion)</span>
+<span class="fc" id="L351">                .conFotos(fotoService.idsPorHabitacion(List.of(habitacion.getId())).get(habitacion.getId()));</span>
+    }
+
+    /** Piso indicado o, por convención hotelera, el primer dígito del número (205 → piso 2). */
+    static Integer resolverPiso(Integer piso, String numero) {
+<span class="fc bfc" id="L356" title="All 2 branches covered.">        if (piso != null) {</span>
+<span class="fc" id="L357">            return piso;</span>
+        }
+<span class="pc bpc" id="L359" title="1 of 2 branches missed.">        String limpio = numero == null ? &quot;&quot; : numero.trim();</span>
+<span class="pc bpc" id="L360" title="1 of 4 branches missed.">        if (limpio.length() &gt;= 3 &amp;&amp; Character.isDigit(limpio.charAt(0))) {</span>
+<span class="fc" id="L361">            return Character.getNumericValue(limpio.charAt(0));</span>
+        }
+<span class="fc" id="L363">        return 1;</span>
+    }
+
+    static Integer resolverCapacidad(Integer capacidad, TipoHabitacion tipo) {
+<span class="fc bfc" id="L367" title="All 2 branches covered.">        if (capacidad != null) {</span>
+<span class="fc" id="L368">            return capacidad;</span>
+        }
+<span class="pc bpc" id="L370" title="1 of 4 branches missed.">        return switch (tipo) {</span>
+<span class="fc" id="L371">            case INDIVIDUAL -&gt; 1;</span>
+<span class="fc" id="L372">            case DOBLE, EJECUTIVA -&gt; 2;</span>
+<span class="nc" id="L373">            case TRIPLE, SUITE -&gt; 3;</span>
+<span class="fc" id="L374">            case FAMILIAR -&gt; 5;</span>
+        };
+    }
+
+    private List&lt;String&gt; normalizarCaracteristicas(List&lt;String&gt; caracteristicas) {
+<span class="pc bpc" id="L379" title="1 of 4 branches missed.">        if (caracteristicas == null || caracteristicas.isEmpty()) {</span>
+<span class="fc" id="L380">            return new ArrayList&lt;&gt;();</span>
+        }
+<span class="fc" id="L382">        return caracteristicas.stream()</span>
+<span class="fc" id="L383">                .map(String::trim)</span>
+<span class="pc bpc" id="L384" title="1 of 2 branches missed.">                .filter(s -&gt; !s.isBlank())</span>
+<span class="fc" id="L385">                .distinct()</span>
+<span class="fc" id="L386">                .toList();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

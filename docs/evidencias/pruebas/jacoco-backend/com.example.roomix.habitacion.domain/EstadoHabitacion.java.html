@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EstadoHabitacion.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.habitacion.domain</a> &gt; <span class="el_source">EstadoHabitacion.java</span></div><h1>EstadoHabitacion.java</h1><pre class="source lang-java linenums">package com.example.roomix.habitacion.domain;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+
+/**
+ * Ciclo operativo de una habitación en el hotel.
+ * &lt;p&gt;
+ * {@link #INHABILITADO}: la habitación no está operativa; se gestionan servicios
+ * (limpieza, mantenimiento, servicio al cuarto, etc.) mediante incidencias.
+ */
+<span class="fc" id="L11">@Schema(</span>
+        name = &quot;EstadoHabitacion&quot;,
+        description = &quot;Estado operativo de una habitación en el ciclo hotelero&quot;
+)
+public enum EstadoHabitacion {
+
+<span class="fc" id="L17">    @Schema(description = &quot;Disponible para reservar o asignar&quot;)</span>
+    LIBRE,
+
+<span class="fc" id="L20">    @Schema(description = &quot;Reserva confirmada; el huésped aún no ha hecho check-in&quot;)</span>
+    RESERVADO,
+
+<span class="fc" id="L23">    @Schema(description = &quot;Huésped dentro de la habitación; reserva en curso (check-in realizado)&quot;)</span>
+    OCUPADO,
+
+<span class="fc" id="L26">    @Schema(</span>
+            description = &quot;&quot;&quot;
+                    Habitación fuera de servicio operativo. Solo tras check-out o adecuación programada.
+                    Mientras dura, se crean incidencias (limpieza, mantenimiento, servicio al cuarto, etc.).
+                    &quot;&quot;&quot;
+    )
+    INHABILITADO
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

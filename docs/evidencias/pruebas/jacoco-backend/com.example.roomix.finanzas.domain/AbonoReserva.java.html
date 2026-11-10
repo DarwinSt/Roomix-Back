@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbonoReserva.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.finanzas.domain</a> &gt; <span class="el_source">AbonoReserva.java</span></div><h1>AbonoReserva.java</h1><pre class="source lang-java linenums">package com.example.roomix.finanzas.domain;
+
+import com.example.roomix.reserva.domain.Reserva;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+/**
+ * Abono (anticipo) recibido sobre una reserva antes de facturarla. Se registra como ingreso el día en que se recibe;
+ * en el check-out se aplica como pago de la factura y, si la reserva se cancela, se devuelve descontando la penalidad.
+ */
+@Entity
+@Table(name = &quot;abonos_reserva&quot;)
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class AbonoReserva {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = &quot;reserva_id&quot;, nullable = false)
+    private Reserva reserva;
+
+    @Column(nullable = false, precision = 14, scale = 2)
+    private BigDecimal valor;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private MetodoPago metodo;
+
+    @Column(length = 80)
+    private String referencia;
+
+    @Column(name = &quot;fecha_hora&quot;, nullable = false)
+    private LocalDateTime fechaHora;
+
+    @Column(name = &quot;registrado_por&quot;, nullable = false, length = 50)
+    private String registradoPor;
+
+    /** Factura en la que se aplicó como pago (null: aún no facturado). */
+    @Column(name = &quot;factura_id&quot;)
+    private Long facturaId;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean devuelto = false;
+
+    @Column(name = &quot;valor_devuelto&quot;, precision = 14, scale = 2)
+    private BigDecimal valorDevuelto;
+
+    @Column(name = &quot;fecha_hora_devolucion&quot;)
+    private LocalDateTime fechaHoraDevolucion;
+
+    public boolean vigente() {
+<span class="pc bpc" id="L76" title="2 of 4 branches missed.">        return !devuelto &amp;&amp; facturaId == null;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,37 @@
+@startuml flujo-autenticacion
+!include _estilo.iuml
+title Roomix — Flujo de autenticación y autorización (JWT)
+autonumber
+actor Usuario
+participant "Login\n(Angular)" as FE
+participant "AuthService\n(frontend)" as AS
+participant "authInterceptor" as INT
+participant "SecurityFilterChain" as SEC
+participant "AuthController /\nAuthService" as BE
+participant "JwtService" as JWT
+database PostgreSQL as DB
+Usuario -> FE : usuario y contraseña
+FE -> AS : login()
+AS -> BE : POST /api/auth/login
+BE -> DB : buscar usuario activo
+BE -> BE : verificar BCrypt y bloqueo
+BE -> JWT : emitir token (HS256, 8 h, rol)
+BE --> AS : token + datos del usuario
+AS -> AS : guardar sesión
+alt debe cambiar la contraseña
+  AS --> FE : redirigir a «Mi cuenta»
+end
+== Peticiones posteriores ==
+FE -> INT : petición HTTP
+INT -> SEC : Authorization: Bearer <token>
+SEC -> SEC : validar firma, vigencia y rol
+alt token válido y rol autorizado
+  SEC -> BE : controlador del módulo
+  BE --> FE : 200 + datos
+else token vencido o inválido
+  SEC --> INT : 401
+  INT --> FE : cerrar sesión y volver al login
+else rol no autorizado
+  SEC --> FE : 403
+end
+@enduml

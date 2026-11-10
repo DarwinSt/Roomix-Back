@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HabitacionEstadoTransicion.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.habitacion.domain</a> &gt; <span class="el_source">HabitacionEstadoTransicion.java</span></div><h1>HabitacionEstadoTransicion.java</h1><pre class="source lang-java linenums">package com.example.roomix.habitacion.domain;
+
+
+
+import com.example.roomix.habitacion.exception.TransicionEstadoInvalidaException;
+
+
+
+import java.util.Map;
+
+import java.util.Set;
+
+
+
+/**
+
+ * Transiciones operativas manuales. INHABILITADO lo gestiona el sistema
+
+ * (mantenimiento del día o limpieza post check-out), salvo reserva validada.
+
+ */
+
+public final class HabitacionEstadoTransicion {
+
+
+
+<span class="fc" id="L27">    private static final Map&lt;EstadoHabitacion, Set&lt;EstadoHabitacion&gt;&gt; TRANSICIONES = Map.of(</span>
+
+<span class="fc" id="L29">            EstadoHabitacion.LIBRE, Set.of(EstadoHabitacion.RESERVADO),</span>
+
+<span class="fc" id="L31">            EstadoHabitacion.RESERVADO, Set.of(</span>
+
+                    EstadoHabitacion.OCUPADO,
+
+                    EstadoHabitacion.LIBRE
+
+            ),
+
+<span class="fc" id="L39">            EstadoHabitacion.OCUPADO, Set.of(EstadoHabitacion.LIBRE)</span>
+
+    );
+
+
+
+    private HabitacionEstadoTransicion() {
+
+    }
+
+
+
+    public static void validar(
+
+            EstadoHabitacion estadoActual,
+
+            EstadoHabitacion estadoNuevo,
+
+            MotivoInhabilitacion motivoInhabilitacion
+
+    ) {
+
+<span class="nc" id="L61">        validar(estadoActual, estadoNuevo, motivoInhabilitacion, false);</span>
+
+<span class="nc" id="L63">    }</span>
+
+
+
+    public static void validar(
+
+            EstadoHabitacion estadoActual,
+
+            EstadoHabitacion estadoNuevo,
+
+            MotivoInhabilitacion motivoInhabilitacion,
+
+            boolean permitirReservaDesdeInhabilitado
+
+    ) {
+
+<span class="pc bpc" id="L79" title="1 of 2 branches missed.">        if (estadoActual == estadoNuevo) {</span>
+
+<span class="nc" id="L81">            return;</span>
+
+        }
+
+
+
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">        if (estadoNuevo == EstadoHabitacion.INHABILITADO) {</span>
+
+<span class="nc" id="L89">            throw new TransicionEstadoInvalidaException(</span>
+
+                    estadoActual,
+
+                    estadoNuevo,
+
+                    &quot;INHABILITADO se aplica automáticamente (mantenimiento hoy o limpieza tras check-out)&quot;
+
+            );
+
+        }
+
+
+
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">        if (estadoActual == EstadoHabitacion.INHABILITADO) {</span>
+
+<span class="nc bnc" id="L105" title="All 4 branches missed.">            if (permitirReservaDesdeInhabilitado &amp;&amp; estadoNuevo == EstadoHabitacion.RESERVADO) {</span>
+
+<span class="nc" id="L107">                return;</span>
+
+            }
+
+<span class="nc" id="L111">            throw new TransicionEstadoInvalidaException(</span>
+
+                    estadoActual,
+
+                    estadoNuevo,
+
+                    &quot;La habitación está inhabilitada hoy. Finalice el mantenimiento o la limpieza, &quot;
+
+                            + &quot;o reserve fechas que no incluyan el día bloqueado&quot;
+
+            );
+
+        }
+
+
+
+<span class="fc" id="L127">        Set&lt;EstadoHabitacion&gt; permitidos = TRANSICIONES.getOrDefault(estadoActual, Set.of());</span>
+
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">        if (!permitidos.contains(estadoNuevo)) {</span>
+
+<span class="nc" id="L131">            throw new TransicionEstadoInvalidaException(estadoActual, estadoNuevo);</span>
+
+        }
+
+<span class="fc" id="L135">    }</span>
+
+}
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,545 @@
+{
+ "n": 7,
+ "n_area": 3,
+ "n_regional": 4,
+ "preguntas": [
+  {
+   "clave": "ubicacion",
+   "pregunta": "Ciudad o municipio donde esta ubicado el Hotel",
+   "tipo": "Selección única (abierta, normalizada)",
+   "modo": "municipio",
+   "filas": [
+    {
+     "respuesta": "Rivera (Huila)",
+     "area": 2,
+     "regional": 0,
+     "total": 2
+    },
+    {
+     "respuesta": "Bogotá D. C.",
+     "area": 0,
+     "regional": 1,
+     "total": 1
+    },
+    {
+     "respuesta": "Bolívar (Santander)",
+     "area": 0,
+     "regional": 1,
+     "total": 1
+    },
+    {
+     "respuesta": "Cúcuta (Norte de Santander)",
+     "area": 0,
+     "regional": 1,
+     "total": 1
+    },
+    {
+     "respuesta": "Neiva (Huila)",
+     "area": 1,
+     "regional": 0,
+     "total": 1
+    },
+    {
+     "respuesta": "Prado (Tolima)",
+     "area": 0,
+     "regional": 1,
+     "total": 1
+    }
+   ]
+  },
+  {
+   "clave": "cargo",
+   "pregunta": "Cargo de quien responde la encuesta",
+   "tipo": "Selección única",
+   "modo": "unica",
+   "filas": [
+    {
+     "respuesta": "Dueño",
+     "area": 2,
+     "regional": 1,
+     "total": 3
+    },
+    {
+     "respuesta": "Recepcionista",
+     "area": 0,
+     "regional": 2,
+     "total": 2
+    },
+    {
+     "respuesta": "Administrador",
+     "area": 1,
+     "regional": 0,
+     "total": 1
+    },
+    {
+     "respuesta": "Encargado operativo",
+     "area": 0,
+     "regional": 1,
+     "total": 1
+    }
+   ]
+  },
+  {
+   "clave": "habitaciones",
+   "pregunta": "¿Cuántas habitaciones tiene el hotel?",
+   "tipo": "Selección única",
+   "modo": "unica",
+   "filas": [
+    {
+     "respuesta": "Entre 5 y 10",
+     "area": 0,
+     "regional": 1,
+     "total": 1
+    },
+    {
+     "respuesta": "Entre 11 y 20",
+     "area": 2,
+     "regional": 0,
+     "total": 2
+    },
+    {
+     "respuesta": "Entre 21 y 50",
+     "area": 1,
+     "regional": 2,
+     "total": 3
+    },
+    {
+     "respuesta": "Más de 5 (sin precisar)",
+     "area": 0,
+     "regional": 1,
+     "total": 1
+    }
+   ]
+  },
+  {
+   "clave": "sistema",
+   "pregunta": "¿Actualmente utilizan algún sistema digital para gestionar el hotel?",
+   "tipo": "Selección única",
+   "modo": "unica",
+   "filas": [
+    {
+     "respuesta": "Sí",
+     "area": 0,
+     "regional": 2,
+     "total": 2
+    },
+    {
+     "respuesta": "Parcialmente",
+     "area": 1,
+     "regional": 1,
+     "total": 2
+    },
+    {
+     "respuesta": "No",
+     "area": 2,
+     "regional": 1,
+     "total": 3
+    }
+   ]
+  },
+  {
+   "clave": "tiempo-real",
+   "pregunta": "¿Qué tan necesario considera tener un sistema que muestre la disponibilidad de habitaciones en tiempo real?",
+   "tipo": "Escala de 1 a 5",
+   "modo": "escala",
+   "filas": [
+    {
+     "respuesta": "1",
+     "area": 0,
+     "regional": 0,
+     "total": 0
+    },
+    {
+     "respuesta": "2",
+     "area": 0,
+     "regional": 0,
+     "total": 0
+    },
+    {
+     "respuesta": "3",
+     "area": 0,
+     "regional": 1,
+     "total": 1
+    },
+    {
+     "respuesta": "4",
+     "area": 2,
+     "regional": 0,
+     "total": 2
+    },
+    {
+     "respuesta": "5",
+     "area": 1,
+     "regional": 3,
+     "total": 4
+    }
+   ],
+   "promedio_area": 4.3,
+   "promedio_regional": 4.5,
+   "promedio_total": 4.4,
+   "duplicada_identica": true
+  },
+  {
+   "clave": "reservas",
+   "pregunta": "¿Cómo gestionan actualmente las reservas?",
+   "tipo": "Selección múltiple",
+   "modo": "multiple",
+   "filas": [
+    {
+     "respuesta": "Llamadas",
+     "area": 3,
+     "regional": 2,
+     "total": 5
+    },
+    {
+     "respuesta": "WhatsApp",
+     "area": 3,
+     "regional": 2,
+     "total": 5
+    },
+    {
+     "respuesta": "Cuaderno o agenda física",
+     "area": 2,
+     "regional": 2,
+     "total": 4
+    },
+    {
+     "respuesta": "Excel",
+     "area": 0,
+     "regional": 1,
+     "total": 1
+    }
+   ]
+  },
+  {
+   "clave": "problemas",
+   "pregunta": "¿Qué problemas se presentan con mayor frecuencia en las reservas?",
+   "tipo": "Selección múltiple",
+   "modo": "multiple",
+   "filas": [
+    {
+     "respuesta": "No se presentan problemas",
+     "area": 3,
+     "regional": 1,
+     "total": 4
+    },
+    {
+     "respuesta": "Cancelaciones no registradas",
+     "area": 0,
+     "regional": 2,
+     "total": 2
+    },
+    {
+     "respuesta": "Pérdida de información del cliente",
+     "area": 0,
+     "regional": 2,
+     "total": 2
+    }
+   ]
+  },
+  {
+   "clave": "estado-hab",
+   "pregunta": "¿Cómo controlan actualmente el estado de las habitaciones?",
+   "tipo": "Selección múltiple",
+   "modo": "multiple",
+   "filas": [
+    {
+     "respuesta": "Cuaderno",
+     "area": 3,
+     "regional": 0,
+     "total": 3
+    },
+    {
+     "respuesta": "Manualmente",
+     "area": 1,
+     "regional": 2,
+     "total": 3
+    },
+    {
+     "respuesta": "Excel",
+     "area": 1,
+     "regional": 1,
+     "total": 2
+    },
+    {
+     "respuesta": "Sistema digital",
+     "area": 0,
+     "regional": 1,
+     "total": 1
+    }
+   ]
+  },
+  {
+   "clave": "importancia-estados",
+   "pregunta": "¿Considera importante manejar estados como disponible, ocupada, limpieza, mantenimiento, etc. dentro de un sistema?",
+   "tipo": "Selección única",
+   "modo": "unica",
+   "filas": [
+    {
+     "respuesta": "Sí",
+     "area": 1,
+     "regional": 3,
+     "total": 4
+    },
+    {
+     "respuesta": "Tal vez",
+     "area": 2,
+     "regional": 1,
+     "total": 3
+    },
+    {
+     "respuesta": "No",
+     "area": 0,
+     "regional": 0,
+     "total": 0
+    }
+   ]
+  },
+  {
+   "clave": "estados-utiles",
+   "pregunta": "¿Si considera importante el manejo de estados que estados ser de utilidad? Si considera colocar uno adicionales por favor llenar la opcion de Otros",
+   "tipo": "Selección múltiple (con opción abierta)",
+   "modo": "multiple",
+   "filas": [
+    {
+     "respuesta": "Disponible",
+     "area": 3,
+     "regional": 4,
+     "total": 7
+    },
+    {
+     "respuesta": "Ocupado",
+     "area": 3,
+     "regional": 2,
+     "total": 5
+    },
+    {
+     "respuesta": "Limpieza",
+     "area": 3,
+     "regional": 1,
+     "total": 4
+    },
+    {
+     "respuesta": "Mantenimiento",
+     "area": 3,
+     "regional": 1,
+     "total": 4
+    }
+   ]
+  },
+  {
+   "clave": "registro",
+   "pregunta": "¿Cómo registran actualmente los datos de los huéspedes?",
+   "tipo": "Selección única",
+   "modo": "unica",
+   "filas": [
+    {
+     "respuesta": "Libro físico",
+     "area": 3,
+     "regional": 2,
+     "total": 5
+    },
+    {
+     "respuesta": "Sistema digital",
+     "area": 0,
+     "regional": 2,
+     "total": 2
+    }
+   ]
+  },
+  {
+   "clave": "dificultades",
+   "pregunta": "¿Han tenido dificultades para consultar información o historial de clientes?",
+   "tipo": "Selección única",
+   "modo": "unica",
+   "filas": [
+    {
+     "respuesta": "Sí",
+     "area": 1,
+     "regional": 1,
+     "total": 2
+    },
+    {
+     "respuesta": "Tal vez",
+     "area": 0,
+     "regional": 1,
+     "total": 1
+    },
+    {
+     "respuesta": "No",
+     "area": 2,
+     "regional": 2,
+     "total": 4
+    }
+   ]
+  },
+  {
+   "clave": "historial",
+   "pregunta": "¿Qué tan útil sería tener el historial de reservas y estadías de cada huésped?",
+   "tipo": "Escala de 1 a 5",
+   "modo": "escala",
+   "filas": [
+    {
+     "respuesta": "1",
+     "area": 0,
+     "regional": 3,
+     "total": 3
+    },
+    {
+     "respuesta": "2",
+     "area": 0,
+     "regional": 0,
+     "total": 0
+    },
+    {
+     "respuesta": "3",
+     "area": 1,
+     "regional": 0,
+     "total": 1
+    },
+    {
+     "respuesta": "4",
+     "area": 1,
+     "regional": 0,
+     "total": 1
+    },
+    {
+     "respuesta": "5",
+     "area": 1,
+     "regional": 1,
+     "total": 2
+    }
+   ],
+   "promedio_area": 4.0,
+   "promedio_regional": 2.0,
+   "promedio_total": 2.9,
+   "duplicada_identica": null
+  },
+  {
+   "clave": "mejorar",
+   "pregunta": "¿qué le gustaría mejorar actualmente en la administración de su hotel?",
+   "tipo": "Pregunta abierta (categorizada)",
+   "modo": "abierta-mejorar",
+   "filas": [
+    {
+     "respuesta": "Gestión administrativa y de reservas",
+     "area": 1,
+     "regional": 1,
+     "total": 2
+    },
+    {
+     "respuesta": "Página web del hotel",
+     "area": 2,
+     "regional": 0,
+     "total": 2
+    },
+    {
+     "respuesta": "Capacitación digital del personal",
+     "area": 0,
+     "regional": 1,
+     "total": 1
+    },
+    {
+     "respuesta": "Historial de clientes",
+     "area": 0,
+     "regional": 1,
+     "total": 1
+    },
+    {
+     "respuesta": "Ninguna mejora",
+     "area": 0,
+     "regional": 1,
+     "total": 1
+    }
+   ]
+  },
+  {
+   "clave": "problema-principal",
+   "pregunta": "¿Cuál considera que es el principal problema u oportunidad de mejora en la gestión diaria del hotel?",
+   "tipo": "Pregunta abierta (categorizada)",
+   "modo": "abierta-problema",
+   "filas": [
+    {
+     "respuesta": "Publicidad y promoción",
+     "area": 2,
+     "regional": 1,
+     "total": 3
+    },
+    {
+     "respuesta": "Contabilidad en libros o planillas",
+     "area": 1,
+     "regional": 0,
+     "total": 1
+    },
+    {
+     "respuesta": "Control de habitaciones en mantenimiento",
+     "area": 0,
+     "regional": 1,
+     "total": 1
+    },
+    {
+     "respuesta": "Relaciones entre empleados",
+     "area": 0,
+     "regional": 1,
+     "total": 1
+    },
+    {
+     "respuesta": "Seguimiento a clientes",
+     "area": 0,
+     "regional": 1,
+     "total": 1
+    }
+   ]
+  },
+  {
+   "clave": "beneficios",
+   "pregunta": "¿Qué beneficio esperaría obtener con un sistema de gestión hotelera?",
+   "tipo": "Selección múltiple",
+   "modo": "multiple",
+   "filas": [
+    {
+     "respuesta": "Mejorar la atención al cliente",
+     "area": 2,
+     "regional": 1,
+     "total": 3
+    },
+    {
+     "respuesta": "Reducir errores",
+     "area": 1,
+     "regional": 2,
+     "total": 3
+    },
+    {
+     "respuesta": "Tener reportes para tomar decisiones",
+     "area": 2,
+     "regional": 1,
+     "total": 3
+    },
+    {
+     "respuesta": "Mejorar el control de reservas",
+     "area": 1,
+     "regional": 1,
+     "total": 2
+    },
+    {
+     "respuesta": "Organizar mejor al personal",
+     "area": 0,
+     "regional": 2,
+     "total": 2
+    },
+    {
+     "respuesta": "Ahorrar tiempo",
+     "area": 1,
+     "regional": 0,
+     "total": 1
+    },
+    {
+     "respuesta": "Controlar inventario",
+     "area": 0,
+     "regional": 1,
+     "total": 1
+    }
+   ]
+  }
+ ]
+}

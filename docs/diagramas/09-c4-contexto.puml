@@ -1,0 +1,14 @@
+@startuml c4-contexto
+!include _estilo.iuml
+title Roomix — Contexto del sistema (C4, nivel 1)
+left to right direction
+actor "Personal del hotel\n(Administrador, Recepción,\nHousekeeping, Finanzas,\nEventos, Almacén)" as U
+rectangle "**Roomix**\nSistema de gestión administrativa hotelera:\nreservas, habitaciones, huéspedes, servicios,\neventos, inventario, finanzas, reportes y auditoría" as R #DDEFE3
+rectangle "Servidor de correo (SMTP)\nRecuperación de contraseña" as SMTP
+rectangle "Entes de control (fuera del sistema)\nMinCIT — TRA / SIAT\nMigración Colombia — SIRE\nDANE — Encuesta Mensual de Alojamiento" as EXT #FFF8E1
+actor "Huésped" as H
+H --> U : solicita reserva,\nllegada, servicios y pago
+U --> R : opera desde navegador\no aplicación Android (HTTPS)
+R --> SMTP : envía enlace de\nrecuperación
+R ..> EXT : genera los informes\nque el hotel reporta
+@enduml

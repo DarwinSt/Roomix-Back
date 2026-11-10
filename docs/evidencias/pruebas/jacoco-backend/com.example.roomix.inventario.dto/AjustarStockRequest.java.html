@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AjustarStockRequest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.inventario.dto</a> &gt; <span class="el_source">AjustarStockRequest.java</span></div><h1>AjustarStockRequest.java</h1><pre class="source lang-java linenums">package com.example.roomix.inventario.dto;
+
+import jakarta.validation.constraints.DecimalMin;
+import java.math.BigDecimal;
+import com.example.roomix.inventario.domain.TipoMovimientoStock;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
+@Schema(name = &quot;AjustarStockRequest&quot;, description = &quot;Movimiento de entrada o salida de stock&quot;)
+<span class="nc" id="L12">public record AjustarStockRequest(</span>
+        @Schema(description = &quot;Tipo de movimiento&quot;, example = &quot;ENTRADA&quot;)
+        @NotNull(message = &quot;El tipo de movimiento es obligatorio&quot;)
+        TipoMovimientoStock tipo,
+
+        @Schema(description = &quot;Cantidad a mover (siempre positiva)&quot;, example = &quot;5&quot;, minimum = &quot;1&quot;)
+        @NotNull(message = &quot;La cantidad es obligatoria&quot;)
+        @Min(value = 0, message = &quot;La cantidad no puede ser negativa&quot;)
+        Integer cantidad,
+
+        @Schema(description = &quot;Motivo del movimiento (opcional)&quot;, example = &quot;Reposición semanal&quot;, nullable = true)
+        @Size(max = 200, message = &quot;El motivo no puede superar 200 caracteres&quot;)
+        String motivo,
+
+        @Schema(description = &quot;Costo unitario de la entrada (actualiza el precio de referencia)&quot;)
+        @DecimalMin(value = &quot;0&quot;, message = &quot;El costo no puede ser negativo&quot;)
+        BigDecimal costoUnitario,
+
+        @Schema(description = &quot;En una ENTRADA, registrar la compra como egreso en el módulo financiero&quot;)
+        Boolean registrarCompra,
+
+        @Size(max = 120) String proveedor
+) {
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuditoriaInterceptor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.auditoria.config</a> &gt; <span class="el_source">AuditoriaInterceptor.java</span></div><h1>AuditoriaInterceptor.java</h1><pre class="source lang-java linenums">package com.example.roomix.auditoria.config;
+
+import com.example.roomix.auditoria.domain.RegistroAuditoria;
+import com.example.roomix.auditoria.service.AuditoriaService;
+import com.example.roomix.auth.service.UsuarioActual;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.HandlerInterceptor;
+
+import java.util.Locale;
+import java.util.Set;
+
+/**
+ * Registra en auditoría toda operación que modifica datos (POST, PUT, PATCH, DELETE) en la API:
+ * usuario, rol, módulo, entidad afectada, resultado HTTP e IP de origen.
+ */
+@Component
+@RequiredArgsConstructor
+public class AuditoriaInterceptor implements HandlerInterceptor {
+
+<span class="fc" id="L23">    private static final Set&lt;String&gt; METODOS_AUDITADOS = Set.of(&quot;POST&quot;, &quot;PUT&quot;, &quot;PATCH&quot;, &quot;DELETE&quot;);</span>
+
+    /** Rutas que registran su propio evento (con más detalle) o que no deben guardar datos sensibles. */
+<span class="fc" id="L26">    private static final Set&lt;String&gt; RUTAS_EXCLUIDAS = Set.of(</span>
+            &quot;/api/auth/login&quot;,
+            &quot;/api/auth/recuperar&quot;,
+            &quot;/api/auth/restablecer&quot;,
+            &quot;/api/auth/cambiar-password&quot;
+    );
+
+    private final AuditoriaService auditoriaService;
+
+    @Override
+    public void afterCompletion(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Object handler,
+            Exception ex
+    ) {
+<span class="fc" id="L42">        String metodo = request.getMethod();</span>
+<span class="fc" id="L43">        String ruta = request.getRequestURI();</span>
+<span class="pc bpc" id="L44" title="1 of 6 branches missed.">        if (!METODOS_AUDITADOS.contains(metodo) || !ruta.startsWith(&quot;/api/&quot;) || RUTAS_EXCLUIDAS.contains(ruta)) {</span>
+<span class="fc" id="L45">            return;</span>
+        }
+
+<span class="fc" id="L48">        int status = response.getStatus();</span>
+<span class="fc" id="L49">        RutaAuditada partes = analizarRuta(ruta);</span>
+<span class="fc" id="L50">        auditoriaService.registrar(RegistroAuditoria.builder()</span>
+<span class="fc" id="L51">                .usuario(UsuarioActual.username())</span>
+<span class="fc" id="L52">                .rol(UsuarioActual.rol())</span>
+<span class="fc" id="L53">                .accion(accion(metodo, partes.accion()))</span>
+<span class="fc" id="L54">                .modulo(partes.modulo())</span>
+<span class="fc" id="L55">                .entidadId(partes.entidadId())</span>
+<span class="fc" id="L56">                .metodoHttp(metodo)</span>
+<span class="fc" id="L57">                .ruta(ruta)</span>
+<span class="pc bpc" id="L58" title="1 of 4 branches missed.">                .estadoHttp(status)</span>
+<span class="fc" id="L59">                .exitoso(status &lt; 400 &amp;&amp; ex == null)</span>
+<span class="fc" id="L60">                .ip(AuditoriaService.ipCliente(request))</span>
+<span class="pc bpc" id="L61" title="1 of 2 branches missed.">                .detalle(metodo + &quot; &quot; + ruta + (request.getQueryString() != null ? &quot;?&quot; + request.getQueryString() : &quot;&quot;))</span>
+<span class="fc" id="L62">                .build());</span>
+<span class="fc" id="L63">    }</span>
+
+    /**
+     * Separa la ruta en módulo, id de la entidad y acción. Ejemplos:
+     * &lt;ul&gt;
+     *   &lt;li&gt;/api/habitaciones/5/estado → HABITACIONES, 5, ESTADO&lt;/li&gt;
+     *   &lt;li&gt;/api/inventario/categorias/3 → INVENTARIO_CATEGORIAS, 3, —&lt;/li&gt;
+     *   &lt;li&gt;/api/incidencias/7/tareas/12 → INCIDENCIAS, 7, TAREAS&lt;/li&gt;
+     * &lt;/ul&gt;
+     * El módulo son los segmentos anteriores al primer número (máximo dos).
+     */
+    static RutaAuditada analizarRuta(String ruta) {
+<span class="fc" id="L75">        String[] segmentos = ruta.replaceFirst(&quot;^/api/&quot;, &quot;&quot;).split(&quot;/&quot;);</span>
+<span class="fc" id="L76">        StringBuilder modulo = new StringBuilder();</span>
+<span class="fc" id="L77">        String entidadId = null;</span>
+<span class="fc" id="L78">        String accion = null;</span>
+
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        for (int i = 0; i &lt; segmentos.length; i++) {</span>
+<span class="fc" id="L81">            String seg = segmentos[i];</span>
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">            if (seg.isBlank()) {</span>
+<span class="nc" id="L83">                continue;</span>
+            }
+<span class="fc" id="L85">            boolean numerico = esNumero(seg);</span>
+<span class="fc bfc" id="L86" title="All 4 branches covered.">            if (entidadId == null &amp;&amp; numerico) {</span>
+<span class="fc" id="L87">                entidadId = seg;</span>
+<span class="pc bpc" id="L88" title="1 of 4 branches missed.">            } else if (entidadId == null &amp;&amp; i &lt; 2) {</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">                if (!modulo.isEmpty()) {</span>
+<span class="fc" id="L90">                    modulo.append('_');</span>
+                }
+<span class="fc" id="L92">                modulo.append(seg);</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">            } else if (!numerico) {</span>
+<span class="fc" id="L94">                accion = seg;</span>
+            }
+        }
+
+<span class="fc" id="L98">        return new RutaAuditada(</span>
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">                normalizar(modulo.isEmpty() ? &quot;api&quot; : modulo.toString()),</span>
+                entidadId,
+<span class="fc bfc" id="L101" title="All 2 branches covered.">                accion != null ? normalizar(accion) : null</span>
+        );
+    }
+
+    static String accion(String metodo, String accionRuta) {
+<span class="fc bfc" id="L106" title="All 2 branches covered.">        if (accionRuta != null) {</span>
+<span class="fc" id="L107">            return accionRuta;</span>
+        }
+<span class="pc bpc" id="L109" title="3 of 5 branches missed.">        return switch (metodo) {</span>
+<span class="fc" id="L110">            case &quot;POST&quot; -&gt; &quot;CREAR&quot;;</span>
+<span class="fc" id="L111">            case &quot;PUT&quot; -&gt; &quot;ACTUALIZAR&quot;;</span>
+<span class="nc" id="L112">            case &quot;PATCH&quot; -&gt; &quot;CAMBIO_ESTADO&quot;;</span>
+<span class="nc" id="L113">            case &quot;DELETE&quot; -&gt; &quot;ELIMINAR&quot;;</span>
+<span class="nc" id="L114">            default -&gt; metodo;</span>
+        };
+    }
+
+    private static boolean esNumero(String valor) {
+<span class="fc" id="L119">        return valor.chars().allMatch(Character::isDigit);</span>
+    }
+
+    private static String normalizar(String valor) {
+<span class="fc" id="L123">        return valor.replace('-', '_').toUpperCase(Locale.ROOT);</span>
+    }
+
+<span class="fc" id="L126">    record RutaAuditada(String modulo, String entidadId, String accion) {</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

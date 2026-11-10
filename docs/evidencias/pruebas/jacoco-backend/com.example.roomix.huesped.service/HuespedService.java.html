@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HuespedService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.huesped.service</a> &gt; <span class="el_source">HuespedService.java</span></div><h1>HuespedService.java</h1><pre class="source lang-java linenums">package com.example.roomix.huesped.service;
+
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Predicate;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import java.util.ArrayList;
+
+import com.example.roomix.habitacion.domain.EstadoHabitacion;
+import com.example.roomix.habitacion.domain.Habitacion;
+import com.example.roomix.habitacion.repository.HabitacionRepository;
+import com.example.roomix.huesped.domain.Huesped;
+import com.example.roomix.huesped.dto.HuespedRequest;
+import com.example.roomix.huesped.dto.HuespedResponse;
+import com.example.roomix.huesped.exception.HuespedErrorCode;
+import com.example.roomix.huesped.exception.HuespedException;
+import com.example.roomix.huesped.repository.HuespedRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class HuespedService {
+
+<span class="fc" id="L33">    private static final EnumSet&lt;EstadoHabitacion&gt; ESTADOS_CON_HUESPED = EnumSet.of(</span>
+            EstadoHabitacion.RESERVADO,
+            EstadoHabitacion.OCUPADO
+    );
+
+    private final HuespedRepository huespedRepository;
+    private final HabitacionRepository habitacionRepository;
+
+    public List&lt;HuespedResponse&gt; listar(Boolean activo, String busqueda) {
+<span class="nc bnc" id="L42" title="All 2 branches missed.">        String termino = busqueda != null ? busqueda.trim() : null;</span>
+<span class="nc" id="L43">        List&lt;Huesped&gt; huespedes = huespedRepository.buscar(activo, termino);</span>
+<span class="nc" id="L44">        Map&lt;Long, String&gt; habitacionPorHuesped = mapaHabitacionActual();</span>
+<span class="nc" id="L45">        return huespedes.stream()</span>
+<span class="nc" id="L46">                .map(h -&gt; HuespedResponse.from(h, habitacionPorHuesped.get(h.getId())))</span>
+<span class="nc" id="L47">                .toList();</span>
+    }
+
+    /**
+     * Búsqueda rápida para autocompletar: cada palabra debe aparecer en nombre, apellidos, documento o correo,
+     * sin distinguir mayúsculas ni tildes (&quot;steween mora&quot; o &quot;gomez&quot; encuentran &quot;Steween Mora&quot; y &quot;Gómez&quot;).
+     */
+    public List&lt;HuespedResponse&gt; buscarRapido(String texto, int limite) {
+<span class="pc bpc" id="L55" title="2 of 4 branches missed.">        if (texto == null || texto.isBlank()) {</span>
+<span class="nc" id="L56">            return List.of();</span>
+        }
+<span class="fc" id="L58">        String[] palabras = normalizar(texto).split(&quot;\\s+&quot;);</span>
+<span class="fc" id="L59">        Specification&lt;Huesped&gt; spec = (root, query, cb) -&gt; {</span>
+<span class="fc" id="L60">            Expression&lt;String&gt; campos = cb.concat(cb.concat(cb.concat(cb.concat(cb.concat(cb.concat(</span>
+<span class="fc" id="L61">                    root.get(&quot;nombre&quot;), &quot; &quot;), root.get(&quot;apellidos&quot;)), &quot; &quot;), root.get(&quot;numeroDocumento&quot;)), &quot; &quot;),</span>
+<span class="fc" id="L62">                    cb.coalesce(root.get(&quot;email&quot;), &quot;&quot;));</span>
+<span class="fc" id="L63">            Expression&lt;String&gt; sinTildes = cb.function(&quot;translate&quot;, String.class, cb.lower(campos),</span>
+<span class="fc" id="L64">                    cb.literal(CON_TILDE), cb.literal(SIN_TILDE));</span>
+<span class="fc" id="L65">            List&lt;Predicate&gt; condiciones = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L66">            condiciones.add(cb.isTrue(root.get(&quot;activo&quot;)));</span>
+<span class="fc bfc" id="L67" title="All 2 branches covered.">            for (int i = 0; i &lt; Math.min(palabras.length, 5); i++) {</span>
+<span class="fc" id="L68">                condiciones.add(cb.like(sinTildes, &quot;%&quot; + palabras[i] + &quot;%&quot;));</span>
+            }
+<span class="fc" id="L70">            return cb.and(condiciones.toArray(Predicate[]::new));</span>
+        };
+<span class="fc" id="L72">        int tope = Math.min(Math.max(limite, 1), 20);</span>
+<span class="fc" id="L73">        List&lt;Huesped&gt; encontrados = huespedRepository.findAll(spec,</span>
+<span class="fc" id="L74">                PageRequest.of(0, tope, Sort.by(&quot;apellidos&quot;).ascending().and(Sort.by(&quot;nombre&quot;).ascending()))).getContent();</span>
+<span class="fc" id="L75">        Map&lt;Long, String&gt; habitacionPorHuesped = mapaHabitacionActual();</span>
+<span class="fc" id="L76">        return encontrados.stream()</span>
+<span class="fc" id="L77">                .map(h -&gt; HuespedResponse.from(h, habitacionPorHuesped.get(h.getId())))</span>
+<span class="fc" id="L78">                .toList();</span>
+    }
+
+    private static final String CON_TILDE = &quot;áéíóúüàèìòùñ&quot;;
+    private static final String SIN_TILDE = &quot;aeiouuaeioun&quot;;
+
+    private static String normalizar(String texto) {
+<span class="fc" id="L85">        String t = texto.trim().toLowerCase();</span>
+<span class="fc" id="L86">        StringBuilder sb = new StringBuilder(t.length());</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        for (char c : t.toCharArray()) {</span>
+<span class="fc" id="L88">            int i = CON_TILDE.indexOf(c);</span>
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">            sb.append(i &gt;= 0 ? SIN_TILDE.charAt(i) : c);</span>
+        }
+<span class="fc" id="L91">        return sb.toString();</span>
+    }
+
+    public HuespedResponse obtenerPorId(Long id) {
+<span class="nc" id="L95">        Huesped huesped = buscarEntidad(id);</span>
+<span class="nc" id="L96">        return HuespedResponse.from(huesped, habitacionActualNumero(huesped.getId()));</span>
+    }
+
+    @Transactional
+    public HuespedResponse crear(HuespedRequest request) {
+<span class="fc" id="L101">        validarDocumentoUnico(request.numeroDocumento(), null);</span>
+<span class="fc" id="L102">        Huesped huesped = aplicarRequest(Huesped.builder().activo(true).build(), request);</span>
+<span class="fc" id="L103">        return HuespedResponse.from(huespedRepository.save(huesped), null);</span>
+    }
+
+    @Transactional
+    public HuespedResponse actualizar(Long id, HuespedRequest request) {
+<span class="nc" id="L108">        Huesped huesped = buscarEntidad(id);</span>
+<span class="nc" id="L109">        validarDocumentoUnico(request.numeroDocumento(), id);</span>
+<span class="nc" id="L110">        aplicarRequest(huesped, request);</span>
+<span class="nc" id="L111">        return HuespedResponse.from(</span>
+<span class="nc" id="L112">                huespedRepository.save(huesped),</span>
+<span class="nc" id="L113">                habitacionActualNumero(huesped.getId())</span>
+        );
+    }
+
+    @Transactional
+    public void eliminar(Long id) {
+<span class="nc" id="L119">        Huesped huesped = buscarEntidad(id);</span>
+<span class="nc" id="L120">        huesped.setActivo(false);</span>
+<span class="nc" id="L121">        huespedRepository.save(huesped);</span>
+<span class="nc" id="L122">    }</span>
+
+    public Huesped buscarActivo(Long id) {
+<span class="fc" id="L125">        Huesped huesped = buscarEntidad(id);</span>
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">        if (!huesped.isActivo()) {</span>
+<span class="nc" id="L127">            throw new HuespedException(HuespedErrorCode.HUESPED_INACTIVO, huesped.nombreCompleto());</span>
+        }
+<span class="fc" id="L129">        return huesped;</span>
+    }
+
+    public Huesped buscarEntidad(Long id) {
+<span class="fc" id="L133">        return huespedRepository.findById(id)</span>
+<span class="pc" id="L134">                .orElseThrow(() -&gt; new HuespedException(HuespedErrorCode.HUESPED_NO_ENCONTRADO, id));</span>
+    }
+
+    public void validarDisponibleParaAsignar(Huesped huesped, Long habitacionIdExcluida) {
+<span class="nc" id="L138">        habitacionRepository</span>
+<span class="nc" id="L139">                .findByHuespedIdAndEstadoIn(huesped.getId(), ESTADOS_CON_HUESPED)</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">                .filter(h -&gt; !h.getId().equals(habitacionIdExcluida))</span>
+<span class="nc" id="L141">                .ifPresent(h -&gt; {</span>
+<span class="nc" id="L142">                    throw new HuespedException(HuespedErrorCode.HUESPED_YA_ASIGNADO, h.getNumero());</span>
+                });
+<span class="nc" id="L144">    }</span>
+
+    private Huesped aplicarRequest(Huesped huesped, HuespedRequest request) {
+<span class="fc" id="L147">        huesped.setNombre(request.nombre().trim());</span>
+<span class="fc" id="L148">        huesped.setApellidos(request.apellidos().trim());</span>
+<span class="fc" id="L149">        huesped.setTipoDocumento(request.tipoDocumento());</span>
+<span class="fc" id="L150">        huesped.setNumeroDocumento(request.numeroDocumento().trim().toUpperCase());</span>
+<span class="fc" id="L151">        huesped.setEmail(request.email().trim().toLowerCase());</span>
+<span class="fc" id="L152">        huesped.setTelefono(request.telefono().trim());</span>
+<span class="fc" id="L153">        huesped.setNacionalidad(normalizarOpcional(request.nacionalidad()));</span>
+<span class="fc" id="L154">        huesped.setFechaNacimiento(request.fechaNacimiento());</span>
+<span class="fc" id="L155">        huesped.setNotas(normalizarOpcional(request.notas()));</span>
+<span class="pc bpc" id="L156" title="1 of 2 branches missed.">        if (request.activo() != null) {</span>
+<span class="nc" id="L157">            huesped.setActivo(request.activo());</span>
+        }
+<span class="pc bpc" id="L159" title="2 of 4 branches missed.">        if (Boolean.TRUE.equals(request.autorizaTratamientoDatos()) &amp;&amp; !huesped.isAutorizaTratamientoDatos()) {</span>
+<span class="fc" id="L160">            huesped.setAutorizaTratamientoDatos(true);</span>
+<span class="fc" id="L161">            huesped.setFechaHoraAutorizacion(java.time.LocalDateTime.now());</span>
+        }
+<span class="fc" id="L163">        return huesped;</span>
+    }
+
+    private void validarDocumentoUnico(String numeroDocumento, Long idExcluido) {
+<span class="fc" id="L167">        String doc = numeroDocumento.trim().toUpperCase();</span>
+<span class="pc bpc" id="L168" title="1 of 2 branches missed.">        if (idExcluido == null) {</span>
+<span class="fc" id="L169">            huespedRepository.findByNumeroDocumentoIgnoreCase(doc).ifPresent(h -&gt; {</span>
+<span class="nc" id="L170">                throw new HuespedException(HuespedErrorCode.DOCUMENTO_DUPLICADO, doc);</span>
+            });
+<span class="fc" id="L172">            return;</span>
+        }
+<span class="nc bnc" id="L174" title="All 2 branches missed.">        if (huespedRepository.existsByNumeroDocumentoIgnoreCaseAndIdNot(doc, idExcluido)) {</span>
+<span class="nc" id="L175">            throw new HuespedException(HuespedErrorCode.DOCUMENTO_DUPLICADO, doc);</span>
+        }
+<span class="nc" id="L177">    }</span>
+
+    private String normalizarOpcional(String valor) {
+<span class="fc bfc" id="L180" title="All 2 branches covered.">        if (valor == null) {</span>
+<span class="fc" id="L181">            return null;</span>
+        }
+<span class="fc" id="L183">        String limpio = valor.trim();</span>
+<span class="pc bpc" id="L184" title="1 of 2 branches missed.">        return limpio.isEmpty() ? null : limpio;</span>
+    }
+
+    private Map&lt;Long, String&gt; mapaHabitacionActual() {
+<span class="fc" id="L188">        return habitacionRepository.findByEstadoIn(ESTADOS_CON_HUESPED).stream()</span>
+<span class="pc bnc" id="L189" title="All 2 branches missed.">                .filter(h -&gt; h.getHuesped() != null)</span>
+<span class="fc" id="L190">                .collect(Collectors.toMap(</span>
+<span class="nc" id="L191">                        h -&gt; h.getHuesped().getId(),</span>
+                        Habitacion::getNumero,
+<span class="nc" id="L193">                        (a, b) -&gt; a</span>
+                ));
+    }
+
+    private String habitacionActualNumero(Long huespedId) {
+<span class="nc" id="L198">        return habitacionRepository</span>
+<span class="nc" id="L199">                .findByHuespedIdAndEstadoIn(huespedId, ESTADOS_CON_HUESPED)</span>
+<span class="nc" id="L200">                .map(Habitacion::getNumero)</span>
+<span class="nc" id="L201">                .orElse(null);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

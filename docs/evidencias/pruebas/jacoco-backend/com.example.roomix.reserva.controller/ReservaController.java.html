@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReservaController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.reserva.controller</a> &gt; <span class="el_source">ReservaController.java</span></div><h1>ReservaController.java</h1><pre class="source lang-java linenums">package com.example.roomix.reserva.controller;
+
+import com.example.roomix.finanzas.dto.FacturaDtos.CuentaResponse;
+import com.example.roomix.finanzas.dto.FinanzasDtos.AnularRequest;
+import com.example.roomix.finanzas.service.FacturacionService;
+import com.example.roomix.habitacion.dto.HabitacionResponse;
+import com.example.roomix.reserva.domain.CanalReserva;
+import com.example.roomix.reserva.dto.ActualizarReservaRequest;
+import com.example.roomix.reserva.service.ReservaOperacionService;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+
+import com.example.roomix.habitacion.domain.EstadoReserva;
+import com.example.roomix.habitacion.domain.TipoHabitacion;
+import com.example.roomix.reserva.dto.CrearReservaRequest;
+import com.example.roomix.reserva.dto.HabitacionDisponibilidadCheckResponse;
+import com.example.roomix.reserva.dto.HabitacionDisponibleResponse;
+import com.example.roomix.reserva.dto.ReservaResponse;
+import com.example.roomix.reserva.service.ReservaService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDate;
+import java.util.List;
+
+@Tag(name = &quot;Reservas&quot;, description = &quot;Reservas, disponibilidad e historial de estadías&quot;)
+@RestController
+@RequestMapping(&quot;/api/reservas&quot;)
+@RequiredArgsConstructor
+public class ReservaController {
+
+    private final ReservaService reservaService;
+    private final ReservaOperacionService operacionService;
+    private final FacturacionService facturacionService;
+    private final com.example.roomix.finanzas.service.AbonoService abonoService;
+
+    @Operation(summary = &quot;Listar reservas con filtros opcionales&quot;)
+    @GetMapping
+    public List&lt;ReservaResponse&gt; listar(
+            @RequestParam(required = false) EstadoReserva estado,
+            @RequestParam(required = false) Long huespedId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaDesde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaHasta
+    ) {
+<span class="nc" id="L57">        return reservaService.listar(estado, huespedId, fechaDesde, fechaHasta);</span>
+    }
+
+    @Operation(summary = &quot;Obtener reserva por id&quot;)
+    @GetMapping(&quot;/{id}&quot;)
+    public ReservaResponse obtener(@PathVariable Long id) {
+<span class="fc" id="L63">        return reservaService.obtenerPorId(id);</span>
+    }
+
+    @Operation(summary = &quot;Consultar habitaciones disponibles para un rango de fechas&quot;)
+    @GetMapping(&quot;/disponibilidad&quot;)
+    public List&lt;HabitacionDisponibleResponse&gt; disponibilidad(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaEntrada,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaSalida,
+            @RequestParam(required = false) TipoHabitacion tipoHabitacion
+    ) {
+<span class="nc" id="L73">        return reservaService.consultarDisponibilidad(fechaEntrada, fechaSalida, tipoHabitacion);</span>
+    }
+
+    @Operation(summary = &quot;Verificar si una habitación concreta está disponible en un rango de fechas&quot;)
+    @GetMapping(&quot;/disponibilidad/habitacion/{habitacionId}&quot;)
+    public HabitacionDisponibilidadCheckResponse disponibilidadHabitacion(
+            @PathVariable Long habitacionId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaEntrada,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaSalida
+    ) {
+<span class="nc" id="L83">        return reservaService.verificarDisponibilidadHabitacion(habitacionId, fechaEntrada, fechaSalida);</span>
+    }
+
+    @Operation(summary = &quot;Crear reserva y marcar habitación como reservada&quot;)
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public ReservaResponse crear(@Valid @RequestBody CrearReservaRequest request) {
+<span class="fc" id="L90">        return operacionService.crear(request);</span>
+    }
+
+    @Operation(summary = &quot;Modificar reserva&quot;,
+            description = &quot;Confirmada: fechas, huésped, canal y observaciones. En curso: solo fecha de salida y observaciones&quot;)
+    @PutMapping(&quot;/{id}&quot;)
+    public ReservaResponse actualizar(@PathVariable Long id, @Valid @RequestBody ActualizarReservaRequest request) {
+<span class="nc" id="L97">        return reservaService.actualizar(id, request);</span>
+    }
+
+    @Operation(summary = &quot;Cancelar reserva confirmada (con motivo)&quot;)
+    @PatchMapping(&quot;/{id}/cancelar&quot;)
+    public ReservaResponse cancelar(@PathVariable Long id, @Valid @RequestBody AnularRequest request) {
+<span class="fc" id="L103">        return reservaService.cancelarReserva(id, request.motivo());</span>
+    }
+
+    @Operation(summary = &quot;Check-in rápido de la reserva&quot;)
+    @PatchMapping(&quot;/{id}/check-in&quot;)
+    public HabitacionResponse checkIn(@PathVariable Long id) {
+<span class="fc" id="L109">        return operacionService.checkIn(id);</span>
+    }
+
+    @Operation(summary = &quot;Check-out de la reserva&quot;, description = &quot;Inhabilita la habitación para limpieza y emite la factura&quot;)
+    @PatchMapping(&quot;/{id}/check-out&quot;)
+    public ReservaOperacionService.CheckOutResponse checkOut(@PathVariable Long id) {
+<span class="fc" id="L115">        return operacionService.checkOut(id);</span>
+    }
+
+    @Operation(summary = &quot;Cuenta del huésped (alojamiento + servicios, facturado y pagado)&quot;)
+    @GetMapping(&quot;/{id}/cuenta&quot;)
+    public CuentaResponse cuenta(@PathVariable Long id) {
+<span class="nc" id="L121">        return facturacionService.cuentaReserva(id);</span>
+    }
+
+    @Operation(summary = &quot;Cotizar una reserva: subtotal, descuento de la promoción, IVA y abono mínimo exigido&quot;)
+    @GetMapping(&quot;/cotizacion&quot;)
+    public com.example.roomix.finanzas.dto.AbonoDtos.Cotizacion cotizacion(
+            @RequestParam Long habitacionId,
+            @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate fechaEntrada,
+            @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate fechaSalida,
+            @RequestParam(required = false) Long promocionId,
+            @RequestParam(required = false) CanalReserva canal,
+            @RequestParam(required = false) Long huespedId
+    ) {
+<span class="nc" id="L134">        return abonoService.cotizar(habitacionId, fechaEntrada, fechaSalida, promocionId, canal, huespedId);</span>
+    }
+
+    @Operation(summary = &quot;Abonos de la reserva: total, mínimo exigido, abonado, saldo y lista de abonos&quot;)
+    @GetMapping(&quot;/{id}/abonos&quot;)
+    public com.example.roomix.finanzas.dto.AbonoDtos.ResumenAbonos abonos(@PathVariable Long id) {
+<span class="fc" id="L140">        return abonoService.resumen(id);</span>
+    }
+
+    @Operation(summary = &quot;Registrar un abono a la reserva&quot;)
+    @PostMapping(&quot;/{id}/abonos&quot;)
+    @org.springframework.web.bind.annotation.ResponseStatus(org.springframework.http.HttpStatus.CREATED)
+    public com.example.roomix.finanzas.dto.AbonoDtos.AbonoResponse registrarAbono(
+            @PathVariable Long id, @Valid @RequestBody com.example.roomix.finanzas.dto.AbonoDtos.AbonoRequest request) {
+<span class="fc" id="L148">        return abonoService.registrar(id, request);</span>
+    }
+
+    @Operation(summary = &quot;Canales de reserva&quot;)
+    @GetMapping(&quot;/canales&quot;)
+    public List&lt;java.util.Map&lt;String, String&gt;&gt; canales() {
+<span class="nc" id="L154">        return java.util.Arrays.stream(CanalReserva.values())</span>
+<span class="nc" id="L155">                .map(c -&gt; java.util.Map.of(&quot;codigo&quot;, c.name(), &quot;nombre&quot;, c.getNombre()))</span>
+<span class="nc" id="L156">                .toList();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

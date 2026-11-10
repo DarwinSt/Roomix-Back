@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ArticuloInventarioRequest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.inventario.dto</a> &gt; <span class="el_source">ArticuloInventarioRequest.java</span></div><h1>ArticuloInventarioRequest.java</h1><pre class="source lang-java linenums">package com.example.roomix.inventario.dto;
+
+import jakarta.validation.constraints.DecimalMin;
+import java.math.BigDecimal;
+import com.example.roomix.inventario.domain.UnidadMedida;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Builder;
+
+@Schema(name = &quot;ArticuloInventarioRequest&quot;, description = &quot;Datos para crear o actualizar un artículo de inventario&quot;)
+@Builder
+<span class="nc" id="L15">public record ArticuloInventarioRequest(</span>
+        @Schema(description = &quot;Nombre del artículo&quot;, example = &quot;Toalla de baño&quot;, maxLength = 120)
+        @NotBlank(message = &quot;El nombre es obligatorio&quot;)
+        @Size(max = 120, message = &quot;El nombre no puede superar 120 caracteres&quot;)
+        String nombre,
+
+        @Schema(description = &quot;Descripción del artículo&quot;, example = &quot;Toalla blanca 70x140 cm&quot;, maxLength = 500)
+        @NotBlank(message = &quot;La descripción es obligatoria&quot;)
+        @Size(max = 500, message = &quot;La descripción no puede superar 500 caracteres&quot;)
+        String descripcion,
+
+        @Schema(description = &quot;ID de la categoría de inventario&quot;, example = &quot;1&quot;)
+        @NotNull(message = &quot;La categoría es obligatoria&quot;)
+        Long categoriaId,
+
+        @Schema(description = &quot;Cantidad actual en inventario&quot;, example = &quot;50&quot;, minimum = &quot;0&quot;)
+        @NotNull(message = &quot;La cantidad es obligatoria&quot;)
+        @Min(value = 0, message = &quot;La cantidad no puede ser negativa&quot;)
+        Integer cantidad,
+
+        @Schema(description = &quot;Umbral mínimo para alerta de stock bajo&quot;, example = &quot;10&quot;, minimum = &quot;0&quot;, nullable = true)
+        @Min(value = 0, message = &quot;La cantidad mínima no puede ser negativa&quot;)
+        Integer cantidadMinima,
+
+        @Schema(description = &quot;Unidad de medida&quot;, example = &quot;UNIDAD&quot;)
+        @NotNull(message = &quot;La unidad de medida es obligatoria&quot;)
+        UnidadMedida unidadMedida,
+
+        @Schema(description = &quot;Ubicación física en el hotel&quot;, example = &quot;Almacén planta baja - estante A3&quot;, nullable = true)
+        @Size(max = 150, message = &quot;La ubicación no puede superar 150 caracteres&quot;)
+        String ubicacion,
+
+        @Schema(description = &quot;Indica si el artículo está activo&quot;, example = &quot;true&quot;)
+        Boolean activo,
+
+        @Schema(description = &quot;Proveedor habitual&quot;, example = &quot;Distribuidora Caribe S.A.S.&quot;)
+        @Size(max = 120, message = &quot;El proveedor no puede superar 120 caracteres&quot;)
+        String proveedor,
+
+        @Schema(description = &quot;Costo unitario de referencia en COP&quot;, example = &quot;18500&quot;)
+        @DecimalMin(value = &quot;0&quot;, message = &quot;El precio no puede ser negativo&quot;)
+        BigDecimal precioUnitario
+) {
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

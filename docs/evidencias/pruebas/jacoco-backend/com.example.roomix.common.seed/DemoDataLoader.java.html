@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DemoDataLoader.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.common.seed</a> &gt; <span class="el_source">DemoDataLoader.java</span></div><h1>DemoDataLoader.java</h1><pre class="source lang-java linenums">package com.example.roomix.common.seed;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
+import org.springframework.stereotype.Component;
+
+import javax.sql.DataSource;
+import java.nio.charset.StandardCharsets;
+
+/**
+ * Carga {@code db/seed-data.sql} cuando {@code app.seed.enabled=true} (APP_SEED_ENABLED).
+ * &lt;p&gt;
+ * Se ejecuta en {@link ApplicationReadyEvent}, es decir, después de que Hibernate creó las tablas
+ * y de que corrieron todas las migraciones ({@code ApplicationRunner}). Solo actúa si la tabla
+ * de habitaciones está vacía, para no sobrescribir datos de un hotel en operación.
+ */
+@Component
+@ConditionalOnProperty(name = &quot;app.seed.enabled&quot;, havingValue = &quot;true&quot;)
+@RequiredArgsConstructor
+<span class="nc" id="L26">@Slf4j</span>
+public class DemoDataLoader {
+
+    private static final String SCRIPT = &quot;db/seed-data.sql&quot;;
+
+    private final DataSource dataSource;
+    private final JdbcTemplate jdbcTemplate;
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void cargar() {
+<span class="nc" id="L36">        Integer habitaciones = jdbcTemplate.queryForObject(&quot;SELECT COUNT(*) FROM habitaciones&quot;, Integer.class);</span>
+<span class="nc bnc" id="L37" title="All 4 branches missed.">        if (habitaciones != null &amp;&amp; habitaciones &gt; 0) {</span>
+<span class="nc" id="L38">            log.info(&quot;Datos iniciales omitidos: la base ya tiene {} habitación(es)&quot;, habitaciones);</span>
+<span class="nc" id="L39">            return;</span>
+        }
+
+<span class="nc" id="L42">        ResourceDatabasePopulator populator = new ResourceDatabasePopulator(new ClassPathResource(SCRIPT));</span>
+<span class="nc" id="L43">        populator.setSqlScriptEncoding(StandardCharsets.UTF_8.name());</span>
+<span class="nc" id="L44">        populator.execute(dataSource);</span>
+<span class="nc" id="L45">        log.info(&quot;Datos iniciales cargados desde {}&quot;, SCRIPT);</span>
+<span class="nc" id="L46">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

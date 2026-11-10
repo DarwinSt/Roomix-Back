@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ServicioService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.servicio.service</a> &gt; <span class="el_source">ServicioService.java</span></div><h1>ServicioService.java</h1><pre class="source lang-java linenums">package com.example.roomix.servicio.service;
+
+import com.example.roomix.auth.service.UsuarioActual;
+import com.example.roomix.finanzas.domain.OrigenItem;
+import com.example.roomix.finanzas.repository.FacturaItemRepository;
+import com.example.roomix.habitacion.domain.EstadoReserva;
+import com.example.roomix.personal.domain.Personal;
+import com.example.roomix.personal.service.PersonalService;
+import com.example.roomix.reserva.domain.Reserva;
+import com.example.roomix.reserva.repository.ReservaRepository;
+import com.example.roomix.servicio.domain.EstadoSolicitud;
+import com.example.roomix.servicio.domain.ServicioCatalogo;
+import com.example.roomix.servicio.domain.SolicitudServicio;
+import com.example.roomix.servicio.dto.ServicioDtos.AsignarRequest;
+import com.example.roomix.servicio.dto.ServicioDtos.CambiarEstadoRequest;
+import com.example.roomix.servicio.dto.ServicioDtos.CatalogoRequest;
+import com.example.roomix.servicio.dto.ServicioDtos.CatalogoResponse;
+import com.example.roomix.servicio.dto.ServicioDtos.SolicitudRequest;
+import com.example.roomix.servicio.dto.ServicioDtos.SolicitudResponse;
+import com.example.roomix.servicio.exception.ServicioErrorCode;
+import com.example.roomix.servicio.exception.ServicioException;
+import com.example.roomix.servicio.repository.ServicioCatalogoRepository;
+import com.example.roomix.servicio.repository.SolicitudServicioRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * Catálogo de servicios adicionales y solicitudes de los huéspedes.
+ */
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class ServicioService {
+
+<span class="fc" id="L45">    private static final Set&lt;EstadoReserva&gt; RESERVA_ACTIVA = Set.of(EstadoReserva.CONFIRMADA, EstadoReserva.EN_CURSO);</span>
+
+    /** Transiciones permitidas del ciclo de una solicitud. */
+<span class="fc" id="L48">    private static final Map&lt;EstadoSolicitud, Set&lt;EstadoSolicitud&gt;&gt; TRANSICIONES = Map.of(</span>
+<span class="fc" id="L49">            EstadoSolicitud.SOLICITADA, Set.of(EstadoSolicitud.EN_PROCESO, EstadoSolicitud.COMPLETADA, EstadoSolicitud.CANCELADA),</span>
+<span class="fc" id="L50">            EstadoSolicitud.EN_PROCESO, Set.of(EstadoSolicitud.COMPLETADA, EstadoSolicitud.CANCELADA),</span>
+<span class="fc" id="L51">            EstadoSolicitud.COMPLETADA, Set.of(),</span>
+<span class="fc" id="L52">            EstadoSolicitud.CANCELADA, Set.of()</span>
+    );
+
+    private final ServicioCatalogoRepository catalogoRepository;
+    private final SolicitudServicioRepository solicitudRepository;
+    private final ReservaRepository reservaRepository;
+    private final PersonalService personalService;
+    private final FacturaItemRepository facturaItemRepository;
+
+    // ----------------------------------------------------------------- Catálogo
+
+    public List&lt;CatalogoResponse&gt; listarCatalogo(boolean soloActivos) {
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        return (soloActivos</span>
+<span class="nc" id="L65">                ? catalogoRepository.findByActivoTrueOrderByCategoriaAscNombreAsc()</span>
+<span class="nc" id="L66">                : catalogoRepository.findAllByOrderByCategoriaAscNombreAsc())</span>
+<span class="nc" id="L67">                .stream().map(CatalogoResponse::from).toList();</span>
+    }
+
+    @Transactional
+    public CatalogoResponse crearServicio(CatalogoRequest request) {
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">        if (catalogoRepository.existsByNombreIgnoreCase(request.nombre().trim())) {</span>
+<span class="nc" id="L73">            throw new ServicioException(ServicioErrorCode.NOMBRE_DUPLICADO, request.nombre().trim());</span>
+        }
+<span class="fc" id="L75">        ServicioCatalogo servicio = aplicar(ServicioCatalogo.builder().build(), request);</span>
+<span class="fc" id="L76">        return CatalogoResponse.from(catalogoRepository.save(servicio));</span>
+    }
+
+    @Transactional
+    public CatalogoResponse actualizarServicio(Long id, CatalogoRequest request) {
+<span class="nc" id="L81">        ServicioCatalogo servicio = buscarServicio(id);</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">        if (catalogoRepository.existsByNombreIgnoreCaseAndIdNot(request.nombre().trim(), id)) {</span>
+<span class="nc" id="L83">            throw new ServicioException(ServicioErrorCode.NOMBRE_DUPLICADO, request.nombre().trim());</span>
+        }
+<span class="nc" id="L85">        return CatalogoResponse.from(catalogoRepository.save(aplicar(servicio, request)));</span>
+    }
+
+    @Transactional
+    public CatalogoResponse cambiarActivo(Long id, boolean activo) {
+<span class="nc" id="L90">        ServicioCatalogo servicio = buscarServicio(id);</span>
+<span class="nc" id="L91">        servicio.setActivo(activo);</span>
+<span class="nc" id="L92">        return CatalogoResponse.from(catalogoRepository.save(servicio));</span>
+    }
+
+    // --------------------------------------------------------------- Solicitudes
+
+    public List&lt;SolicitudResponse&gt; listarSolicitudes(
+            EstadoSolicitud estado,
+            Long reservaId,
+            Long huespedId,
+            LocalDate fecha,
+            Boolean activas
+    ) {
+<span class="nc bnc" id="L104" title="All 2 branches missed.">        LocalDateTime desde = fecha != null ? fecha.atStartOfDay() : null;</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">        LocalDateTime hasta = fecha != null ? fecha.plusDays(1).atStartOfDay() : null;</span>
+<span class="nc" id="L106">        return solicitudRepository.findAll(</span>
+<span class="nc" id="L107">                        SolicitudServicioRepository.conFiltros(estado, reservaId, huespedId, desde, hasta, activas),</span>
+<span class="nc" id="L108">                        Sort.by(Sort.Direction.DESC, &quot;fechaHoraSolicitud&quot;))</span>
+<span class="nc" id="L109">                .stream().map(SolicitudResponse::from).toList();</span>
+    }
+
+    @Transactional
+    public SolicitudResponse crearSolicitud(SolicitudRequest request) {
+<span class="fc" id="L114">        Reserva reserva = reservaRepository.findById(request.reservaId())</span>
+<span class="pc" id="L115">                .orElseThrow(() -&gt; new ServicioException(ServicioErrorCode.RESERVA_NO_ENCONTRADA, request.reservaId()));</span>
+<span class="fc bfc" id="L116" title="All 2 branches covered.">        if (!RESERVA_ACTIVA.contains(reserva.getEstadoReserva())) {</span>
+<span class="fc" id="L117">            throw new ServicioException(ServicioErrorCode.RESERVA_NO_ACTIVA);</span>
+        }
+<span class="fc" id="L119">        ServicioCatalogo servicio = buscarServicio(request.servicioId());</span>
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">        if (!servicio.isActivo()) {</span>
+<span class="nc" id="L121">            throw new ServicioException(ServicioErrorCode.SERVICIO_INACTIVO, servicio.getNombre());</span>
+        }
+
+<span class="fc" id="L124">        SolicitudServicio solicitud = SolicitudServicio.builder()</span>
+<span class="fc" id="L125">                .servicio(servicio)</span>
+<span class="fc" id="L126">                .reserva(reserva)</span>
+<span class="fc" id="L127">                .habitacion(reserva.getHabitacion())</span>
+<span class="fc" id="L128">                .huesped(reserva.getHuesped())</span>
+<span class="fc" id="L129">                .cantidad(request.cantidad())</span>
+<span class="fc" id="L130">                .precioUnitario(servicio.getPrecio())</span>
+<span class="fc" id="L131">                .total(servicio.getPrecio().multiply(BigDecimal.valueOf(request.cantidad())))</span>
+<span class="fc" id="L132">                .fechaHoraProgramada(request.fechaHoraProgramada())</span>
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">                .responsable(request.responsableId() != null ? personalService.buscarEntidad(request.responsableId()) : null)</span>
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">                .notas(StringUtils.hasText(request.notas()) ? request.notas().trim() : null)</span>
+<span class="fc" id="L135">                .solicitadoPor(UsuarioActual.username())</span>
+<span class="fc" id="L136">                .fechaHoraSolicitud(LocalDateTime.now())</span>
+<span class="fc" id="L137">                .build();</span>
+<span class="fc" id="L138">        return SolicitudResponse.from(solicitudRepository.save(solicitud));</span>
+    }
+
+    @Transactional
+    public SolicitudResponse asignar(Long id, AsignarRequest request) {
+<span class="nc" id="L143">        SolicitudServicio solicitud = buscarSolicitud(id);</span>
+<span class="nc" id="L144">        validarNoCerrada(solicitud, solicitud.getEstado());</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">        Personal responsable = request.responsableId() != null ? personalService.buscarEntidad(request.responsableId()) : null;</span>
+<span class="nc" id="L146">        solicitud.setResponsable(responsable);</span>
+<span class="nc" id="L147">        solicitud.setFechaHoraProgramada(request.fechaHoraProgramada());</span>
+<span class="nc" id="L148">        return SolicitudResponse.from(solicitudRepository.save(solicitud));</span>
+    }
+
+    @Transactional
+    public SolicitudResponse cambiarEstado(Long id, CambiarEstadoRequest request) {
+<span class="fc" id="L153">        SolicitudServicio solicitud = buscarSolicitud(id);</span>
+<span class="fc" id="L154">        EstadoSolicitud nuevo = request.estado();</span>
+<span class="fc bfc" id="L155" title="All 2 branches covered.">        if (!TRANSICIONES.get(solicitud.getEstado()).contains(nuevo)) {</span>
+<span class="fc" id="L156">            throw new ServicioException(ServicioErrorCode.TRANSICION_INVALIDA, solicitud.getEstado(), nuevo);</span>
+        }
+<span class="pc bpc" id="L158" title="1 of 2 branches missed.">        if (nuevo == EstadoSolicitud.CANCELADA) {</span>
+<span class="fc bfc" id="L159" title="All 2 branches covered.">            if (!StringUtils.hasText(request.motivo())) {</span>
+<span class="fc" id="L160">                throw new ServicioException(ServicioErrorCode.MOTIVO_REQUERIDO);</span>
+            }
+<span class="pc bpc" id="L162" title="1 of 2 branches missed.">            if (facturaItemRepository.estaFacturado(OrigenItem.SERVICIO, solicitud.getId())) {</span>
+<span class="fc" id="L163">                throw new ServicioException(ServicioErrorCode.SOLICITUD_FACTURADA);</span>
+            }
+<span class="nc" id="L165">            solicitud.setMotivoCancelacion(request.motivo().trim());</span>
+        }
+<span class="nc bnc" id="L167" title="All 2 branches missed.">        if (nuevo == EstadoSolicitud.COMPLETADA) {</span>
+<span class="nc" id="L168">            solicitud.setFechaHoraCompletado(LocalDateTime.now());</span>
+        }
+<span class="nc" id="L170">        solicitud.setEstado(nuevo);</span>
+<span class="nc" id="L171">        return SolicitudResponse.from(solicitudRepository.save(solicitud));</span>
+    }
+
+    /** Solicitudes cobrables (no canceladas) de una reserva, para la cuenta y la factura. */
+    public List&lt;SolicitudServicio&gt; cobrablesDeReserva(Long reservaId) {
+<span class="fc" id="L176">        return solicitudRepository.findByReservaIdAndEstadoNotOrderByFechaHoraSolicitudAsc(reservaId, EstadoSolicitud.CANCELADA);</span>
+    }
+
+    private void validarNoCerrada(SolicitudServicio solicitud, EstadoSolicitud estado) {
+<span class="nc bnc" id="L180" title="All 4 branches missed.">        if (estado == EstadoSolicitud.COMPLETADA || estado == EstadoSolicitud.CANCELADA) {</span>
+<span class="nc" id="L181">            throw new ServicioException(ServicioErrorCode.TRANSICION_INVALIDA, estado, &quot;asignación&quot;);</span>
+        }
+<span class="nc" id="L183">    }</span>
+
+    private ServicioCatalogo aplicar(ServicioCatalogo servicio, CatalogoRequest request) {
+<span class="fc" id="L186">        servicio.setNombre(request.nombre().trim());</span>
+<span class="pc bpc" id="L187" title="1 of 2 branches missed.">        servicio.setDescripcion(StringUtils.hasText(request.descripcion()) ? request.descripcion().trim() : null);</span>
+<span class="fc" id="L188">        servicio.setCategoria(request.categoria());</span>
+<span class="fc" id="L189">        servicio.setPrecio(request.precio());</span>
+<span class="fc" id="L190">        servicio.setUnidad(request.unidad().trim());</span>
+<span class="fc" id="L191">        servicio.setDuracionMinutos(request.duracionMinutos());</span>
+<span class="pc bpc" id="L192" title="1 of 2 branches missed.">        if (request.activo() != null) {</span>
+<span class="nc" id="L193">            servicio.setActivo(request.activo());</span>
+        }
+<span class="fc" id="L195">        return servicio;</span>
+    }
+
+    private ServicioCatalogo buscarServicio(Long id) {
+<span class="fc" id="L199">        return catalogoRepository.findById(id)</span>
+<span class="pc" id="L200">                .orElseThrow(() -&gt; new ServicioException(ServicioErrorCode.SERVICIO_NO_ENCONTRADO, id));</span>
+    }
+
+    private SolicitudServicio buscarSolicitud(Long id) {
+<span class="fc" id="L204">        return solicitudRepository.findById(id)</span>
+<span class="pc" id="L205">                .orElseThrow(() -&gt; new ServicioException(ServicioErrorCode.SOLICITUD_NO_ENCONTRADA, id));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

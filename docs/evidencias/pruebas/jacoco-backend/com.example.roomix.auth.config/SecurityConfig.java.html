@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SecurityConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.auth.config</a> &gt; <span class="el_source">SecurityConfig.java</span></div><h1>SecurityConfig.java</h1><pre class="source lang-java linenums">package com.example.roomix.auth.config;
+
+import com.example.roomix.auth.domain.Rol;
+import com.example.roomix.auth.domain.Usuario;
+import com.example.roomix.auth.repository.UsuarioRepository;
+import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.util.StringUtils;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ * Seguridad de la API: autenticación stateless con JWT (HS256), contraseñas con BCrypt
+ * y control de acceso por rol en cada módulo.
+ */
+@Configuration
+@EnableWebSecurity
+<span class="fc" id="L53">@Slf4j</span>
+<span class="fc" id="L54">public class SecurityConfig {</span>
+
+<span class="fc" id="L56">    private static final String ADMIN = Rol.ADMIN.name();</span>
+<span class="fc" id="L57">    private static final String RECEPCION = Rol.RECEPCION.name();</span>
+<span class="fc" id="L58">    private static final String HOUSEKEEPING = Rol.HOUSEKEEPING.name();</span>
+<span class="fc" id="L59">    private static final String FINANZAS = Rol.FINANZAS.name();</span>
+<span class="fc" id="L60">    private static final String EVENTOS = Rol.EVENTOS.name();</span>
+<span class="fc" id="L61">    private static final String ALMACEN = Rol.ALMACEN.name();</span>
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            Converter&lt;Jwt, AbstractAuthenticationToken&gt; jwtConverter
+    ) throws Exception {
+<span class="fc" id="L68">        http</span>
+<span class="fc" id="L69">                .csrf(csrf -&gt; csrf.disable())</span>
+<span class="fc" id="L70">                .cors(cors -&gt; { })</span>
+<span class="fc" id="L71">                .sessionManagement(s -&gt; s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))</span>
+<span class="fc" id="L72">                .authorizeHttpRequests(auth -&gt; auth</span>
+                        // Públicos
+<span class="fc" id="L74">                        .requestMatchers(HttpMethod.OPTIONS, &quot;/**&quot;).permitAll()</span>
+<span class="fc" id="L75">                        .requestMatchers(&quot;/api/auth/login&quot;, &quot;/api/auth/recuperar&quot;, &quot;/api/auth/restablecer&quot;).permitAll()</span>
+<span class="fc" id="L76">                        .requestMatchers(&quot;/actuator/health/**&quot;, &quot;/actuator/health&quot;).permitAll()</span>
+<span class="fc" id="L77">                        .requestMatchers(&quot;/swagger-ui.html&quot;, &quot;/swagger-ui/**&quot;, &quot;/api-docs/**&quot;).permitAll()</span>
+                        // Las fotos se cargan con &lt;img&gt;, que no envía el token
+<span class="fc" id="L79">                        .requestMatchers(HttpMethod.GET, &quot;/api/habitaciones/*/fotos/*&quot;).permitAll()</span>
+
+                        // Administración del sistema
+<span class="fc" id="L82">                        .requestMatchers(&quot;/api/usuarios/**&quot;, &quot;/api/auditoria/**&quot;).hasRole(ADMIN)</span>
+
+                        // Habitaciones
+<span class="fc" id="L85">                        .requestMatchers(HttpMethod.GET, &quot;/api/habitaciones/**&quot;)</span>
+<span class="fc" id="L86">                        .hasAnyRole(ADMIN, RECEPCION, HOUSEKEEPING, EVENTOS)</span>
+<span class="fc" id="L87">                        .requestMatchers(HttpMethod.POST, &quot;/api/habitaciones&quot;).hasRole(ADMIN)</span>
+<span class="fc" id="L88">                        .requestMatchers(HttpMethod.DELETE, &quot;/api/habitaciones/**&quot;).hasRole(ADMIN)</span>
+<span class="fc" id="L89">                        .requestMatchers(&quot;/api/habitaciones/*/fotos/**&quot;).hasRole(ADMIN)</span>
+<span class="fc" id="L90">                        .requestMatchers(&quot;/api/habitaciones/**&quot;).hasAnyRole(ADMIN, RECEPCION)</span>
+
+                        // Promociones y políticas de reserva: consulta para recepción y finanzas, cambios solo el administrador
+<span class="fc" id="L93">                        .requestMatchers(HttpMethod.GET, &quot;/api/promociones/**&quot;, &quot;/api/politicas-reserva&quot;)</span>
+<span class="fc" id="L94">                        .hasAnyRole(ADMIN, RECEPCION, FINANZAS)</span>
+<span class="fc" id="L95">                        .requestMatchers(&quot;/api/promociones/**&quot;, &quot;/api/politicas-reserva&quot;).hasRole(ADMIN)</span>
+
+                        // Reservas, huéspedes y tarifas
+<span class="fc" id="L98">                        .requestMatchers(HttpMethod.GET, &quot;/api/reservas/**&quot;, &quot;/api/huespedes/**&quot;)</span>
+<span class="fc" id="L99">                        .hasAnyRole(ADMIN, RECEPCION, FINANZAS)</span>
+<span class="fc" id="L100">                        .requestMatchers(&quot;/api/reservas/**&quot;, &quot;/api/huespedes/**&quot;).hasAnyRole(ADMIN, RECEPCION)</span>
+<span class="fc" id="L101">                        .requestMatchers(HttpMethod.GET, &quot;/api/tarifas/**&quot;).authenticated()</span>
+<span class="fc" id="L102">                        .requestMatchers(&quot;/api/tarifas/**&quot;).hasAnyRole(ADMIN, FINANZAS)</span>
+
+                        // Incidencias (limpieza, mantenimiento) y personal
+<span class="fc" id="L105">                        .requestMatchers(&quot;/api/incidencias/**&quot;).hasAnyRole(ADMIN, RECEPCION, HOUSEKEEPING)</span>
+<span class="fc" id="L106">                        .requestMatchers(HttpMethod.GET, &quot;/api/personal/**&quot;)</span>
+<span class="fc" id="L107">                        .hasAnyRole(ADMIN, RECEPCION, HOUSEKEEPING, EVENTOS)</span>
+<span class="fc" id="L108">                        .requestMatchers(&quot;/api/personal/**&quot;).hasRole(ADMIN)</span>
+
+                        // Inventario
+<span class="fc" id="L111">                        .requestMatchers(HttpMethod.GET, &quot;/api/inventario/**&quot;)</span>
+<span class="fc" id="L112">                        .hasAnyRole(ADMIN, ALMACEN, HOUSEKEEPING, FINANZAS)</span>
+<span class="fc" id="L113">                        .requestMatchers(&quot;/api/inventario/**&quot;).hasAnyRole(ADMIN, ALMACEN)</span>
+
+                        // Servicios
+<span class="fc" id="L116">                        .requestMatchers(HttpMethod.GET, &quot;/api/servicios/**&quot;)</span>
+<span class="fc" id="L117">                        .hasAnyRole(ADMIN, RECEPCION, HOUSEKEEPING, EVENTOS, FINANZAS)</span>
+<span class="fc" id="L118">                        .requestMatchers(&quot;/api/servicios/catalogo/**&quot;).hasAnyRole(ADMIN, EVENTOS)</span>
+<span class="fc" id="L119">                        .requestMatchers(&quot;/api/servicios/**&quot;).hasAnyRole(ADMIN, RECEPCION, HOUSEKEEPING, EVENTOS)</span>
+
+                        // Eventos y salones
+<span class="fc" id="L122">                        .requestMatchers(HttpMethod.GET, &quot;/api/eventos/**&quot;, &quot;/api/salones/**&quot;)</span>
+<span class="fc" id="L123">                        .hasAnyRole(ADMIN, EVENTOS, RECEPCION, FINANZAS)</span>
+<span class="fc" id="L124">                        .requestMatchers(&quot;/api/eventos/**&quot;, &quot;/api/salones/**&quot;).hasAnyRole(ADMIN, EVENTOS)</span>
+
+                        // Finanzas, facturación y reportes
+<span class="fc" id="L127">                        .requestMatchers(&quot;/api/facturas/**&quot;).hasAnyRole(ADMIN, FINANZAS, RECEPCION)</span>
+<span class="fc" id="L128">                        .requestMatchers(&quot;/api/finanzas/**&quot;, &quot;/api/reportes/**&quot;).hasAnyRole(ADMIN, FINANZAS)</span>
+
+                        // Dashboard, perfil propio y cualquier otra ruta: usuario autenticado
+<span class="fc" id="L131">                        .anyRequest().authenticated()</span>
+                )
+<span class="fc" id="L133">                .oauth2ResourceServer(oauth -&gt; oauth</span>
+<span class="fc" id="L134">                        .jwt(jwt -&gt; jwt.jwtAuthenticationConverter(jwtConverter))</span>
+<span class="fc" id="L135">                        .authenticationEntryPoint(entryPoint())</span>
+                )
+<span class="fc" id="L137">                .exceptionHandling(ex -&gt; ex</span>
+<span class="fc" id="L138">                        .authenticationEntryPoint(entryPoint())</span>
+<span class="fc" id="L139">                        .accessDeniedHandler(accessDeniedHandler())</span>
+                );
+<span class="fc" id="L141">        return http.build();</span>
+    }
+
+    /**
+     * Toma el rol y el estado del usuario desde la base de datos en cada petición: si se desactiva
+     * un usuario o se le cambia el rol, el efecto es inmediato aunque su token siga vigente.
+     */
+    @Bean
+    public Converter&lt;Jwt, AbstractAuthenticationToken&gt; jwtConverter(UsuarioRepository usuarioRepository) {
+<span class="fc" id="L150">        return jwt -&gt; {</span>
+<span class="fc" id="L151">            Usuario usuario = usuarioRepository.findByUsernameIgnoreCase(jwt.getSubject())</span>
+<span class="fc" id="L152">                    .filter(Usuario::isActivo)</span>
+<span class="pc" id="L153">                    .orElseThrow(() -&gt; new DisabledException(&quot;Usuario inexistente o desactivado&quot;));</span>
+<span class="fc" id="L154">            return new JwtAuthenticationToken(</span>
+                    jwt,
+<span class="fc" id="L156">                    List.of(new SimpleGrantedAuthority(usuario.getRol().autoridad())),</span>
+<span class="fc" id="L157">                    usuario.getUsername()</span>
+            );
+        };
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+<span class="fc" id="L164">        return new BCryptPasswordEncoder(10);</span>
+    }
+
+    @Bean
+    public SecretKey jwtSecretKey(@Value(&quot;${app.security.jwt-secret:}&quot;) String secreto) {
+        byte[] material;
+<span class="pc bpc" id="L170" title="1 of 2 branches missed.">        if (StringUtils.hasText(secreto)) {</span>
+<span class="fc" id="L171">            material = secreto.getBytes(StandardCharsets.UTF_8);</span>
+        } else {
+<span class="nc" id="L173">            material = new byte[64];</span>
+<span class="nc" id="L174">            new SecureRandom().nextBytes(material);</span>
+<span class="nc" id="L175">            log.warn(&quot;JWT_SECRET no está definido: se generó una clave aleatoria. &quot;</span>
+                    + &quot;Las sesiones se cerrarán cada vez que el backend se reinicie. &quot;
+                    + &quot;Defina JWT_SECRET en producción.&quot;);
+        }
+<span class="fc" id="L179">        return new SecretKeySpec(sha256(material), &quot;HmacSHA256&quot;);</span>
+    }
+
+    @Bean
+    public JwtEncoder jwtEncoder(SecretKey jwtSecretKey) {
+<span class="fc" id="L184">        return new NimbusJwtEncoder(new ImmutableSecret&lt;&gt;(jwtSecretKey));</span>
+    }
+
+    @Bean
+    public JwtDecoder jwtDecoder(SecretKey jwtSecretKey) {
+<span class="fc" id="L189">        return NimbusJwtDecoder.withSecretKey(jwtSecretKey).macAlgorithm(MacAlgorithm.HS256).build();</span>
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource(
+            @Value(&quot;${app.cors.allowed-origins}&quot;) String allowedOrigins
+    ) {
+<span class="fc" id="L196">        CorsConfiguration config = new CorsConfiguration();</span>
+<span class="fc" id="L197">        config.setAllowedOriginPatterns(Arrays.stream(allowedOrigins.split(&quot;,&quot;))</span>
+<span class="fc" id="L198">                .map(String::trim)</span>
+<span class="pc bpc" id="L199" title="1 of 2 branches missed.">                .filter(o -&gt; !o.isEmpty())</span>
+<span class="fc" id="L200">                .toList());</span>
+<span class="fc" id="L201">        config.setAllowedMethods(List.of(&quot;GET&quot;, &quot;POST&quot;, &quot;PUT&quot;, &quot;PATCH&quot;, &quot;DELETE&quot;, &quot;OPTIONS&quot;));</span>
+<span class="fc" id="L202">        config.setAllowedHeaders(List.of(&quot;*&quot;));</span>
+<span class="fc" id="L203">        config.setExposedHeaders(List.of(&quot;Content-Disposition&quot;));</span>
+<span class="fc" id="L204">        config.setMaxAge(3600L);</span>
+
+<span class="fc" id="L206">        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();</span>
+<span class="fc" id="L207">        source.registerCorsConfiguration(&quot;/api/**&quot;, config);</span>
+<span class="fc" id="L208">        return source;</span>
+    }
+
+    private AuthenticationEntryPoint entryPoint() {
+<span class="fc" id="L212">        return (request, response, ex) -&gt; escribirError(</span>
+                response, HttpStatus.UNAUTHORIZED, &quot;No autenticado&quot;,
+                &quot;Inicie sesión para acceder a este recurso&quot;, &quot;AUT-401&quot;);
+    }
+
+    private AccessDeniedHandler accessDeniedHandler() {
+<span class="fc" id="L218">        return (request, response, ex) -&gt; escribirError(</span>
+                response, HttpStatus.FORBIDDEN, &quot;Acceso denegado&quot;,
+                &quot;Su rol no tiene permiso para realizar esta acción&quot;, &quot;AUT-403&quot;);
+    }
+
+    private static void escribirError(
+            jakarta.servlet.http.HttpServletResponse response,
+            HttpStatus status,
+            String titulo,
+            String detalle,
+            String codigo
+    ) throws java.io.IOException {
+<span class="fc" id="L230">        response.setStatus(status.value());</span>
+<span class="fc" id="L231">        response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);</span>
+<span class="fc" id="L232">        response.setCharacterEncoding(StandardCharsets.UTF_8.name());</span>
+<span class="fc" id="L233">        response.getWriter().write(&quot;&quot;&quot;</span>
+                {&quot;type&quot;:&quot;about:blank&quot;,&quot;title&quot;:&quot;%s&quot;,&quot;status&quot;:%d,&quot;detail&quot;:&quot;%s&quot;,&quot;codigo&quot;:&quot;%s&quot;,&quot;modulo&quot;:&quot;AUTENTICACION&quot;}&quot;&quot;&quot;
+<span class="fc" id="L235">                .formatted(titulo, status.value(), detalle, codigo));</span>
+<span class="fc" id="L236">    }</span>
+
+    private static byte[] sha256(byte[] material) {
+        try {
+<span class="fc" id="L240">            return MessageDigest.getInstance(&quot;SHA-256&quot;).digest(material);</span>
+<span class="nc" id="L241">        } catch (NoSuchAlgorithmException e) {</span>
+<span class="nc" id="L242">            throw new IllegalStateException(e);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

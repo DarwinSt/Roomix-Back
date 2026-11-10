@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.auth.service</a> &gt; <span class="el_source">AuthService.java</span></div><h1>AuthService.java</h1><pre class="source lang-java linenums">package com.example.roomix.auth.service;
+
+import com.example.roomix.auditoria.service.AuditoriaService;
+import com.example.roomix.auth.domain.TokenRecuperacion;
+import com.example.roomix.auth.domain.Usuario;
+import com.example.roomix.auth.dto.AuthDtos.CambiarPasswordRequest;
+import com.example.roomix.auth.dto.AuthDtos.LoginRequest;
+import com.example.roomix.auth.dto.AuthDtos.LoginResponse;
+import com.example.roomix.auth.dto.AuthDtos.RestablecerPasswordRequest;
+import com.example.roomix.auth.dto.AuthDtos.UsuarioResponse;
+import com.example.roomix.auth.exception.AuthErrorCode;
+import com.example.roomix.auth.exception.AuthException;
+import com.example.roomix.auth.repository.TokenRecuperacionRepository;
+import com.example.roomix.auth.repository.UsuarioRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Base64;
+import java.util.HexFormat;
+import java.util.Optional;
+
+/**
+ * Inicio de sesión, cambio de contraseña y recuperación de credenciales.
+ */
+@Service
+@RequiredArgsConstructor
+<span class="fc" id="L38">@Slf4j</span>
+public class AuthService {
+
+    static final int MAX_INTENTOS = 5;
+    static final int MINUTOS_BLOQUEO = 15;
+    static final int MINUTOS_VIGENCIA_TOKEN = 30;
+    private static final String MODULO = &quot;AUTENTICACION&quot;;
+
+    private final UsuarioRepository usuarioRepository;
+    private final TokenRecuperacionRepository tokenRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final AuditoriaService auditoriaService;
+    private final CorreoService correoService;
+
+    @Value(&quot;${app.frontend-url:http://localhost:4200}&quot;)
+    private String frontendUrl;
+
+    private volatile String hashFicticio;
+
+    private String hashFicticio() {
+<span class="pc bpc" id="L59" title="1 of 2 branches missed.">        if (hashFicticio == null) {</span>
+<span class="fc" id="L60">            hashFicticio = passwordEncoder.encode(&quot;roomix-usuario-inexistente&quot;);</span>
+        }
+<span class="fc" id="L62">        return hashFicticio;</span>
+    }
+
+    /**
+     * Valida credenciales y emite el token. Tras {@value #MAX_INTENTOS} intentos fallidos
+     * consecutivos la cuenta queda bloqueada {@value #MINUTOS_BLOQUEO} minutos.
+     */
+    @Transactional(noRollbackFor = AuthException.class)
+    public LoginResponse login(LoginRequest request, HttpServletRequest http) {
+<span class="fc" id="L71">        LocalDateTime ahora = LocalDateTime.now();</span>
+<span class="fc" id="L72">        String username = request.username().trim();</span>
+<span class="fc" id="L73">        Optional&lt;Usuario&gt; encontrado = usuarioRepository.findByUsernameIgnoreCase(username);</span>
+
+<span class="fc bfc" id="L75" title="All 2 branches covered.">        if (encontrado.isEmpty()) {</span>
+            // Mismo costo que una verificación real para no revelar qué usuarios existen
+<span class="fc" id="L77">            passwordEncoder.matches(request.password(), hashFicticio());</span>
+<span class="fc" id="L78">            auditoriaService.registrarEvento(username, null, &quot;LOGIN_FALLIDO&quot;, MODULO, false, &quot;Usuario inexistente&quot;, http);</span>
+<span class="fc" id="L79">            throw new AuthException(AuthErrorCode.CREDENCIALES_INVALIDAS);</span>
+        }
+
+<span class="fc" id="L82">        Usuario usuario = encontrado.get();</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        if (usuario.estaBloqueado(ahora)) {</span>
+<span class="fc" id="L84">            auditoriaService.registrarEvento(usuario.getUsername(), usuario.getRol().name(), &quot;LOGIN_FALLIDO&quot;, MODULO,</span>
+                    false, &quot;Cuenta bloqueada&quot;, http);
+<span class="fc" id="L86">            throw new AuthException(AuthErrorCode.USUARIO_BLOQUEADO,</span>
+<span class="fc" id="L87">                    usuario.getBloqueadoHasta().format(DateTimeFormatter.ofPattern(&quot;HH:mm&quot;)));</span>
+        }
+
+<span class="fc bfc" id="L90" title="All 2 branches covered.">        if (!passwordEncoder.matches(request.password(), usuario.getPasswordHash())) {</span>
+<span class="fc" id="L91">            int intentos = usuario.getIntentosFallidos() + 1;</span>
+<span class="fc" id="L92">            usuario.setIntentosFallidos(intentos);</span>
+<span class="fc" id="L93">            String detalle = &quot;Contraseña incorrecta (intento &quot; + intentos + &quot; de &quot; + MAX_INTENTOS + &quot;)&quot;;</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">            if (intentos &gt;= MAX_INTENTOS) {</span>
+<span class="fc" id="L95">                usuario.setBloqueadoHasta(ahora.plusMinutes(MINUTOS_BLOQUEO));</span>
+<span class="fc" id="L96">                usuario.setIntentosFallidos(0);</span>
+<span class="fc" id="L97">                detalle = &quot;Cuenta bloqueada &quot; + MINUTOS_BLOQUEO + &quot; minutos por intentos fallidos&quot;;</span>
+            }
+<span class="fc" id="L99">            usuarioRepository.save(usuario);</span>
+<span class="fc" id="L100">            auditoriaService.registrarEvento(usuario.getUsername(), usuario.getRol().name(), &quot;LOGIN_FALLIDO&quot;, MODULO,</span>
+                    false, detalle, http);
+<span class="fc" id="L102">            throw new AuthException(AuthErrorCode.CREDENCIALES_INVALIDAS);</span>
+        }
+
+<span class="fc bfc" id="L105" title="All 2 branches covered.">        if (!usuario.isActivo()) {</span>
+<span class="fc" id="L106">            auditoriaService.registrarEvento(usuario.getUsername(), usuario.getRol().name(), &quot;LOGIN_FALLIDO&quot;, MODULO,</span>
+                    false, &quot;Usuario desactivado&quot;, http);
+<span class="fc" id="L108">            throw new AuthException(AuthErrorCode.USUARIO_INACTIVO);</span>
+        }
+
+<span class="fc" id="L111">        usuario.setIntentosFallidos(0);</span>
+<span class="fc" id="L112">        usuario.setBloqueadoHasta(null);</span>
+<span class="fc" id="L113">        usuario.setUltimoAcceso(ahora);</span>
+<span class="fc" id="L114">        usuarioRepository.save(usuario);</span>
+
+<span class="fc" id="L116">        JwtService.TokenEmitido token = jwtService.emitir(usuario);</span>
+<span class="fc" id="L117">        auditoriaService.registrarEvento(usuario.getUsername(), usuario.getRol().name(), &quot;LOGIN&quot;, MODULO, true,</span>
+                &quot;Inicio de sesión&quot;, http);
+<span class="fc" id="L119">        return new LoginResponse(token.token(), &quot;Bearer&quot;, token.expiraEn(), UsuarioResponse.from(usuario));</span>
+    }
+
+    @Transactional(readOnly = true)
+    public UsuarioResponse perfil() {
+<span class="fc" id="L124">        return UsuarioResponse.from(usuarioAutenticado());</span>
+    }
+
+    @Transactional
+    public void cambiarPassword(CambiarPasswordRequest request, HttpServletRequest http) {
+<span class="nc" id="L129">        Usuario usuario = usuarioAutenticado();</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">        if (!passwordEncoder.matches(request.passwordActual(), usuario.getPasswordHash())) {</span>
+<span class="nc" id="L131">            auditoriaService.registrarEvento(usuario.getUsername(), usuario.getRol().name(), &quot;CAMBIO_PASSWORD&quot;, MODULO,</span>
+                    false, &quot;Contraseña actual incorrecta&quot;, http);
+<span class="nc" id="L133">            throw new AuthException(AuthErrorCode.PASSWORD_ACTUAL_INCORRECTA);</span>
+        }
+<span class="nc bnc" id="L135" title="All 2 branches missed.">        if (request.passwordActual().equals(request.passwordNueva())) {</span>
+<span class="nc" id="L136">            throw new AuthException(AuthErrorCode.PASSWORD_REPETIDA);</span>
+        }
+<span class="nc" id="L138">        PasswordPolicy.validar(request.passwordNueva());</span>
+<span class="nc" id="L139">        usuario.setPasswordHash(passwordEncoder.encode(request.passwordNueva()));</span>
+<span class="nc" id="L140">        usuario.setDebeCambiarPassword(false);</span>
+<span class="nc" id="L141">        usuarioRepository.save(usuario);</span>
+<span class="nc" id="L142">        auditoriaService.registrarEvento(usuario.getUsername(), usuario.getRol().name(), &quot;CAMBIO_PASSWORD&quot;, MODULO,</span>
+                true, &quot;Contraseña actualizada&quot;, http);
+<span class="nc" id="L144">    }</span>
+
+    /**
+     * Genera un enlace de recuperación de un solo uso (válido {@value #MINUTOS_VIGENCIA_TOKEN} minutos)
+     * y lo envía por correo. Siempre responde igual, exista o no el correo, para no revelar usuarios.
+     *
+     * @return true si el correo se envió (o no aplica); false si el SMTP no está configurado
+     */
+    @Transactional
+    public boolean solicitarRecuperacion(String email, HttpServletRequest http) {
+<span class="nc" id="L154">        Optional&lt;Usuario&gt; encontrado = usuarioRepository.findByEmailIgnoreCase(email.trim())</span>
+<span class="nc" id="L155">                .filter(Usuario::isActivo);</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">        if (encontrado.isEmpty()) {</span>
+<span class="nc" id="L157">            auditoriaService.registrarEvento(email, null, &quot;RECUPERAR_PASSWORD&quot;, MODULO, false,</span>
+                    &quot;Correo no registrado o usuario inactivo&quot;, http);
+<span class="nc" id="L159">            return correoService.habilitado();</span>
+        }
+
+<span class="nc" id="L162">        Usuario usuario = encontrado.get();</span>
+<span class="nc" id="L163">        tokenRepository.invalidarPendientes(usuario.getId());</span>
+
+<span class="nc" id="L165">        byte[] aleatorio = new byte[32];</span>
+<span class="nc" id="L166">        new SecureRandom().nextBytes(aleatorio);</span>
+<span class="nc" id="L167">        String token = Base64.getUrlEncoder().withoutPadding().encodeToString(aleatorio);</span>
+<span class="nc" id="L168">        LocalDateTime ahora = LocalDateTime.now();</span>
+<span class="nc" id="L169">        tokenRepository.save(TokenRecuperacion.builder()</span>
+<span class="nc" id="L170">                .usuario(usuario)</span>
+<span class="nc" id="L171">                .tokenHash(sha256(token))</span>
+<span class="nc" id="L172">                .expiraEn(ahora.plusMinutes(MINUTOS_VIGENCIA_TOKEN))</span>
+<span class="nc" id="L173">                .fechaHoraCreacion(ahora)</span>
+<span class="nc" id="L174">                .build());</span>
+
+<span class="nc" id="L176">        String enlace = frontendUrl.replaceAll(&quot;/+$&quot;, &quot;&quot;) + &quot;/restablecer?token=&quot; + token;</span>
+<span class="nc" id="L177">        boolean enviado = correoService.enviar(</span>
+<span class="nc" id="L178">                usuario.getEmail(),</span>
+                &quot;Roomix — Restablecer contraseña&quot;,
+                &quot;&quot;&quot;
+                Hola %s,
+
+                Recibimos una solicitud para restablecer tu contraseña de Roomix.
+                Abre este enlace (válido por %d minutos):
+
+                %s
+
+                Si no fuiste tú, ignora este mensaje: tu contraseña no cambiará.
+<span class="nc" id="L189">                &quot;&quot;&quot;.formatted(usuario.getNombreCompleto(), MINUTOS_VIGENCIA_TOKEN, enlace)</span>
+        );
+<span class="nc bnc" id="L191" title="All 2 branches missed.">        if (!enviado) {</span>
+<span class="nc" id="L192">            log.info(&quot;Enlace de recuperación para {} (SMTP no configurado): {}&quot;, usuario.getUsername(), enlace);</span>
+        }
+<span class="nc" id="L194">        auditoriaService.registrarEvento(usuario.getUsername(), usuario.getRol().name(), &quot;RECUPERAR_PASSWORD&quot;, MODULO,</span>
+<span class="nc bnc" id="L195" title="All 2 branches missed.">                true, enviado ? &quot;Enlace enviado por correo&quot; : &quot;Enlace generado (correo no configurado)&quot;, http);</span>
+<span class="nc" id="L196">        return enviado;</span>
+    }
+
+    @Transactional
+    public void restablecer(RestablecerPasswordRequest request, HttpServletRequest http) {
+<span class="nc" id="L201">        TokenRecuperacion token = tokenRepository.findByTokenHash(sha256(request.token().trim()))</span>
+<span class="nc bnc" id="L202" title="All 4 branches missed.">                .filter(t -&gt; !t.isUsado() &amp;&amp; t.getExpiraEn().isAfter(LocalDateTime.now()))</span>
+<span class="nc" id="L203">                .orElseThrow(() -&gt; new AuthException(AuthErrorCode.TOKEN_INVALIDO));</span>
+
+<span class="nc" id="L205">        PasswordPolicy.validar(request.passwordNueva());</span>
+<span class="nc" id="L206">        Usuario usuario = token.getUsuario();</span>
+<span class="nc" id="L207">        usuario.setPasswordHash(passwordEncoder.encode(request.passwordNueva()));</span>
+<span class="nc" id="L208">        usuario.setDebeCambiarPassword(false);</span>
+<span class="nc" id="L209">        usuario.setIntentosFallidos(0);</span>
+<span class="nc" id="L210">        usuario.setBloqueadoHasta(null);</span>
+<span class="nc" id="L211">        usuarioRepository.save(usuario);</span>
+
+<span class="nc" id="L213">        token.setUsado(true);</span>
+<span class="nc" id="L214">        tokenRepository.save(token);</span>
+<span class="nc" id="L215">        auditoriaService.registrarEvento(usuario.getUsername(), usuario.getRol().name(), &quot;RESTABLECER_PASSWORD&quot;,</span>
+                MODULO, true, &quot;Contraseña restablecida con enlace de recuperación&quot;, http);
+<span class="nc" id="L217">    }</span>
+
+    private Usuario usuarioAutenticado() {
+<span class="fc" id="L220">        return usuarioRepository.findByUsernameIgnoreCase(UsuarioActual.username())</span>
+<span class="pc" id="L221">                .orElseThrow(() -&gt; new AuthException(AuthErrorCode.CREDENCIALES_INVALIDAS));</span>
+    }
+
+    static String sha256(String valor) {
+        try {
+<span class="nc" id="L226">            byte[] hash = MessageDigest.getInstance(&quot;SHA-256&quot;).digest(valor.getBytes(StandardCharsets.UTF_8));</span>
+<span class="nc" id="L227">            return HexFormat.of().formatHex(hash);</span>
+<span class="nc" id="L228">        } catch (NoSuchAlgorithmException e) {</span>
+<span class="nc" id="L229">            throw new IllegalStateException(e);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

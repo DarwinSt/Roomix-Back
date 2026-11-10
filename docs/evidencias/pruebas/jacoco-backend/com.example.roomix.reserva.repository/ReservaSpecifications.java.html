@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReservaSpecifications.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.reserva.repository</a> &gt; <span class="el_source">ReservaSpecifications.java</span></div><h1>ReservaSpecifications.java</h1><pre class="source lang-java linenums">package com.example.roomix.reserva.repository;
+
+import com.example.roomix.habitacion.domain.EstadoReserva;
+import com.example.roomix.reserva.domain.Reserva;
+import org.springframework.data.jpa.domain.Specification;
+
+import java.time.LocalDate;
+
+public final class ReservaSpecifications {
+
+    private ReservaSpecifications() {
+    }
+
+    public static Specification&lt;Reserva&gt; conFiltros(
+            EstadoReserva estado,
+            Long huespedId,
+            LocalDate fechaDesde,
+            LocalDate fechaHasta
+    ) {
+<span class="nc" id="L20">        Specification&lt;Reserva&gt; spec = Specification.unrestricted();</span>
+
+<span class="nc bnc" id="L22" title="All 2 branches missed.">        if (estado != null) {</span>
+<span class="nc" id="L23">            spec = spec.and((root, query, cb) -&gt; cb.equal(root.get(&quot;estadoReserva&quot;), estado));</span>
+        }
+<span class="nc bnc" id="L25" title="All 2 branches missed.">        if (huespedId != null) {</span>
+<span class="nc" id="L26">            spec = spec.and((root, query, cb) -&gt; cb.equal(root.get(&quot;huesped&quot;).get(&quot;id&quot;), huespedId));</span>
+        }
+<span class="nc bnc" id="L28" title="All 2 branches missed.">        if (fechaDesde != null) {</span>
+<span class="nc" id="L29">            spec = spec.and((root, query, cb) -&gt; cb.greaterThan(root.get(&quot;fechaSalida&quot;), fechaDesde));</span>
+        }
+<span class="nc bnc" id="L31" title="All 2 branches missed.">        if (fechaHasta != null) {</span>
+<span class="nc" id="L32">            spec = spec.and((root, query, cb) -&gt; cb.lessThan(root.get(&quot;fechaEntrada&quot;), fechaHasta));</span>
+        }
+
+<span class="nc" id="L35">        return spec;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

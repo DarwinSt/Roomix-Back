@@ -1,0 +1,598 @@
+[{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"73","camas":"140","num_emp1":"5"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"29","camas":"45","num_emp1":"0"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"5","camas":"13","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"5","camas":"18","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"49","camas":"118","num_emp1":"13"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"87","camas":"236","num_emp1":"52"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"30","camas":"70","num_emp1":"3"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"12","camas":"36","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"39","camas":"113","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"48","camas":"103","num_emp1":"4"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"32","camas":"32","num_emp1":"5"}
+,{"municipio":"PALERMO","sub_categoria":"CENTRO VACACIONAL","habitaciones":"24","camas":"84","num_emp1":"36"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"36","camas":"135","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"13","camas":"17","num_emp1":"0"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"25","camas":"46","num_emp1":"1"}
+,{"municipio":"LA PLATA","sub_categoria":"HOTEL","habitaciones":"23","camas":"40","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"30","camas":"70","num_emp1":"5"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"13","camas":"20","num_emp1":"0"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"32","camas":"44","num_emp1":"15"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"24","camas":"32","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"40","camas":"50","num_emp1":"6"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"21","camas":"28","num_emp1":"1"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"10","camas":"12","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"12","camas":"12","num_emp1":"2"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"21","camas":"25","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"27","camas":"28","num_emp1":"2"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"13","camas":"16","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"26","camas":"36","num_emp1":"0"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"16","camas":"36","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"8","camas":"15","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"7","camas":"20","num_emp1":"1"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"10","camas":"24","num_emp1":"1"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"7","camas":"10","num_emp1":"0"}
+,{"municipio":"TIMANA","sub_categoria":"HOTEL","habitaciones":"15","camas":"20","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"27","camas":"90","num_emp1":"6"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"10","camas":"15","num_emp1":"1"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"10","camas":"36","num_emp1":"8"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"14","camas":"28","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"19","camas":"30","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"20","camas":"32","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"20","camas":"30","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"12","camas":"16","num_emp1":"1"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"36","camas":"62","num_emp1":"1"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"9","camas":"14","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"21","camas":"32","num_emp1":"4"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"30","camas":"45","num_emp1":"0"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"22","camas":"26","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"40","camas":"52","num_emp1":"2"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"15","camas":"38","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"18","camas":"27","num_emp1":"0"}
+,{"municipio":"LA PLATA","sub_categoria":"HOTEL","habitaciones":"1","camas":"26","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"18","camas":"26","num_emp1":"1"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"7","camas":"12","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"APARTAHOTEL","habitaciones":"27","camas":"53","num_emp1":"4"}
+,{"municipio":"CAMPOALEGRE","sub_categoria":"HOSTAL","habitaciones":"8","camas":"11","num_emp1":"0"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"4","camas":"6","num_emp1":"1"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"9","camas":"11","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"57","camas":"65","num_emp1":"6"}
+,{"municipio":"LA PLATA","sub_categoria":"HOTEL","habitaciones":"1","camas":"31","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"44","camas":"108","num_emp1":"5"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"8","camas":"16","num_emp1":"1"}
+,{"municipio":"YAGUARA","sub_categoria":"HOTEL","habitaciones":"13","camas":"21","num_emp1":"0"}
+,{"municipio":"LA PLATA","sub_categoria":"HOTEL","habitaciones":"69","camas":"102","num_emp1":"3"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"17","camas":"24","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"25","camas":"42","num_emp1":"10"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"20","camas":"25","num_emp1":"0"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"12","camas":"14","num_emp1":"0"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOTEL","habitaciones":"12","camas":"30","num_emp1":"3"}
+,{"municipio":"SAN JOSE DE ISNOS","sub_categoria":"HOTEL","habitaciones":"12","camas":"14","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"41","camas":"72","num_emp1":"3"}
+,{"municipio":"AGRADO","sub_categoria":"HOTEL","habitaciones":"9","camas":"9","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"8","camas":"11","num_emp1":"0"}
+,{"municipio":"LA PLATA","sub_categoria":"HOTEL","habitaciones":"22","camas":"30","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"11","camas":"22","num_emp1":"0"}
+,{"municipio":"PALESTINA","sub_categoria":"HOTEL","habitaciones":"12","camas":"20","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"32","camas":"48","num_emp1":"4"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"24","camas":"45","num_emp1":"3"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"16","camas":"17","num_emp1":"0"}
+,{"municipio":"SAN JOSE DE ISNOS","sub_categoria":"HOTEL","habitaciones":"10","camas":"16","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"15","camas":"21","num_emp1":"2"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOSTAL","habitaciones":"3","camas":"5","num_emp1":"1"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"30","camas":"52","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"7","camas":"17","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"21","camas":"27","num_emp1":"8"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"16","camas":"21","num_emp1":"1"}
+,{"municipio":"PITAL","sub_categoria":"HOTEL","habitaciones":"20","camas":"26","num_emp1":"0"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOTEL","habitaciones":"12","camas":"25","num_emp1":"3"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"15","camas":"20","num_emp1":"3"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOSTAL","habitaciones":"4","camas":"8","num_emp1":"1"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOSTAL","habitaciones":"9","camas":"29","num_emp1":"0"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"1","camas":"29","num_emp1":"8"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"20","camas":"24","num_emp1":"0"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"30","camas":"36","num_emp1":"4"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"15","camas":"22","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"38","camas":"49","num_emp1":"3"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"14","camas":"14","num_emp1":"0"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"18","camas":"23","num_emp1":"1"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"1","camas":"14","num_emp1":"2"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"22","camas":"22","num_emp1":"2"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"15","camas":"18","num_emp1":"3"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"23","camas":"32","num_emp1":"0"}
+,{"municipio":"LA PLATA","sub_categoria":"HOTEL","habitaciones":"19","camas":"19","num_emp1":"3"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"14","camas":"14","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"102","camas":"141","num_emp1":"54"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"8","camas":"8","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"9","camas":"11","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"8","camas":"9","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOSTAL","habitaciones":"11","camas":"11","num_emp1":"1"}
+,{"municipio":"AIPE","sub_categoria":"HOTEL","habitaciones":"9","camas":"12","num_emp1":"0"}
+,{"municipio":"LA PLATA","sub_categoria":"HOTEL","habitaciones":"22","camas":"28","num_emp1":"0"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"30","camas":"34","num_emp1":"2"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"14","camas":"30","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"8","camas":"12","num_emp1":"0"}
+,{"municipio":"TIMANA","sub_categoria":"HOTEL","habitaciones":"5","camas":"8","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"14","camas":"20","num_emp1":"0"}
+,{"municipio":"GIGANTE","sub_categoria":"HOTEL","habitaciones":"16","camas":"19","num_emp1":"0"}
+,{"municipio":"LA ARGENTINA","sub_categoria":"HOTEL","habitaciones":"8","camas":"8","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"8","camas":"9","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"CAMPAMENTO","habitaciones":"5","camas":"7","num_emp1":"1"}
+,{"municipio":"CAMPOALEGRE","sub_categoria":"HOSTAL","habitaciones":"7","camas":"7","num_emp1":"0"}
+,{"municipio":"AIPE","sub_categoria":"HOTEL","habitaciones":"18","camas":"25","num_emp1":"2"}
+,{"municipio":"CAMPOALEGRE","sub_categoria":"HOTEL","habitaciones":"19","camas":"48","num_emp1":"10"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"19","camas":"25","num_emp1":"2"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"11","camas":"17","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"27","camas":"44","num_emp1":"4"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"33","camas":"46","num_emp1":"6"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"28","camas":"40","num_emp1":"1"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOTEL","habitaciones":"12","camas":"34","num_emp1":"3"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"11","camas":"11","num_emp1":"1"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOTEL","habitaciones":"7","camas":"14","num_emp1":"0"}
+,{"municipio":"PITALITO","sub_categoria":"HOSTAL","habitaciones":"16","camas":"20","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"12","camas":"24","num_emp1":"0"}
+,{"municipio":"TARQUI","sub_categoria":"HOTEL","habitaciones":"11","camas":"17","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"23","camas":"35","num_emp1":"8"}
+,{"municipio":"RIVERA","sub_categoria":"HOSTAL","habitaciones":"19","camas":"40","num_emp1":"1"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"8","camas":"9","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"24","camas":"24","num_emp1":"0"}
+,{"municipio":"SAN JOSE DE ISNOS","sub_categoria":"HOTEL","habitaciones":"17","camas":"17","num_emp1":"0"}
+,{"municipio":"LA PLATA","sub_categoria":"HOSTAL","habitaciones":"20","camas":"25","num_emp1":"0"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"20","camas":"27","num_emp1":"1"}
+,{"municipio":"PALERMO","sub_categoria":"HOTEL","habitaciones":"78","camas":"137","num_emp1":"18"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOTEL","habitaciones":"9","camas":"15","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"11","camas":"11","num_emp1":"1"}
+,{"municipio":"GUADALUPE","sub_categoria":"HOTEL","habitaciones":"17","camas":"19","num_emp1":"0"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"22","camas":"36","num_emp1":"3"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"44","camas":"75","num_emp1":"7"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"10","camas":"22","num_emp1":"15"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"28","camas":"37","num_emp1":"2"}
+,{"municipio":"PALERMO","sub_categoria":"HOSTAL","habitaciones":"8","camas":"12","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"13","camas":"18","num_emp1":"0"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"10","camas":"20","num_emp1":"3"}
+,{"municipio":"PALERMO","sub_categoria":"HOTEL","habitaciones":"21","camas":"21","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"6","camas":"6","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"14","camas":"18","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"14","camas":"22","num_emp1":"6"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"11","camas":"22","num_emp1":"0"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"1","camas":"12","num_emp1":"1"}
+,{"municipio":"PALERMO","sub_categoria":"HOTEL","habitaciones":"154","camas":"194","num_emp1":"6"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"23","camas":"28","num_emp1":"5"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"15","camas":"40","num_emp1":"4"}
+,{"municipio":"PALERMO","sub_categoria":"HOTEL","habitaciones":"14","camas":"14","num_emp1":"2"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOSTAL","habitaciones":"5","camas":"15","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"12","camas":"18","num_emp1":"0"}
+,{"municipio":"AIPE","sub_categoria":"HOTEL","habitaciones":"18","camas":"22","num_emp1":"1"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOTEL","habitaciones":"11","camas":"40","num_emp1":"1"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"24","camas":"62","num_emp1":"1"}
+,{"municipio":"AIPE","sub_categoria":"HOTEL","habitaciones":"33","camas":"38","num_emp1":"0"}
+,{"municipio":"LA PLATA","sub_categoria":"HOTEL","habitaciones":"31","camas":"43","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOSTAL","habitaciones":"12","camas":"20","num_emp1":"0"}
+,{"municipio":"ALTAMIRA","sub_categoria":"HOTEL","habitaciones":"1","camas":"9","num_emp1":"0"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"1","camas":"7","num_emp1":"0"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"21","camas":"32","num_emp1":"0"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOSTAL","habitaciones":"8","camas":"21","num_emp1":"0"}
+,{"municipio":"TARQUI","sub_categoria":"HOSTAL","habitaciones":"1","camas":"10","num_emp1":"0"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"12","camas":"16","num_emp1":"0"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOSTAL","habitaciones":"8","camas":"17","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"7","camas":"7","num_emp1":"0"}
+,{"municipio":"AIPE","sub_categoria":"HOTEL","habitaciones":"12","camas":"14","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"10","camas":"13","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"6","camas":"8","num_emp1":"0"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOSTAL","habitaciones":"5","camas":"11","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"15","camas":"19","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"73","camas":"110","num_emp1":"3"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"71","camas":"92","num_emp1":"16"}
+,{"municipio":"NEIVA","sub_categoria":"HOSTAL","habitaciones":"12","camas":"14","num_emp1":"0"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"10","camas":"17","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"6","camas":"7","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"9","camas":"14","num_emp1":"0"}
+,{"municipio":"PALERMO","sub_categoria":"HOSTAL","habitaciones":"4","camas":"6","num_emp1":"0"}
+,{"municipio":"RIVERA","sub_categoria":"HOSTAL","habitaciones":"4","camas":"4","num_emp1":"0"}
+,{"municipio":"AIPE","sub_categoria":"HOTEL","habitaciones":"9","camas":"15","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOSTAL","habitaciones":"7","camas":"14","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"14","camas":"24","num_emp1":"0"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"24","camas":"27","num_emp1":"0"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"15","camas":"22","num_emp1":"1"}
+,{"municipio":"SAN JOSE DE ISNOS","sub_categoria":"HOTEL","habitaciones":"6","camas":"18","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOSTAL","habitaciones":"5","camas":"10","num_emp1":"0"}
+,{"municipio":"AIPE","sub_categoria":"HOTEL","habitaciones":"4","camas":"5","num_emp1":"0"}
+,{"municipio":"TIMANA","sub_categoria":"HOTEL","habitaciones":"14","camas":"16","num_emp1":"1"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"23","camas":"38","num_emp1":"2"}
+,{"municipio":"TIMANA","sub_categoria":"HOTEL","habitaciones":"12","camas":"80","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"30","camas":"34","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"9","camas":"12","num_emp1":"0"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOTEL","habitaciones":"4","camas":"9","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"13","camas":"15","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"17","camas":"25","num_emp1":"0"}
+,{"municipio":"LA PLATA","sub_categoria":"HOTEL","habitaciones":"43","camas":"63","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"22","camas":"80","num_emp1":"3"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"14","camas":"40","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"8","camas":"8","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"8","camas":"12","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"11","camas":"14","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"15","camas":"15","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOSTAL","habitaciones":"16","camas":"27","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"25","camas":"32","num_emp1":"11"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"11","camas":"11","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"11","camas":"15","num_emp1":"1"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"8","camas":"12","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"8","camas":"13","num_emp1":"1"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"5","camas":"8","num_emp1":"0"}
+,{"municipio":"PALERMO","sub_categoria":"HOTEL","habitaciones":"30","camas":"47","num_emp1":"3"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"26","camas":"26","num_emp1":"19"}
+,{"municipio":"SAN JOSE DE ISNOS","sub_categoria":"HOTEL","habitaciones":"12","camas":"21","num_emp1":"1"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOSTAL","habitaciones":"6","camas":"10","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOSTAL","habitaciones":"10","camas":"14","num_emp1":"0"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"9","camas":"13","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"13","camas":"17","num_emp1":"1"}
+,{"municipio":"PALERMO","sub_categoria":"HOSTAL","habitaciones":"6","camas":"8","num_emp1":"1"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"21","camas":"21","num_emp1":"0"}
+,{"municipio":"RIVERA","sub_categoria":"HOSTAL","habitaciones":"6","camas":"10","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"15","camas":"36","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"1","camas":"1","num_emp1":"1"}
+,{"municipio":"GARZON","sub_categoria":"HOSTAL","habitaciones":"13","camas":"25","num_emp1":"2"}
+,{"municipio":"NEIVA","sub_categoria":"HOSTAL","habitaciones":"24","camas":"24","num_emp1":"0"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOSTAL","habitaciones":"9","camas":"13","num_emp1":"2"}
+,{"municipio":"SAN JOSE DE ISNOS","sub_categoria":"HOTEL","habitaciones":"14","camas":"20","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"11","camas":"11","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOSTAL","habitaciones":"7","camas":"15","num_emp1":"1"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"2","camas":"4","num_emp1":"3"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOTEL","habitaciones":"11","camas":"35","num_emp1":"0"}
+,{"municipio":"SUAZA","sub_categoria":"HOTEL","habitaciones":"26","camas":"26","num_emp1":"0"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOSTAL","habitaciones":"4","camas":"10","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"CAMPAMENTO","habitaciones":"3","camas":"3","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"9","camas":"17","num_emp1":"0"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"30","camas":"35","num_emp1":"4"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"13","camas":"32","num_emp1":"0"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"24","camas":"41","num_emp1":"6"}
+,{"municipio":"GUADALUPE","sub_categoria":"HOTEL","habitaciones":"10","camas":"14","num_emp1":"1"}
+,{"municipio":"SUAZA","sub_categoria":"HOTEL","habitaciones":"62","camas":"74","num_emp1":"2"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"15","camas":"20","num_emp1":"1"}
+,{"municipio":"PAICOL","sub_categoria":"HOSTAL","habitaciones":"4","camas":"9","num_emp1":"0"}
+,{"municipio":"SAN JOSE DE ISNOS","sub_categoria":"HOSTAL","habitaciones":"14","camas":"14","num_emp1":"2"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOSTAL","habitaciones":"4","camas":"8","num_emp1":"0"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOTEL","habitaciones":"14","camas":"47","num_emp1":"1"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"19","camas":"58","num_emp1":"2"}
+,{"municipio":"GIGANTE","sub_categoria":"HOSTAL","habitaciones":"4","camas":"8","num_emp1":"5"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"7","camas":"35","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOSTAL","habitaciones":"10","camas":"26","num_emp1":"0"}
+,{"municipio":"TIMANA","sub_categoria":"HOTEL","habitaciones":"9","camas":"10","num_emp1":"2"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"25","camas":"25","num_emp1":"6"}
+,{"municipio":"ACEVEDO","sub_categoria":"HOTEL","habitaciones":"13","camas":"13","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"9","camas":"18","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"12","camas":"18","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOSTAL","habitaciones":"9","camas":"9","num_emp1":"0"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"16","camas":"18","num_emp1":"1"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"11","camas":"18","num_emp1":"1"}
+,{"municipio":"TARQUI","sub_categoria":"HOTEL","habitaciones":"6","camas":"8","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"9","camas":"12","num_emp1":"2"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"CENTRO VACACIONAL","habitaciones":"29","camas":"72","num_emp1":"3"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"CAMPAMENTO","habitaciones":"30","camas":"60","num_emp1":"0"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"CAMPAMENTO","habitaciones":"1","camas":"20","num_emp1":"0"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"9","camas":"12","num_emp1":"0"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"19","camas":"40","num_emp1":"3"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOSTAL","habitaciones":"9","camas":"19","num_emp1":"0"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOTEL","habitaciones":"3","camas":"6","num_emp1":"0"}
+,{"municipio":"SAN JOSE DE ISNOS","sub_categoria":"HOSTAL","habitaciones":"5","camas":"5","num_emp1":"2"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"26","camas":"48","num_emp1":"0"}
+,{"municipio":"ALGECIRAS","sub_categoria":"HOTEL","habitaciones":"12","camas":"24","num_emp1":"0"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"12","camas":"14","num_emp1":"0"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOTEL","habitaciones":"10","camas":"20","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"27","camas":"32","num_emp1":"4"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"6","camas":"20","num_emp1":"1"}
+,{"municipio":"LA PLATA","sub_categoria":"HOSTAL","habitaciones":"10","camas":"10","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"5","camas":"5","num_emp1":"1"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"17","camas":"28","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"12","camas":"18","num_emp1":"0"}
+,{"municipio":"LA PLATA","sub_categoria":"HOTEL","habitaciones":"6","camas":"10","num_emp1":"0"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"1","camas":"24","num_emp1":"1"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"13","camas":"27","num_emp1":"0"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"7","camas":"7","num_emp1":"2"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"8","camas":"8","num_emp1":"0"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"21","camas":"25","num_emp1":"0"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"12","camas":"14","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"7","camas":"10","num_emp1":"1"}
+,{"municipio":"YAGUARA","sub_categoria":"CENTRO VACACIONAL","habitaciones":"4","camas":"10","num_emp1":"2"}
+,{"municipio":"TERUEL","sub_categoria":"HOSTAL","habitaciones":"11","camas":"15","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"11","camas":"15","num_emp1":"0"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOTEL","habitaciones":"5","camas":"15","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOSTAL","habitaciones":"25","camas":"28","num_emp1":"2"}
+,{"municipio":"NEIVA","sub_categoria":"HOSTAL","habitaciones":"5","camas":"6","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"12","camas":"12","num_emp1":"1"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOTEL","habitaciones":"9","camas":"20","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"4","camas":"5","num_emp1":"0"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"33","camas":"34","num_emp1":"0"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"16","camas":"26","num_emp1":"2"}
+,{"municipio":"GUADALUPE","sub_categoria":"HOTEL","habitaciones":"10","camas":"10","num_emp1":"0"}
+,{"municipio":"RIVERA","sub_categoria":"APARTAHOTEL","habitaciones":"4","camas":"6","num_emp1":"1"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOTEL","habitaciones":"18","camas":"40","num_emp1":"0"}
+,{"municipio":"LA PLATA","sub_categoria":"HOTEL","habitaciones":"1","camas":"24","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOSTAL","habitaciones":"9","camas":"12","num_emp1":"0"}
+,{"municipio":"AGRADO","sub_categoria":"HOTEL","habitaciones":"11","camas":"13","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"15","camas":"25","num_emp1":"2"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"18","camas":"31","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"2","camas":"4","num_emp1":"2"}
+,{"municipio":"ACEVEDO","sub_categoria":"HOTEL","habitaciones":"10","camas":"11","num_emp1":"1"}
+,{"municipio":"LA PLATA","sub_categoria":"HOTEL","habitaciones":"12","camas":"28","num_emp1":"0"}
+,{"municipio":"LA PLATA","sub_categoria":"HOTEL","habitaciones":"16","camas":"16","num_emp1":"0"}
+,{"municipio":"PITALITO","sub_categoria":"HOSTAL","habitaciones":"12","camas":"12","num_emp1":"1"}
+,{"municipio":"YAGUARA","sub_categoria":"HOTEL","habitaciones":"14","camas":"35","num_emp1":"1"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"7","camas":"10","num_emp1":"0"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOSTAL","habitaciones":"2","camas":"10","num_emp1":"0"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOSTAL","habitaciones":"4","camas":"4","num_emp1":"0"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOSTAL","habitaciones":"7","camas":"11","num_emp1":"0"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"15","camas":"14","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"10","camas":"12","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"10","camas":"11","num_emp1":"0"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"18","camas":"22","num_emp1":"0"}
+,{"municipio":"ACEVEDO","sub_categoria":"HOTEL","habitaciones":"10","camas":"10","num_emp1":"1"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"APARTAHOTEL","habitaciones":"2","camas":"12","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"4","camas":"20","num_emp1":"0"}
+,{"municipio":"RIVERA","sub_categoria":"CENTRO VACACIONAL","habitaciones":"31","camas":"112","num_emp1":"13"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"18","camas":"36","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"9","camas":"18","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"8","camas":"14","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"24","camas":"24","num_emp1":"4"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"9","camas":"11","num_emp1":"2"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"8","camas":"8","num_emp1":"1"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOTEL","habitaciones":"11","camas":"16","num_emp1":"1"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOTEL","habitaciones":"8","camas":"12","num_emp1":"0"}
+,{"municipio":"SAN JOSE DE ISNOS","sub_categoria":"HOTEL","habitaciones":"8","camas":"10","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"6","camas":"10","num_emp1":"0"}
+,{"municipio":"YAGUARA","sub_categoria":"HOTEL","habitaciones":"10","camas":"17","num_emp1":"0"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"10","camas":"14","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"23","camas":"24","num_emp1":"5"}
+,{"municipio":"ACEVEDO","sub_categoria":"HOTEL","habitaciones":"21","camas":"35","num_emp1":"8"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOSTAL","habitaciones":"5","camas":"10","num_emp1":"0"}
+,{"municipio":"SAN JOSE DE ISNOS","sub_categoria":"GLAMPING","habitaciones":"2","camas":"2","num_emp1":"1"}
+,{"municipio":"GIGANTE","sub_categoria":"HOTEL","habitaciones":"28","camas":"40","num_emp1":"0"}
+,{"municipio":"GIGANTE","sub_categoria":"HOTEL","habitaciones":"10","camas":"10","num_emp1":"0"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"4","camas":"4","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"11","camas":"11","num_emp1":"0"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOTEL","habitaciones":"6","camas":"12","num_emp1":"6"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"8","camas":"8","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"CENTRO VACACIONAL","habitaciones":"20","camas":"80","num_emp1":"0"}
+,{"municipio":"GIGANTE","sub_categoria":"HOTEL","habitaciones":"1","camas":"23","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"24","camas":"48","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"15","camas":"40","num_emp1":"1"}
+,{"municipio":"AIPE","sub_categoria":"HOTEL","habitaciones":"14","camas":"18","num_emp1":"0"}
+,{"municipio":"ALTAMIRA","sub_categoria":"HOTEL","habitaciones":"40","camas":"40","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"14","camas":"16","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"12","camas":"24","num_emp1":"2"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"10","camas":"10","num_emp1":"0"}
+,{"municipio":"GIGANTE","sub_categoria":"CAMPAMENTO","habitaciones":"4","camas":"8","num_emp1":"0"}
+,{"municipio":"PALERMO","sub_categoria":"HOSTAL","habitaciones":"3","camas":"14","num_emp1":"0"}
+,{"municipio":"SANTA MARIA","sub_categoria":"HOTEL","habitaciones":"6","camas":"12","num_emp1":"2"}
+,{"municipio":"TARQUI","sub_categoria":"GLAMPING","habitaciones":"2","camas":"10","num_emp1":"0"}
+,{"municipio":"PAICOL","sub_categoria":"HOTEL","habitaciones":"11","camas":"32","num_emp1":"0"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOSTAL","habitaciones":"4","camas":"8","num_emp1":"0"}
+,{"municipio":"ACEVEDO","sub_categoria":"HOTEL","habitaciones":"10","camas":"15","num_emp1":"1"}
+,{"municipio":"RIVERA","sub_categoria":"CENTRO VACACIONAL","habitaciones":"15","camas":"28","num_emp1":"0"}
+,{"municipio":"TESALIA","sub_categoria":"HOTEL","habitaciones":"32","camas":"44","num_emp1":"1"}
+,{"municipio":"HOBO","sub_categoria":"HOTEL","habitaciones":"27","camas":"70","num_emp1":"0"}
+,{"municipio":"AIPE","sub_categoria":"HOTEL","habitaciones":"10","camas":"22","num_emp1":"0"}
+,{"municipio":"LA PLATA","sub_categoria":"HOSTAL","habitaciones":"1","camas":"10","num_emp1":"0"}
+,{"municipio":"RIVERA","sub_categoria":"CENTRO VACACIONAL","habitaciones":"7","camas":"10","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"36","camas":"110","num_emp1":"6"}
+,{"municipio":"NEIVA","sub_categoria":"APARTAHOTEL","habitaciones":"17","camas":"25","num_emp1":"1"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"5","camas":"14","num_emp1":"0"}
+,{"municipio":"LA PLATA","sub_categoria":"GLAMPING","habitaciones":"3","camas":"6","num_emp1":"1"}
+,{"municipio":"ACEVEDO","sub_categoria":"GLAMPING","habitaciones":"3","camas":"10","num_emp1":"2"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"1","camas":"60","num_emp1":"0"}
+,{"municipio":"ELIAS","sub_categoria":"HOSTAL","habitaciones":"13","camas":"22","num_emp1":"1"}
+,{"municipio":"PAICOL","sub_categoria":"HOSTAL","habitaciones":"7","camas":"7","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"22","camas":"40","num_emp1":"2"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"4","camas":"8","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"ALBERGUE","habitaciones":"9","camas":"30","num_emp1":"4"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOTEL","habitaciones":"11","camas":"28","num_emp1":"0"}
+,{"municipio":"GIGANTE","sub_categoria":"HOTEL","habitaciones":"1","camas":"16","num_emp1":"1"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"CAMPAMENTO","habitaciones":"4","camas":"8","num_emp1":"0"}
+,{"municipio":"SAN JOSE DE ISNOS","sub_categoria":"HOTEL","habitaciones":"15","camas":"22","num_emp1":"1"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"13","camas":"13","num_emp1":"2"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"18","camas":"23","num_emp1":"5"}
+,{"municipio":"TIMANA","sub_categoria":"GLAMPING","habitaciones":"3","camas":"3","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"20","camas":"30","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"10","camas":"10","num_emp1":"0"}
+,{"municipio":"LA PLATA","sub_categoria":"HOTEL","habitaciones":"26","camas":"31","num_emp1":"0"}
+,{"municipio":"SAN JOSE DE ISNOS","sub_categoria":"HOSTAL","habitaciones":"10","camas":"18","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"APARTAHOTEL","habitaciones":"3","camas":"6","num_emp1":"0"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"6","camas":"9","num_emp1":"0"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"20","camas":"30","num_emp1":"1"}
+,{"municipio":"PALERMO","sub_categoria":"HOSTAL","habitaciones":"6","camas":"12","num_emp1":"0"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"20","camas":"58","num_emp1":"1"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOSTAL","habitaciones":"6","camas":"15","num_emp1":"1"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"13","camas":"21","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"12","camas":"13","num_emp1":"1"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"1","camas":"5","num_emp1":"0"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"10","camas":"12","num_emp1":"0"}
+,{"municipio":"ALTAMIRA","sub_categoria":"HOTEL","habitaciones":"12","camas":"19","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"32","camas":"64","num_emp1":"3"}
+,{"municipio":"NEIVA","sub_categoria":"APARTAHOTEL","habitaciones":"2","camas":"4","num_emp1":"0"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"1","camas":"15","num_emp1":"2"}
+,{"municipio":"LA ARGENTINA","sub_categoria":"HOTEL","habitaciones":"1","camas":"8","num_emp1":"0"}
+,{"municipio":"TESALIA","sub_categoria":"HOTEL","habitaciones":"8","camas":"8","num_emp1":"0"}
+,{"municipio":"PALERMO","sub_categoria":"HOTEL","habitaciones":"19","camas":"25","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"7","camas":"19","num_emp1":"0"}
+,{"municipio":"SANTA MARIA","sub_categoria":"GLAMPING","habitaciones":"1","camas":"2","num_emp1":"3"}
+,{"municipio":"BARAYA","sub_categoria":"HOSTAL","habitaciones":"6","camas":"12","num_emp1":"0"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOTEL","habitaciones":"4","camas":"10","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOSTAL","habitaciones":"7","camas":"10","num_emp1":"0"}
+,{"municipio":"CAMPOALEGRE","sub_categoria":"HOTEL","habitaciones":"30","camas":"34","num_emp1":"2"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"17","camas":"20","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"16","camas":"22","num_emp1":"2"}
+,{"municipio":"PAICOL","sub_categoria":"HOSTAL","habitaciones":"17","camas":"27","num_emp1":"2"}
+,{"municipio":"COLOMBIA","sub_categoria":"HOTEL","habitaciones":"4","camas":"4","num_emp1":"0"}
+,{"municipio":"TIMANA","sub_categoria":"HOTEL","habitaciones":"20","camas":"20","num_emp1":"1"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"4","camas":"12","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"8","camas":"14","num_emp1":"0"}
+,{"municipio":"YAGUARA","sub_categoria":"GLAMPING","habitaciones":"2","camas":"4","num_emp1":"3"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"13","camas":"18","num_emp1":"0"}
+,{"municipio":"YAGUARA","sub_categoria":"GLAMPING","habitaciones":"3","camas":"6","num_emp1":"0"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"14","camas":"14","num_emp1":"1"}
+,{"municipio":"GARZON","sub_categoria":"GLAMPING","habitaciones":"6","camas":"16","num_emp1":"1"}
+,{"municipio":"GIGANTE","sub_categoria":"HOTEL","habitaciones":"10","camas":"10","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"12","camas":"24","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"APARTAHOTEL","habitaciones":"17","camas":"17","num_emp1":"3"}
+,{"municipio":"RIVERA","sub_categoria":"HOSTAL","habitaciones":"3","camas":"8","num_emp1":"0"}
+,{"municipio":"PALERMO","sub_categoria":"HOTEL","habitaciones":"9","camas":"10","num_emp1":"2"}
+,{"municipio":"NEIVA","sub_categoria":"HOSTAL","habitaciones":"10","camas":"30","num_emp1":"0"}
+,{"municipio":"CAMPOALEGRE","sub_categoria":"HOTEL","habitaciones":"10","camas":"20","num_emp1":"2"}
+,{"municipio":"TELLO","sub_categoria":"HOTEL","habitaciones":"6","camas":"14","num_emp1":"0"}
+,{"municipio":"AIPE","sub_categoria":"HOTEL","habitaciones":"11","camas":"15","num_emp1":"0"}
+,{"municipio":"NATAGA","sub_categoria":"GLAMPING","habitaciones":"1","camas":"3","num_emp1":"0"}
+,{"municipio":"PAICOL","sub_categoria":"HOSTAL","habitaciones":"18","camas":"9","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"13","camas":"30","num_emp1":"1"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"8","camas":"30","num_emp1":"1"}
+,{"municipio":"SAN JOSE DE ISNOS","sub_categoria":"CAMPAMENTO","habitaciones":"4","camas":"4","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"8","camas":"11","num_emp1":"0"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOTEL","habitaciones":"8","camas":"18","num_emp1":"4"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"10","camas":"10","num_emp1":"0"}
+,{"municipio":"LA PLATA","sub_categoria":"HOSTAL","habitaciones":"1","camas":"23","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"11","camas":"27","num_emp1":"3"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOTEL","habitaciones":"30","camas":"30","num_emp1":"20"}
+,{"municipio":"PAICOL","sub_categoria":"HOTEL","habitaciones":"10","camas":"20","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"1","camas":"120","num_emp1":"6"}
+,{"municipio":"LA PLATA","sub_categoria":"HOSTAL","habitaciones":"1","camas":"12","num_emp1":"2"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"11","camas":"11","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"GLAMPING","habitaciones":"2","camas":"4","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOSTAL","habitaciones":"3","camas":"5","num_emp1":"3"}
+,{"municipio":"LA PLATA","sub_categoria":"HOTEL","habitaciones":"9","camas":"9","num_emp1":"0"}
+,{"municipio":"PITALITO","sub_categoria":"GLAMPING","habitaciones":"1","camas":"2","num_emp1":"0"}
+,{"municipio":"LA PLATA","sub_categoria":"GLAMPING","habitaciones":"4","camas":"8","num_emp1":"0"}
+,{"municipio":"LA PLATA","sub_categoria":"GLAMPING","habitaciones":"1","camas":"10","num_emp1":"0"}
+,{"municipio":"GIGANTE","sub_categoria":"HOTEL","habitaciones":"1","camas":"5","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOSTAL","habitaciones":"8","camas":"10","num_emp1":"1"}
+,{"municipio":"SAN JOSE DE ISNOS","sub_categoria":"HOTEL","habitaciones":"11","camas":"30","num_emp1":"2"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"1","camas":"10","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"APARTAHOTEL","habitaciones":"1","camas":"3","num_emp1":"0"}
+,{"municipio":"SAN JOSE DE ISNOS","sub_categoria":"HOTEL","habitaciones":"13","camas":"15","num_emp1":"2"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"CENTRO VACACIONAL","habitaciones":"6","camas":"21","num_emp1":"1"}
+,{"municipio":"PITAL","sub_categoria":"REFUGIO","habitaciones":"2","camas":"8","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"16","camas":"40","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOSTAL","habitaciones":"16","camas":"16","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOSTAL","habitaciones":"6","camas":"7","num_emp1":"1"}
+,{"municipio":"LA PLATA","sub_categoria":"HOTEL","habitaciones":"19","camas":"22","num_emp1":"2"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOTEL","habitaciones":"8","camas":"24","num_emp1":"2"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"5","camas":"6","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"34","camas":"34","num_emp1":"3"}
+,{"municipio":"NEIVA","sub_categoria":"HOSTAL","habitaciones":"9","camas":"18","num_emp1":"4"}
+,{"municipio":"ACEVEDO","sub_categoria":"HOTEL","habitaciones":"14","camas":"16","num_emp1":"1"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"5","camas":"12","num_emp1":"1"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"15","camas":"21","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"12","camas":"24","num_emp1":"1"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOTEL","habitaciones":"37","camas":"37","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOSTAL","habitaciones":"11","camas":"13","num_emp1":"1"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"13","camas":"19","num_emp1":"7"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOTEL","habitaciones":"11","camas":"28","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"3","camas":"6","num_emp1":"0"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"8","camas":"16","num_emp1":"0"}
+,{"municipio":"SAN JOSE DE ISNOS","sub_categoria":"HOSTAL","habitaciones":"7","camas":"10","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"20","camas":"30","num_emp1":"3"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"20","camas":"43","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"10","camas":"20","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"GLAMPING","habitaciones":"3","camas":"10","num_emp1":"1"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"12","camas":"40","num_emp1":"1"}
+,{"municipio":"GARZON","sub_categoria":"GLAMPING","habitaciones":"2","camas":"8","num_emp1":"0"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"5","camas":"16","num_emp1":"0"}
+,{"municipio":"GIGANTE","sub_categoria":"GLAMPING","habitaciones":"3","camas":"14","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"11","camas":"21","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"40","camas":"59","num_emp1":"6"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"8","camas":"16","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"8","camas":"8","num_emp1":"0"}
+,{"municipio":"GIGANTE","sub_categoria":"CENTRO VACACIONAL","habitaciones":"2","camas":"2","num_emp1":"1"}
+,{"municipio":"GIGANTE","sub_categoria":"HOTEL","habitaciones":"1","camas":"40","num_emp1":"0"}
+,{"municipio":"GIGANTE","sub_categoria":"HOTEL","habitaciones":"1","camas":"20","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOSTAL","habitaciones":"10","camas":"10","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"7","camas":"22","num_emp1":"4"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"5","camas":"14","num_emp1":"0"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"23","camas":"50","num_emp1":"2"}
+,{"municipio":"NEIVA","sub_categoria":"HOSTAL","habitaciones":"19","camas":"40","num_emp1":"1"}
+,{"municipio":"GARZON","sub_categoria":"GLAMPING","habitaciones":"2","camas":"8","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"6","camas":"15","num_emp1":"0"}
+,{"municipio":"GUADALUPE","sub_categoria":"HOTEL","habitaciones":"1","camas":"20","num_emp1":"1"}
+,{"municipio":"PAICOL","sub_categoria":"HOTEL","habitaciones":"9","camas":"13","num_emp1":"2"}
+,{"municipio":"TARQUI","sub_categoria":"GLAMPING","habitaciones":"1","camas":"2","num_emp1":"0"}
+,{"municipio":"NATAGA","sub_categoria":"HOTEL","habitaciones":"4","camas":"16","num_emp1":"0"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"1","camas":"16","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"6","camas":"12","num_emp1":"0"}
+,{"municipio":"GIGANTE","sub_categoria":"GLAMPING","habitaciones":"2","camas":"4","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"20","camas":"45","num_emp1":"11"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"CAMPAMENTO","habitaciones":"1","camas":"2","num_emp1":"0"}
+,{"municipio":"ALGECIRAS","sub_categoria":"HOSTAL","habitaciones":"5","camas":"12","num_emp1":"0"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"42","camas":"71","num_emp1":"1"}
+,{"municipio":"AIPE","sub_categoria":"HOTEL","habitaciones":"6","camas":"12","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"8","camas":"8","num_emp1":"0"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOTEL","habitaciones":"3","camas":"7","num_emp1":"0"}
+,{"municipio":"ALGECIRAS","sub_categoria":"HOTEL","habitaciones":"17","camas":"21","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOSTAL","habitaciones":"1","camas":"6","num_emp1":"0"}
+,{"municipio":"TELLO","sub_categoria":"HOTEL","habitaciones":"7","camas":"14","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"23","camas":"27","num_emp1":"1"}
+,{"municipio":"PALERMO","sub_categoria":"HOTEL","habitaciones":"10","camas":"25","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"73","camas":"135","num_emp1":"32"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"10","camas":"20","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"42","camas":"61","num_emp1":"4"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"14","camas":"22","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"18","camas":"26","num_emp1":"0"}
+,{"municipio":"TERUEL","sub_categoria":"HOSTAL","habitaciones":"19","camas":"80","num_emp1":"0"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"1","camas":"10","num_emp1":"0"}
+,{"municipio":"SUAZA","sub_categoria":"HOTEL","habitaciones":"24","camas":"28","num_emp1":"4"}
+,{"municipio":"SAN JOSE DE ISNOS","sub_categoria":"HOSTAL","habitaciones":"2","camas":"3","num_emp1":"1"}
+,{"municipio":"CAMPOALEGRE","sub_categoria":"HOTEL","habitaciones":"5","camas":"15","num_emp1":"0"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"HOTEL","habitaciones":"12","camas":"32","num_emp1":"0"}
+,{"municipio":"SAN JOSE DE ISNOS","sub_categoria":"HOTEL","habitaciones":"14","camas":"14","num_emp1":"1"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"20","camas":"31","num_emp1":"0"}
+,{"municipio":"PALERMO","sub_categoria":"APARTAHOTEL","habitaciones":"1","camas":"15","num_emp1":"3"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"9","camas":"10","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"15","camas":"29","num_emp1":"0"}
+,{"municipio":"RIVERA","sub_categoria":"HOSTAL","habitaciones":"5","camas":"14","num_emp1":"0"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"CAMPAMENTO","habitaciones":"12","camas":"48","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"23","camas":"40","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"27","camas":"60","num_emp1":"7"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"12","camas":"35","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"20","camas":"25","num_emp1":"2"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"12","camas":"42","num_emp1":"1"}
+,{"municipio":"ACEVEDO","sub_categoria":"REFUGIO","habitaciones":"4","camas":"4","num_emp1":"0"}
+,{"municipio":"ACEVEDO","sub_categoria":"GLAMPING","habitaciones":"4","camas":"4","num_emp1":"3"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"8","camas":"10","num_emp1":"0"}
+,{"municipio":"VILLAVIEJA","sub_categoria":"CAMPAMENTO","habitaciones":"20","camas":"40","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"9","camas":"25","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"16","camas":"32","num_emp1":"0"}
+,{"municipio":"GIGANTE","sub_categoria":"GLAMPING","habitaciones":"3","camas":"20","num_emp1":"2"}
+,{"municipio":"PALERMO","sub_categoria":"APARTAHOTEL","habitaciones":"67","camas":"77","num_emp1":"0"}
+,{"municipio":"ACEVEDO","sub_categoria":"HOTEL","habitaciones":"27","camas":"54","num_emp1":"0"}
+,{"municipio":"GARZON","sub_categoria":"HOTEL","habitaciones":"13","camas":"31","num_emp1":"0"}
+,{"municipio":"PITALITO","sub_categoria":"GLAMPING","habitaciones":"3","camas":"8","num_emp1":"0"}
+,{"municipio":"RIVERA","sub_categoria":"HOTEL","habitaciones":"1","camas":"8","num_emp1":"0"}
+,{"municipio":"GARZON","sub_categoria":"GLAMPING","habitaciones":"1","camas":"1","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"5","camas":"10","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"6","camas":"6","num_emp1":"0"}
+,{"municipio":"PALERMO","sub_categoria":"GLAMPING","habitaciones":"4","camas":"3","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"14","camas":"20","num_emp1":"0"}
+,{"municipio":"GIGANTE","sub_categoria":"HOTEL","habitaciones":"15","camas":"27","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOSTAL","habitaciones":"10","camas":"20","num_emp1":"0"}
+,{"municipio":"PALESTINA","sub_categoria":"CAMPAMENTO","habitaciones":"5","camas":"7","num_emp1":"1"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"26","camas":"29","num_emp1":"1"}
+,{"municipio":"SUAZA","sub_categoria":"HOTEL","habitaciones":"12","camas":"12","num_emp1":"2"}
+,{"municipio":"SAN JOSE DE ISNOS","sub_categoria":"GLAMPING","habitaciones":"3","camas":"3","num_emp1":"1"}
+,{"municipio":"PALERMO","sub_categoria":"HOTEL","habitaciones":"15","camas":"15","num_emp1":"2"}
+,{"municipio":"RIVERA","sub_categoria":"CAMPAMENTO","habitaciones":"1","camas":"1","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"5","camas":"5","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"4","camas":"5","num_emp1":"0"}
+,{"municipio":"GARZON","sub_categoria":"GLAMPING","habitaciones":"4","camas":"21","num_emp1":"0"}
+,{"municipio":"GIGANTE","sub_categoria":"HOTEL","habitaciones":"19","camas":"19","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"10","camas":"12","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"ALBERGUE","habitaciones":"3","camas":"16","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"CENTRO VACACIONAL","habitaciones":"2","camas":"7","num_emp1":"0"}
+,{"municipio":"ALTAMIRA","sub_categoria":"CAMPAMENTO","habitaciones":"1","camas":"4","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"GLAMPING","habitaciones":"3","camas":"10","num_emp1":"0"}
+,{"municipio":"SAN AGUSTIN","sub_categoria":"HOTEL","habitaciones":"13","camas":"17","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"13","camas":"19","num_emp1":"0"}
+,{"municipio":"PITALITO","sub_categoria":"HOTEL","habitaciones":"22","camas":"25","num_emp1":"1"}
+,{"municipio":"GIGANTE","sub_categoria":"GLAMPING","habitaciones":"5","camas":"30","num_emp1":"3"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"18","camas":"35","num_emp1":"0"}
+,{"municipio":"GARZON","sub_categoria":"HOSTAL","habitaciones":"8","camas":"20","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"8","camas":"20","num_emp1":"0"}
+,{"municipio":"ACEVEDO","sub_categoria":"HOTEL","habitaciones":"14","camas":"18","num_emp1":"0"}
+,{"municipio":"SAN JOSE DE ISNOS","sub_categoria":"GLAMPING","habitaciones":"4","camas":"4","num_emp1":"1"}
+,{"municipio":"HOBO","sub_categoria":"HOTEL","habitaciones":"14","camas":"22","num_emp1":"0"}
+,{"municipio":"NEIVA","sub_categoria":"HOTEL","habitaciones":"8","camas":"12","num_emp1":"0"}]

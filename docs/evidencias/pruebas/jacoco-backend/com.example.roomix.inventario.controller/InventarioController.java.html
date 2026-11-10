@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InventarioController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.inventario.controller</a> &gt; <span class="el_source">InventarioController.java</span></div><h1>InventarioController.java</h1><pre class="source lang-java linenums">package com.example.roomix.inventario.controller;
+
+import com.example.roomix.common.dto.PaginaResponse;
+import com.example.roomix.inventario.domain.TipoMovimientoStock;
+import com.example.roomix.inventario.dto.MovimientoInventarioResponse;
+import com.example.roomix.inventario.dto.ResumenInventarioResponse;
+import org.springframework.format.annotation.DateTimeFormat;
+import java.time.LocalDate;
+
+import com.example.roomix.habitacion.dto.ErrorResponseDoc;
+import com.example.roomix.inventario.dto.AjustarStockRequest;
+import com.example.roomix.inventario.dto.ArticuloInventarioRequest;
+import com.example.roomix.inventario.dto.ArticuloInventarioResponse;
+import com.example.roomix.inventario.service.InventarioService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@Tag(
+        name = &quot;Inventario&quot;,
+        description = &quot;&quot;&quot;
+                Artículos del inventario del hotel. Cada artículo pertenece a una categoría
+                (`/api/inventario/categorias`). Incluye fechas de creación/actualización y control de stock.
+                Errores: enum `InventarioErrorCode` (INV-001, …).
+                &quot;&quot;&quot;
+)
+@RestController
+@RequestMapping(&quot;/api/inventario&quot;)
+@RequiredArgsConstructor
+public class InventarioController {
+
+    private final InventarioService inventarioService;
+
+    @Operation(
+            summary = &quot;Listar artículos de inventario&quot;,
+            description = &quot;Filtros opcionales por categoría, estado activo o stock bajo (cantidad ≤ mínimo).&quot;
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = &quot;200&quot;,
+                    description = &quot;Listado obtenido&quot;,
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            array = @ArraySchema(schema = @Schema(implementation = ArticuloInventarioResponse.class))
+                    )
+            )
+    })
+    @GetMapping
+    public List&lt;ArticuloInventarioResponse&gt; listar(
+            @Parameter(description = &quot;Filtrar por ID de categoría&quot;, example = &quot;1&quot;)
+            @RequestParam(required = false) Long categoriaId,
+            @Parameter(description = &quot;Filtrar por artículos activos/inactivos&quot;, example = &quot;true&quot;)
+            @RequestParam(required = false) Boolean activo,
+            @Parameter(description = &quot;Solo artículos con stock en o por debajo del mínimo&quot;, example = &quot;true&quot;)
+            @RequestParam(required = false) Boolean stockBajo
+    ) {
+<span class="fc" id="L79">        return inventarioService.listar(categoriaId, activo, stockBajo);</span>
+    }
+
+    @Operation(summary = &quot;Obtener artículo por ID&quot;)
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = &quot;200&quot;,
+                    content = @Content(schema = @Schema(implementation = ArticuloInventarioResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = &quot;404&quot;,
+                    description = &quot;INV-001: artículo no encontrado&quot;,
+                    content = @Content(schema = @Schema(implementation = ErrorResponseDoc.class))
+            )
+    })
+    @GetMapping(&quot;/{id}&quot;)
+    public ArticuloInventarioResponse obtener(
+            @Parameter(description = &quot;ID del artículo&quot;, example = &quot;1&quot;, required = true)
+            @PathVariable Long id
+    ) {
+<span class="nc" id="L99">        return inventarioService.obtenerPorId(id);</span>
+    }
+
+    @Operation(summary = &quot;Registrar artículo en inventario&quot;)
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = &quot;201&quot;,
+                    content = @Content(schema = @Schema(implementation = ArticuloInventarioResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = &quot;400&quot;,
+                    description = &quot;Datos inválidos o INV-005&quot;,
+                    content = @Content(schema = @Schema(implementation = ErrorResponseDoc.class))
+            ),
+            @ApiResponse(
+                    responseCode = &quot;409&quot;,
+                    description = &quot;INV-002: nombre duplicado&quot;,
+                    content = @Content(schema = @Schema(implementation = ErrorResponseDoc.class))
+            )
+    })
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public ArticuloInventarioResponse crear(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = ArticuloInventarioRequest.class))
+            )
+            @Valid @RequestBody ArticuloInventarioRequest request
+    ) {
+<span class="nc" id="L128">        return inventarioService.crear(request);</span>
+    }
+
+    @Operation(summary = &quot;Actualizar artículo de inventario&quot;)
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = &quot;200&quot;,
+                    content = @Content(schema = @Schema(implementation = ArticuloInventarioResponse.class))
+            ),
+            @ApiResponse(responseCode = &quot;400&quot;, content = @Content(schema = @Schema(implementation = ErrorResponseDoc.class))),
+            @ApiResponse(responseCode = &quot;404&quot;, content = @Content(schema = @Schema(implementation = ErrorResponseDoc.class))),
+            @ApiResponse(responseCode = &quot;409&quot;, content = @Content(schema = @Schema(implementation = ErrorResponseDoc.class)))
+    })
+    @PutMapping(&quot;/{id}&quot;)
+    public ArticuloInventarioResponse actualizar(
+            @Parameter(description = &quot;ID del artículo&quot;, example = &quot;1&quot;, required = true)
+            @PathVariable Long id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = ArticuloInventarioRequest.class))
+            )
+            @Valid @RequestBody ArticuloInventarioRequest request
+    ) {
+<span class="nc" id="L151">        return inventarioService.actualizar(id, request);</span>
+    }
+
+    @Operation(
+            summary = &quot;Ajustar stock (entrada o salida)&quot;,
+            description = &quot;&quot;&quot;
+                    Registra un movimiento de inventario. En `SALIDA` valida stock disponible (INV-004 si no alcanza).
+                    Solo artículos activos (INV-003 si está inactivo).
+                    &quot;&quot;&quot;
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = &quot;200&quot;,
+                    content = @Content(schema = @Schema(implementation = ArticuloInventarioResponse.class))
+            ),
+            @ApiResponse(responseCode = &quot;404&quot;, content = @Content(schema = @Schema(implementation = ErrorResponseDoc.class))),
+            @ApiResponse(
+                    responseCode = &quot;422&quot;,
+                    description = &quot;INV-003 o INV-004&quot;,
+                    content = @Content(schema = @Schema(implementation = ErrorResponseDoc.class))
+            )
+    })
+    @PatchMapping(&quot;/{id}/stock&quot;)
+    public ArticuloInventarioResponse ajustarStock(
+            @Parameter(description = &quot;ID del artículo&quot;, example = &quot;1&quot;, required = true)
+            @PathVariable Long id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = AjustarStockRequest.class))
+            )
+            @Valid @RequestBody AjustarStockRequest request
+    ) {
+<span class="nc" id="L183">        return inventarioService.ajustarStock(id, request);</span>
+    }
+
+    @Operation(
+            summary = &quot;Dar de baja artículo (baja lógica)&quot;,
+            description = &quot;Marca el artículo como inactivo. No elimina el registro de la base de datos.&quot;
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = &quot;204&quot;, description = &quot;Artículo dado de baja&quot;),
+            @ApiResponse(responseCode = &quot;404&quot;, content = @Content(schema = @Schema(implementation = ErrorResponseDoc.class)))
+    })
+    @DeleteMapping(&quot;/{id}&quot;)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void eliminar(
+            @Parameter(description = &quot;ID del artículo&quot;, example = &quot;1&quot;, required = true)
+            @PathVariable Long id
+    ) {
+<span class="nc" id="L200">        inventarioService.eliminar(id);</span>
+<span class="nc" id="L201">    }</span>
+
+    @Operation(summary = &quot;Historial de movimientos de un artículo (entradas, salidas y ajustes)&quot;)
+    @GetMapping(&quot;/{id}/movimientos&quot;)
+    public List&lt;MovimientoInventarioResponse&gt; movimientosArticulo(@PathVariable Long id) {
+<span class="nc" id="L206">        return inventarioService.movimientosDeArticulo(id);</span>
+    }
+
+    @Operation(summary = &quot;Movimientos de inventario en un periodo (por defecto, últimos 30 días)&quot;)
+    @GetMapping(&quot;/movimientos&quot;)
+    public PaginaResponse&lt;MovimientoInventarioResponse&gt; movimientos(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            @RequestParam(required = false) TipoMovimientoStock tipo,
+            @RequestParam(defaultValue = &quot;0&quot;) int pagina,
+            @RequestParam(defaultValue = &quot;50&quot;) int tamano
+    ) {
+<span class="nc" id="L218">        return inventarioService.movimientos(desde, hasta, tipo, pagina, tamano);</span>
+    }
+
+    @Operation(summary = &quot;Reporte de inventario&quot;, description = &quot;Valorización, productos críticos y artículos más usados&quot;)
+    @GetMapping(&quot;/reportes/resumen&quot;)
+    public ResumenInventarioResponse resumen(@RequestParam(defaultValue = &quot;30&quot;) int dias) {
+<span class="nc" id="L224">        return inventarioService.resumen(dias);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

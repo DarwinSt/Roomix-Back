@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InventarioErrorCode.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.inventario.exception</a> &gt; <span class="el_source">InventarioErrorCode.java</span></div><h1>InventarioErrorCode.java</h1><pre class="source lang-java linenums">package com.example.roomix.inventario.exception;
+
+import org.springframework.http.HttpStatus;
+
+/**
+ * Catálogo de errores controlados del módulo de inventario.
+ * Cada valor define código HTTP, código de negocio y plantilla del mensaje.
+ */
+<span class="nc" id="L9">public enum InventarioErrorCode {</span>
+
+<span class="nc" id="L11">    ARTICULO_NO_ENCONTRADO(</span>
+            HttpStatus.NOT_FOUND,
+            &quot;INV-001&quot;,
+            &quot;Artículo de inventario no encontrado con id: %s&quot;
+    ),
+<span class="nc" id="L16">    NOMBRE_DUPLICADO(</span>
+            HttpStatus.CONFLICT,
+            &quot;INV-002&quot;,
+            &quot;Ya existe un artículo de inventario con el nombre: %s&quot;
+    ),
+<span class="nc" id="L21">    ARTICULO_INACTIVO(</span>
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            &quot;INV-003&quot;,
+            &quot;El artículo '%s' está inactivo y no puede utilizarse&quot;
+    ),
+<span class="nc" id="L26">    STOCK_INSUFICIENTE(</span>
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            &quot;INV-004&quot;,
+            &quot;Stock insuficiente para '%s'. Disponible: %s, solicitado: %s&quot;
+    ),
+<span class="nc" id="L31">    CANTIDAD_MINIMA_INVALIDA(</span>
+            HttpStatus.BAD_REQUEST,
+            &quot;INV-005&quot;,
+            &quot;La cantidad mínima no puede ser mayor que la cantidad actual (%s)&quot;
+    ),
+<span class="nc" id="L36">    CATEGORIA_NO_ENCONTRADA(</span>
+            HttpStatus.NOT_FOUND,
+            &quot;INV-006&quot;,
+            &quot;Categoría de inventario no encontrada con id: %s&quot;
+    ),
+<span class="nc" id="L41">    CATEGORIA_NOMBRE_DUPLICADO(</span>
+            HttpStatus.CONFLICT,
+            &quot;INV-007&quot;,
+            &quot;Ya existe una categoría con el nombre: %s&quot;
+    ),
+<span class="nc" id="L46">    CATEGORIA_INACTIVA(</span>
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            &quot;INV-008&quot;,
+            &quot;La categoría '%s' está inactiva&quot;
+    ),
+<span class="nc" id="L51">    CATEGORIA_CON_ARTICULOS(</span>
+            HttpStatus.CONFLICT,
+            &quot;INV-009&quot;,
+            &quot;No se puede eliminar la categoría '%s' porque tiene %s artículo(s) asociado(s)&quot;
+    ),
+<span class="nc" id="L56">    CATEGORIA_PREDEFINIDA(</span>
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            &quot;INV-010&quot;,
+            &quot;La categoría predefinida '%s' no puede eliminarse; desactívela si no la necesita&quot;
+    ),
+<span class="nc" id="L61">    CANTIDAD_MOVIMIENTO_INVALIDA(</span>
+            HttpStatus.BAD_REQUEST,
+            &quot;INV-011&quot;,
+            &quot;La cantidad de una entrada o salida debe ser al menos 1&quot;
+    );
+
+    private final HttpStatus httpStatus;
+    private final String code;
+    private final String messageTemplate;
+
+<span class="nc" id="L71">    InventarioErrorCode(HttpStatus httpStatus, String code, String messageTemplate) {</span>
+<span class="nc" id="L72">        this.httpStatus = httpStatus;</span>
+<span class="nc" id="L73">        this.code = code;</span>
+<span class="nc" id="L74">        this.messageTemplate = messageTemplate;</span>
+<span class="nc" id="L75">    }</span>
+
+    public HttpStatus getHttpStatus() {
+<span class="nc" id="L78">        return httpStatus;</span>
+    }
+
+    public String getCode() {
+<span class="nc" id="L82">        return code;</span>
+    }
+
+    public String formatMessage(Object... args) {
+<span class="nc" id="L86">        return messageTemplate.formatted(args);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

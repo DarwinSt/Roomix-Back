@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SolicitudServicioRepository.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.servicio.repository</a> &gt; <span class="el_source">SolicitudServicioRepository.java</span></div><h1>SolicitudServicioRepository.java</h1><pre class="source lang-java linenums">package com.example.roomix.servicio.repository;
+
+import com.example.roomix.servicio.domain.EstadoSolicitud;
+import com.example.roomix.servicio.domain.SolicitudServicio;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
+
+public interface SolicitudServicioRepository
+        extends JpaRepository&lt;SolicitudServicio, Long&gt;, JpaSpecificationExecutor&lt;SolicitudServicio&gt; {
+
+    List&lt;SolicitudServicio&gt; findByReservaIdAndEstadoNotOrderByFechaHoraSolicitudAsc(Long reservaId, EstadoSolicitud estado);
+
+    long countByEstadoIn(Collection&lt;EstadoSolicitud&gt; estados);
+
+    /** Servicios más solicitados en el periodo. Filas: [nombre, cantidad, total]. */
+    @Query(&quot;&quot;&quot;
+            SELECT s.servicio.nombre, SUM(s.cantidad), SUM(s.total) FROM SolicitudServicio s
+            WHERE s.estado &lt;&gt; com.example.roomix.servicio.domain.EstadoSolicitud.CANCELADA
+              AND s.fechaHoraSolicitud &gt;= :desde AND s.fechaHoraSolicitud &lt; :hasta
+            GROUP BY s.servicio.nombre
+            ORDER BY SUM(s.total) DESC
+            &quot;&quot;&quot;)
+    List&lt;Object[]&gt; ranking(@Param(&quot;desde&quot;) LocalDateTime desde, @Param(&quot;hasta&quot;) LocalDateTime hasta);
+
+    static Specification&lt;SolicitudServicio&gt; conFiltros(
+            EstadoSolicitud estado,
+            Long reservaId,
+            Long huespedId,
+            LocalDateTime desde,
+            LocalDateTime hasta,
+            Boolean activas
+    ) {
+<span class="nc" id="L40">        return (root, query, cb) -&gt; {</span>
+<span class="nc" id="L41">            var predicados = new java.util.ArrayList&lt;jakarta.persistence.criteria.Predicate&gt;();</span>
+<span class="nc bnc" id="L42" title="All 2 branches missed.">            if (estado != null) {</span>
+<span class="nc" id="L43">                predicados.add(cb.equal(root.get(&quot;estado&quot;), estado));</span>
+            }
+<span class="nc bnc" id="L45" title="All 2 branches missed.">            if (reservaId != null) {</span>
+<span class="nc" id="L46">                predicados.add(cb.equal(root.get(&quot;reserva&quot;).get(&quot;id&quot;), reservaId));</span>
+            }
+<span class="nc bnc" id="L48" title="All 2 branches missed.">            if (huespedId != null) {</span>
+<span class="nc" id="L49">                predicados.add(cb.equal(root.get(&quot;huesped&quot;).get(&quot;id&quot;), huespedId));</span>
+            }
+<span class="nc bnc" id="L51" title="All 2 branches missed.">            if (Boolean.TRUE.equals(activas)) {</span>
+<span class="nc" id="L52">                predicados.add(root.get(&quot;estado&quot;).in(EstadoSolicitud.SOLICITADA, EstadoSolicitud.EN_PROCESO));</span>
+            }
+<span class="nc bnc" id="L54" title="All 4 branches missed.">            if (desde != null || hasta != null) {</span>
+<span class="nc" id="L55">                var fecha = cb.coalesce(root.&lt;LocalDateTime&gt;get(&quot;fechaHoraProgramada&quot;), root.&lt;LocalDateTime&gt;get(&quot;fechaHoraSolicitud&quot;));</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">                if (desde != null) {</span>
+<span class="nc" id="L57">                    predicados.add(cb.greaterThanOrEqualTo(fecha, desde));</span>
+                }
+<span class="nc bnc" id="L59" title="All 2 branches missed.">                if (hasta != null) {</span>
+<span class="nc" id="L60">                    predicados.add(cb.lessThan(fecha, hasta));</span>
+                }
+            }
+<span class="nc" id="L63">            return cb.and(predicados.toArray(jakarta.persistence.criteria.Predicate[]::new));</span>
+        };
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

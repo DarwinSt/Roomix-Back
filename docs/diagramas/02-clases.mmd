@@ -1,0 +1,306 @@
+---
+title: Roomix — Diagrama de clases (modelo de dominio)
+---
+classDiagram
+direction LR
+
+namespace Seguridad {
+  class Usuario {
+    -String username
+    -String nombreCompleto
+    -String email
+    -String passwordHash
+    -Rol rol
+    -boolean activo
+    -boolean debeCambiarPassword
+    -int intentosFallidos
+    -LocalDateTime bloqueadoHasta
+    +estaBloqueado(ahora) boolean
+  }
+  class TokenRecuperacion {
+    -String tokenHash
+    -LocalDateTime expiraEn
+    -boolean usado
+  }
+  class RegistroAuditoria {
+    -LocalDateTime fechaHora
+    -String usuario
+    -String accion
+    -String modulo
+    -String ip
+    -boolean exitoso
+  }
+  class Rol {
+    <<enumeration>>
+    ADMIN
+    RECEPCION
+    HOUSEKEEPING
+    FINANZAS
+    EVENTOS
+    ALMACEN
+  }
+}
+
+namespace Hospedaje {
+  class Habitacion {
+    -String numero
+    -TipoHabitacion tipoHabitacion
+    -Integer piso
+    -Integer capacidad
+    -BigDecimal precioNoche
+    -List~String~ caracteristicas
+    -EstadoHabitacion estado
+    -MotivoInhabilitacion motivoInhabilitacion
+  }
+  class HabitacionFoto {
+    -byte[] contenido
+    -String tipoContenido
+    -Integer orden
+  }
+  class Huesped {
+    -String nombre
+    -String apellidos
+    -TipoDocumento tipoDocumento
+    -String numeroDocumento
+    -String email
+    -String nacionalidad
+    -boolean autorizaTratamientoDatos
+    -LocalDateTime fechaHoraAutorizacion
+  }
+  class Reserva {
+    -LocalDate fechaEntrada
+    -LocalDate fechaSalida
+    -Integer cantidadNoches
+    -EstadoReserva estadoReserva
+    -BigDecimal tarifaNoche
+    -BigDecimal totalEstimado
+    -CanalReserva canal
+    -String motivoCancelacion
+    -BigDecimal descuento
+    -BigDecimal valorPenalidad
+    -BigDecimal valorDevuelto
+  }
+  class Promocion {
+    -String nombre
+    -Integer minimoNoches
+    -TipoHabitacion tipoHabitacion
+    -CanalReserva canal
+    -LocalDate vigenteDesde
+    -LocalDate vigenteHasta
+    -TipoDescuento tipoDescuento
+    -BigDecimal valor
+    -boolean activa
+    +aplica(noches, tipo, canal, llegada) boolean
+    +descuentoSobre(subtotal) BigDecimal
+  }
+  class PoliticaReserva {
+    -BigDecimal abonoMinimoPct
+    -BigDecimal penalidadCancelacionPct
+  }
+  class TarifaTipoHabitacion {
+    -TipoHabitacion tipoHabitacion
+    -BigDecimal precioNoche
+  }
+  class EstadoHabitacion {
+    <<enumeration>>
+    LIBRE
+    RESERVADO
+    OCUPADO
+    INHABILITADO
+  }
+  class EstadoReserva {
+    <<enumeration>>
+    CONFIRMADA
+    EN_CURSO
+    FINALIZADA
+    CANCELADA
+  }
+}
+
+namespace Operacion {
+  class Personal {
+    -String nombre
+    -String rol
+    -String departamento
+    -boolean activo
+  }
+  class Incidencia {
+    -AlcanceIncidencia alcance
+    -TipoIncidencia tipo
+    -String titulo
+    -EstadoIncidencia estado
+    -LocalDateTime fechaHoraProgramada
+  }
+  class IncidenciaTarea {
+    -String descripcion
+    -int orden
+    -boolean completada
+  }
+}
+
+namespace Servicios {
+  class ServicioCatalogo {
+    -String nombre
+    -CategoriaServicio categoria
+    -BigDecimal precio
+    -String unidad
+    -boolean activo
+  }
+  class SolicitudServicio {
+    -Integer cantidad
+    -BigDecimal precioUnitario
+    -BigDecimal total
+    -EstadoSolicitud estado
+    -LocalDateTime fechaHoraProgramada
+  }
+}
+
+namespace Eventos {
+  class Salon {
+    -String nombre
+    -Integer capacidad
+    -BigDecimal tarifaHora
+    -boolean activo
+  }
+  class Evento {
+    -String nombre
+    -TipoEvento tipo
+    -TipoAcceso tipoAcceso
+    -EstadoEvento estado
+    -LocalDateTime fechaHoraInicio
+    -LocalDateTime fechaHoraFin
+    -Integer capacidad
+    -BigDecimal valorBase
+    +valorTotal() BigDecimal
+  }
+  class EventoRecurso {
+    -TipoRecurso tipo
+    -String descripcion
+    -Integer cantidad
+    -BigDecimal valorUnitario
+  }
+  class EventoParticipante {
+    -String nombre
+    -String documento
+    -boolean confirmado
+    -boolean asistio
+  }
+}
+
+namespace Inventario {
+  class CategoriaInventario {
+    -String nombre
+    -boolean predefinida
+  }
+  class ArticuloInventario {
+    -String nombre
+    -Integer cantidad
+    -Integer cantidadMinima
+    -UnidadMedida unidadMedida
+    -String proveedor
+    -BigDecimal precioUnitario
+    -boolean activo
+  }
+  class MovimientoInventario {
+    -TipoMovimientoStock tipo
+    -Integer cantidad
+    -Integer stockAnterior
+    -Integer stockResultante
+    -BigDecimal costoUnitario
+  }
+}
+
+namespace Finanzas {
+  class Factura {
+    -String numero
+    -LocalDateTime fechaEmision
+    -BigDecimal subtotal
+    -BigDecimal porcentajeImpuesto
+    -BigDecimal impuesto
+    -BigDecimal total
+    -BigDecimal totalPagado
+    -EstadoFactura estado
+    +saldo() BigDecimal
+  }
+  class FacturaItem {
+    -String descripcion
+    -BigDecimal cantidad
+    -BigDecimal valorUnitario
+    -OrigenItem origen
+  }
+  class Pago {
+    -BigDecimal valor
+    -MetodoPago metodo
+    -String referencia
+    -boolean devuelto
+  }
+  class AbonoReserva {
+    -BigDecimal valor
+    -MetodoPago metodo
+    -String referencia
+    -LocalDateTime fechaHora
+    -Long facturaId
+    -boolean devuelto
+    -BigDecimal valorDevuelto
+    +vigente() boolean
+  }
+  class MovimientoFinanciero {
+    -TipoMovimiento tipo
+    -CategoriaFinanciera categoria
+    -BigDecimal valor
+    -LocalDate fecha
+    -boolean pendiente
+    -LocalDate fechaVencimiento
+    -boolean anulado
+  }
+  class GastoRecurrente {
+    -String concepto
+    -CategoriaFinanciera categoria
+    -BigDecimal valor
+    -Integer diaVencimiento
+    -String ultimoPeriodo
+    -boolean activo
+  }
+}
+
+Usuario "1" -- "0..*" TokenRecuperacion
+Usuario ..> Rol
+
+Habitacion "1" *-- "0..6" HabitacionFoto
+Habitacion "1" -- "0..*" Reserva
+Huesped "1" -- "0..*" Reserva
+Habitacion "0..*" --> "0..1" Huesped : huésped actual
+Habitacion ..> EstadoHabitacion
+Reserva ..> EstadoReserva
+TarifaTipoHabitacion ..> Habitacion : tarifa por tipo
+
+Habitacion "0..1" -- "0..*" Incidencia
+Personal "0..1" -- "0..*" Incidencia : asignado
+Incidencia "1" *-- "1..*" IncidenciaTarea
+
+ServicioCatalogo "1" -- "0..*" SolicitudServicio
+Reserva "1" -- "0..*" SolicitudServicio : cargo a la cuenta
+Personal "0..1" -- "0..*" SolicitudServicio : responsable
+
+Salon "1" -- "0..*" Evento
+Personal "0..1" -- "0..*" Evento : responsable
+Evento "1" *-- "0..*" EventoRecurso
+Evento "1" *-- "0..*" EventoParticipante
+Huesped "0..1" -- "0..*" EventoParticipante
+
+CategoriaInventario "1" -- "0..*" ArticuloInventario
+ArticuloInventario "1" *-- "0..*" MovimientoInventario
+
+Reserva "0..1" -- "0..*" Factura
+Huesped "0..1" -- "0..*" Factura
+Evento "0..1" .. "0..*" Factura : eventoId
+Factura "1" *-- "1..*" FacturaItem
+Factura "1" *-- "0..*" Pago
+Pago "1" .. "1..*" MovimientoFinanciero : genera ingresos
+MovimientoInventario "0..1" .. "0..1" MovimientoFinanciero : compra genera egreso
+Promocion "0..1" -- "0..*" Reserva : se aplica en
+PoliticaReserva ..> Reserva : abono mínimo y penalidad
+Reserva "1" *-- "0..*" AbonoReserva
+AbonoReserva "1" .. "1..2" MovimientoFinanciero : ingreso y devolución
+Factura "0..1" .. "0..*" AbonoReserva : aplica como pago
+GastoRecurrente "1" .. "0..*" MovimientoFinanciero : egreso por pagar del mes

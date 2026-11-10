@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UsuarioActual.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.auth.service</a> &gt; <span class="el_source">UsuarioActual.java</span></div><h1>UsuarioActual.java</h1><pre class="source lang-java linenums">package com.example.roomix.auth.service;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.util.Optional;
+
+/**
+ * Acceso al usuario autenticado de la petición en curso (para auditoría y responsables).
+ */
+public final class UsuarioActual {
+
+    public static final String SISTEMA = &quot;sistema&quot;;
+
+    private UsuarioActual() {
+    }
+
+    /** Nombre de usuario autenticado, o &quot;sistema&quot; en procesos sin sesión (arranque, tareas internas). */
+    public static String username() {
+<span class="fc" id="L21">        return autenticacion().map(Authentication::getName).orElse(SISTEMA);</span>
+    }
+
+    /** Rol sin prefijo (ADMIN, RECEPCION, ...) o null si no hay sesión. */
+    public static String rol() {
+<span class="fc" id="L26">        return autenticacion()</span>
+<span class="fc" id="L27">                .flatMap(a -&gt; a.getAuthorities().stream().map(GrantedAuthority::getAuthority).findFirst())</span>
+<span class="fc" id="L28">                .map(r -&gt; r.replaceFirst(&quot;^ROLE_&quot;, &quot;&quot;))</span>
+<span class="fc" id="L29">                .orElse(null);</span>
+    }
+
+    public static boolean tieneRol(String... roles) {
+<span class="nc" id="L33">        String actual = rol();</span>
+<span class="nc bnc" id="L34" title="All 2 branches missed.">        if (actual == null) {</span>
+<span class="nc" id="L35">            return false;</span>
+        }
+<span class="nc bnc" id="L37" title="All 2 branches missed.">        for (String r : roles) {</span>
+<span class="nc bnc" id="L38" title="All 2 branches missed.">            if (r.equals(actual)) {</span>
+<span class="nc" id="L39">                return true;</span>
+            }
+        }
+<span class="nc" id="L42">        return false;</span>
+    }
+
+    private static Optional&lt;Authentication&gt; autenticacion() {
+<span class="fc" id="L46">        Authentication auth = SecurityContextHolder.getContext().getAuthentication();</span>
+<span class="pc bpc" id="L47" title="2 of 6 branches missed.">        if (auth == null || !auth.isAuthenticated() || &quot;anonymousUser&quot;.equals(auth.getName())) {</span>
+<span class="fc" id="L48">            return Optional.empty();</span>
+        }
+<span class="fc" id="L50">        return Optional.of(auth);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

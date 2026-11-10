@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbonoService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.finanzas.service</a> &gt; <span class="el_source">AbonoService.java</span></div><h1>AbonoService.java</h1><pre class="source lang-java linenums">package com.example.roomix.finanzas.service;
+
+import com.example.roomix.auth.service.UsuarioActual;
+import com.example.roomix.config.HotelProperties;
+import com.example.roomix.finanzas.domain.AbonoReserva;
+import com.example.roomix.finanzas.domain.CategoriaFinanciera;
+import com.example.roomix.finanzas.domain.EstadoFactura;
+import com.example.roomix.finanzas.domain.Factura;
+import com.example.roomix.finanzas.domain.MovimientoFinanciero;
+import com.example.roomix.finanzas.domain.Pago;
+import com.example.roomix.finanzas.dto.AbonoDtos.AbonoRequest;
+import com.example.roomix.finanzas.dto.AbonoDtos.AbonoResponse;
+import com.example.roomix.finanzas.dto.AbonoDtos.ResumenAbonos;
+import com.example.roomix.finanzas.exception.FinanzasErrorCode;
+import com.example.roomix.finanzas.exception.FinanzasException;
+import com.example.roomix.finanzas.repository.AbonoReservaRepository;
+import com.example.roomix.finanzas.repository.MovimientoFinancieroRepository;
+import com.example.roomix.habitacion.domain.EstadoReserva;
+import com.example.roomix.reserva.domain.Reserva;
+import com.example.roomix.reserva.domain.ReservaCanceladaEvent;
+import com.example.roomix.reserva.exception.ReservaErrorCode;
+import com.example.roomix.reserva.exception.ReservaException;
+import com.example.roomix.reserva.repository.ReservaRepository;
+import com.example.roomix.reserva.service.PoliticaReservaService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.NumberFormat;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Locale;
+
+/**
+ * Abonos de las reservas: abono mínimo para reservar, abonos posteriores, aplicación como pago de la factura
+ * en el check-out y devolución con penalidad cuando la reserva se cancela.
+ */
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class AbonoService {
+
+<span class="fc" id="L47">    private static final NumberFormat PESOS = NumberFormat.getCurrencyInstance(Locale.forLanguageTag(&quot;es-CO&quot;));</span>
+
+    private final AbonoReservaRepository abonoRepository;
+    private final ReservaRepository reservaRepository;
+    private final MovimientoFinancieroRepository movimientoRepository;
+    private final FinanzasService finanzasService;
+    private final PoliticaReservaService politicaService;
+    private final HotelProperties hotel;
+    private final com.example.roomix.habitacion.repository.HabitacionRepository habitacionRepository;
+    private final com.example.roomix.huesped.repository.HuespedRepository huespedRepository;
+    private final com.example.roomix.reserva.service.PromocionService promocionService;
+    private final com.example.roomix.reserva.service.TarifaService tarifaService;
+
+    /** Cotiza la reserva con la promoción escogida y el IVA del huésped (si aún no existe, se asume IVA). */
+    public com.example.roomix.finanzas.dto.AbonoDtos.Cotizacion cotizar(Long habitacionId, java.time.LocalDate entrada,
+                                                                         java.time.LocalDate salida, Long promocionId,
+                                                                         com.example.roomix.reserva.domain.CanalReserva canal,
+                                                                         Long huespedId) {
+<span class="nc" id="L65">        var habitacion = habitacionRepository.findById(habitacionId)</span>
+<span class="nc" id="L66">                .orElseThrow(() -&gt; new com.example.roomix.habitacion.exception.HabitacionNotFoundException(habitacionId));</span>
+<span class="nc bnc" id="L67" title="All 6 branches missed.">        if (entrada == null || salida == null || !salida.isAfter(entrada)) {</span>
+<span class="nc" id="L68">            throw new ReservaException(ReservaErrorCode.FECHAS_INVALIDAS);</span>
+        }
+<span class="nc" id="L70">        int noches = (int) java.time.temporal.ChronoUnit.DAYS.between(entrada, salida);</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        BigDecimal tarifa = habitacion.getPrecioNoche() != null ? habitacion.getPrecioNoche()</span>
+<span class="nc" id="L72">                : tarifaService.obtenerPrecioNoche(habitacion.getTipoHabitacion());</span>
+<span class="nc" id="L73">        BigDecimal subtotal = tarifa.multiply(BigDecimal.valueOf(noches));</span>
+<span class="nc" id="L74">        BigDecimal descuento = BigDecimal.ZERO;</span>
+<span class="nc" id="L75">        String promocion = null;</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        if (promocionId != null) {</span>
+<span class="nc" id="L77">            var p = promocionService.validarAplicable(promocionId, habitacion, noches, canal, entrada);</span>
+<span class="nc" id="L78">            descuento = p.descuentoSobre(subtotal);</span>
+<span class="nc" id="L79">            promocion = p.getNombre();</span>
+        }
+<span class="nc" id="L81">        BigDecimal total = subtotal.subtract(descuento);</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">        var huesped = huespedId != null ? huespedRepository.findById(huespedId).orElse(null) : null;</span>
+<span class="nc" id="L83">        BigDecimal porcentaje = ReglaIva.porcentaje(hotel, huesped);</span>
+<span class="nc" id="L84">        BigDecimal impuesto = ReglaIva.impuesto(total, porcentaje);</span>
+<span class="nc" id="L85">        BigDecimal conImpuesto = total.add(impuesto);</span>
+<span class="nc" id="L86">        var politica = politicaService.vigente();</span>
+<span class="nc" id="L87">        BigDecimal minimo = conImpuesto.multiply(politica.getAbonoMinimoPct()).divide(BigDecimal.valueOf(100), 0, RoundingMode.UP);</span>
+<span class="nc" id="L88">        return new com.example.roomix.finanzas.dto.AbonoDtos.Cotizacion(noches, tarifa, subtotal, descuento, promocion, total,</span>
+<span class="nc" id="L89">                porcentaje, impuesto, conImpuesto, politica.getAbonoMinimoPct(), minimo, politica.getPenalidadCancelacionPct());</span>
+    }
+
+    /** Total que pagará el huésped por el alojamiento: total estimado (ya con descuento) más IVA si aplica. */
+    public BigDecimal totalReserva(Reserva r) {
+<span class="fc" id="L94">        BigDecimal porcentaje = ReglaIva.porcentaje(hotel, r.getHuesped());</span>
+<span class="fc" id="L95">        return r.getTotalEstimado().add(ReglaIva.impuesto(r.getTotalEstimado(), porcentaje));</span>
+    }
+
+    /** Abono mínimo según la política vigente, redondeado al peso hacia arriba. */
+    public BigDecimal abonoMinimo(Reserva r) {
+<span class="fc" id="L100">        BigDecimal pct = politicaService.vigente().getAbonoMinimoPct();</span>
+<span class="fc" id="L101">        return totalReserva(r).multiply(pct).divide(BigDecimal.valueOf(100), 0, RoundingMode.UP);</span>
+    }
+
+    public ResumenAbonos resumen(Long reservaId) {
+<span class="fc" id="L105">        Reserva r = buscarReserva(reservaId);</span>
+<span class="fc" id="L106">        List&lt;AbonoReserva&gt; abonos = abonoRepository.findByReservaIdOrderByFechaHoraAsc(reservaId);</span>
+<span class="fc" id="L107">        BigDecimal total = totalReserva(r);</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">        BigDecimal abonado = abonos.stream().filter(a -&gt; !a.isDevuelto()).map(AbonoReserva::getValor).reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+<span class="fc" id="L109">        return new ResumenAbonos(r.getId(), total, ReglaIva.porcentaje(hotel, r.getHuesped()),</span>
+<span class="fc" id="L110">                politicaService.vigente().getAbonoMinimoPct(), abonoMinimo(r), abonado,</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">                r.getEstadoReserva() == EstadoReserva.CANCELADA ? BigDecimal.ZERO : total.subtract(abonado).max(BigDecimal.ZERO),</span>
+<span class="fc" id="L112">                r.getValorPenalidad(), r.getValorDevuelto(), abonos.stream().map(AbonoResponse::from).toList());</span>
+    }
+
+    /** Al crear la reserva: exige el abono mínimo de la política y registra el abono inicial. */
+    @Transactional
+    public void registrarAbonoInicial(Long reservaId, AbonoRequest abono) {
+<span class="fc" id="L118">        Reserva r = buscarReserva(reservaId);</span>
+<span class="fc" id="L119">        BigDecimal minimo = abonoMinimo(r);</span>
+<span class="pc bpc" id="L120" title="1 of 4 branches missed.">        BigDecimal valor = abono != null &amp;&amp; abono.valor() != null ? abono.valor() : BigDecimal.ZERO;</span>
+        // Toda reserva exige un pago al crearla: completo o un abono parcial (al menos el mínimo de la política)
+<span class="fc bfc" id="L122" title="All 2 branches covered.">        if (valor.signum() &lt;= 0) {</span>
+<span class="fc" id="L123">            throw new ReservaException(ReservaErrorCode.ABONO_INSUFICIENTE,</span>
+<span class="fc" id="L124">                    &quot;Para reservar debe registrar el pago: completo (&quot; + PESOS.format(totalReserva(r)) + &quot;) o un abono&quot;</span>
+<span class="pc bpc" id="L125" title="1 of 2 branches missed.">                            + (minimo.signum() &gt; 0 ? &quot; de al menos &quot; + PESOS.format(minimo) : &quot;&quot;));</span>
+        }
+<span class="fc bfc" id="L127" title="All 4 branches covered.">        if (minimo.signum() &gt; 0 &amp;&amp; valor.compareTo(minimo) &lt; 0) {</span>
+<span class="fc" id="L128">            throw new ReservaException(ReservaErrorCode.ABONO_INSUFICIENTE,</span>
+<span class="fc" id="L129">                    &quot;Para reservar se requiere un abono mínimo de &quot; + PESOS.format(minimo) + &quot; (&quot;</span>
+<span class="fc" id="L130">                            + politicaService.vigente().getAbonoMinimoPct().stripTrailingZeros().toPlainString()</span>
+<span class="fc" id="L131">                            + &quot; % del total de &quot; + PESOS.format(totalReserva(r)) + &quot;)&quot;);</span>
+        }
+<span class="fc" id="L133">        registrar(reservaId, abono);</span>
+<span class="fc" id="L134">    }</span>
+
+    @Transactional
+    public AbonoResponse registrar(Long reservaId, AbonoRequest request) {
+<span class="fc" id="L138">        Reserva r = buscarReserva(reservaId);</span>
+<span class="pc bpc" id="L139" title="3 of 4 branches missed.">        if (r.getEstadoReserva() != EstadoReserva.CONFIRMADA &amp;&amp; r.getEstadoReserva() != EstadoReserva.EN_CURSO) {</span>
+<span class="nc" id="L140">            throw new FinanzasException(FinanzasErrorCode.RESERVA_NO_ABONABLE, r.getEstadoReserva());</span>
+        }
+<span class="fc" id="L142">        BigDecimal valor = request.valor().setScale(2, RoundingMode.HALF_UP);</span>
+<span class="fc" id="L143">        BigDecimal abonado = abonoRepository.findByReservaIdOrderByFechaHoraAsc(reservaId).stream()</span>
+<span class="pc bpc" id="L144" title="1 of 2 branches missed.">                .filter(a -&gt; !a.isDevuelto()).map(AbonoReserva::getValor).reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+<span class="fc" id="L145">        BigDecimal saldo = totalReserva(r).subtract(abonado);</span>
+<span class="fc bfc" id="L146" title="All 2 branches covered.">        if (valor.compareTo(saldo) &gt; 0) {</span>
+<span class="fc" id="L147">            throw new FinanzasException(FinanzasErrorCode.ABONO_EXCEDE_TOTAL, PESOS.format(valor), PESOS.format(saldo.max(BigDecimal.ZERO)));</span>
+        }
+<span class="fc" id="L149">        AbonoReserva abono = abonoRepository.save(AbonoReserva.builder()</span>
+<span class="fc" id="L150">                .reserva(r)</span>
+<span class="fc" id="L151">                .valor(valor)</span>
+<span class="fc" id="L152">                .metodo(request.metodo())</span>
+<span class="fc bfc" id="L153" title="All 2 branches covered.">                .referencia(StringUtils.hasText(request.referencia()) ? request.referencia().trim() : null)</span>
+<span class="fc" id="L154">                .fechaHora(LocalDateTime.now())</span>
+<span class="fc" id="L155">                .registradoPor(UsuarioActual.username())</span>
+<span class="fc" id="L156">                .build());</span>
+<span class="fc" id="L157">        MovimientoFinanciero ingreso = finanzasService.registrarAutomatico(CategoriaFinanciera.ALOJAMIENTO,</span>
+<span class="fc" id="L158">                &quot;Abono de la reserva #&quot; + r.getId() + &quot; — habitación &quot; + r.getHabitacion().getNumero()</span>
+<span class="fc" id="L159">                        + &quot; (&quot; + r.getHuesped().nombreCompleto() + &quot;)&quot;,</span>
+<span class="fc" id="L160">                valor, request.metodo(), r.getHuesped().nombreCompleto(), &quot;RES-&quot; + r.getId(), null, null);</span>
+<span class="fc" id="L161">        ingreso.setAbonoId(abono.getId());</span>
+<span class="fc" id="L162">        movimientoRepository.save(ingreso);</span>
+<span class="fc" id="L163">        return AbonoResponse.from(abono);</span>
+    }
+
+    /** Abonos aún no facturados ni devueltos (cuenta del huésped antes del check-out). */
+    public BigDecimal abonadoSinAplicar(Long reservaId) {
+<span class="nc" id="L168">        return abonoRepository.findByReservaIdOrderByFechaHoraAsc(reservaId).stream()</span>
+<span class="nc" id="L169">                .filter(AbonoReserva::vigente).map(AbonoReserva::getValor).reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+    }
+
+    /**
+     * En la facturación de la reserva, los abonos vigentes se aplican como pagos de la factura. No generan un nuevo
+     * ingreso: ya se registraron como ingreso el día en que se recibieron.
+     */
+    @Transactional
+    public void aplicarAFactura(Factura factura) {
+<span class="pc bpc" id="L178" title="1 of 2 branches missed.">        if (factura.getReserva() == null) {</span>
+<span class="nc" id="L179">            return;</span>
+        }
+<span class="fc bfc" id="L181" title="All 2 branches covered.">        for (AbonoReserva abono : abonoRepository.findByReservaIdOrderByFechaHoraAsc(factura.getReserva().getId())) {</span>
+<span class="pc bpc" id="L182" title="2 of 4 branches missed.">            if (!abono.vigente() || factura.saldo().signum() &lt;= 0) {</span>
+<span class="nc" id="L183">                continue;</span>
+            }
+<span class="fc" id="L185">            BigDecimal valor = abono.getValor().min(factura.saldo());</span>
+<span class="fc" id="L186">            factura.getPagos().add(Pago.builder()</span>
+<span class="fc" id="L187">                    .factura(factura)</span>
+<span class="fc" id="L188">                    .valor(valor)</span>
+<span class="fc" id="L189">                    .metodo(abono.getMetodo())</span>
+<span class="fc bfc" id="L190" title="All 2 branches covered.">                    .referencia(&quot;Abono #&quot; + abono.getId() + (abono.getReferencia() != null ? &quot; · &quot; + abono.getReferencia() : &quot;&quot;))</span>
+<span class="fc" id="L191">                    .fechaHora(abono.getFechaHora())</span>
+<span class="fc" id="L192">                    .registradoPor(abono.getRegistradoPor())</span>
+<span class="fc" id="L193">                    .build());</span>
+<span class="fc" id="L194">            factura.setTotalPagado(factura.getTotalPagado().add(valor));</span>
+<span class="pc bpc" id="L195" title="1 of 2 branches missed.">            factura.setEstado(factura.saldo().signum() == 0 ? EstadoFactura.PAGADA : EstadoFactura.PAGADA_PARCIAL);</span>
+<span class="fc" id="L196">            abono.setFacturaId(factura.getId());</span>
+<span class="fc" id="L197">            abonoRepository.save(abono);</span>
+<span class="fc" id="L198">        }</span>
+<span class="fc" id="L199">    }</span>
+
+    /**
+     * Cancelación de una reserva con abonos: se retiene la penalidad de la política (porcentaje de lo abonado) y el
+     * resto se devuelve al huésped como egreso de devolución.
+     */
+    @EventListener
+    @Transactional
+    public void alCancelarReserva(ReservaCanceladaEvent evento) {
+<span class="fc" id="L208">        Reserva r = buscarReserva(evento.reservaId());</span>
+<span class="fc" id="L209">        List&lt;AbonoReserva&gt; vigentes = abonoRepository.findByReservaIdOrderByFechaHoraAsc(r.getId()).stream()</span>
+<span class="fc" id="L210">                .filter(AbonoReserva::vigente).toList();</span>
+<span class="fc" id="L211">        BigDecimal abonado = vigentes.stream().map(AbonoReserva::getValor).reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+<span class="pc bpc" id="L212" title="1 of 2 branches missed.">        if (abonado.signum() == 0) {</span>
+<span class="nc" id="L213">            return;</span>
+        }
+<span class="fc" id="L215">        BigDecimal pct = politicaService.vigente().getPenalidadCancelacionPct();</span>
+<span class="fc" id="L216">        BigDecimal retenido = abonado.multiply(pct).divide(BigDecimal.valueOf(100), 0, RoundingMode.HALF_UP).min(abonado);</span>
+<span class="fc" id="L217">        BigDecimal devolver = abonado.subtract(retenido);</span>
+<span class="fc" id="L218">        LocalDateTime ahora = LocalDateTime.now();</span>
+<span class="fc" id="L219">        BigDecimal pendiente = devolver;</span>
+<span class="fc bfc" id="L220" title="All 2 branches covered.">        for (int i = 0; i &lt; vigentes.size(); i++) {</span>
+<span class="fc" id="L221">            AbonoReserva a = vigentes.get(i);</span>
+<span class="pc bpc" id="L222" title="1 of 2 branches missed.">            BigDecimal parte = i == vigentes.size() - 1</span>
+<span class="fc" id="L223">                    ? pendiente</span>
+<span class="pc" id="L224">                    : devolver.multiply(a.getValor()).divide(abonado, 2, RoundingMode.HALF_UP);</span>
+<span class="fc" id="L225">            pendiente = pendiente.subtract(parte);</span>
+<span class="fc" id="L226">            a.setDevuelto(true);</span>
+<span class="fc" id="L227">            a.setValorDevuelto(parte);</span>
+<span class="fc" id="L228">            a.setFechaHoraDevolucion(ahora);</span>
+<span class="fc" id="L229">            abonoRepository.save(a);</span>
+        }
+<span class="pc bpc" id="L231" title="1 of 2 branches missed.">        if (devolver.signum() &gt; 0) {</span>
+<span class="fc" id="L232">            finanzasService.registrarAutomatico(CategoriaFinanciera.OTROS_EGRESOS,</span>
+<span class="fc" id="L233">                    &quot;Devolución de abonos de la reserva #&quot; + r.getId() + &quot; cancelada (penalidad retenida &quot;</span>
+<span class="fc" id="L234">                            + pct.stripTrailingZeros().toPlainString() + &quot; %: &quot; + PESOS.format(retenido) + &quot;)&quot;,</span>
+<span class="fc" id="L235">                    devolver, vigentes.getLast().getMetodo(), r.getHuesped().nombreCompleto(), &quot;RES-&quot; + r.getId(), null, null);</span>
+        }
+<span class="fc" id="L237">        r.setValorPenalidad(retenido);</span>
+<span class="fc" id="L238">        r.setValorDevuelto(devolver);</span>
+<span class="fc" id="L239">        reservaRepository.save(r);</span>
+<span class="fc" id="L240">    }</span>
+
+    private Reserva buscarReserva(Long id) {
+<span class="pc" id="L243">        return reservaRepository.findById(id).orElseThrow(() -&gt; new ReservaException(ReservaErrorCode.RESERVA_NO_ENCONTRADA));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

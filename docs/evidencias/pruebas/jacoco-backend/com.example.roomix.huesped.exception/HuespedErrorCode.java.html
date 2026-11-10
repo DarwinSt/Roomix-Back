@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HuespedErrorCode.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.huesped.exception</a> &gt; <span class="el_source">HuespedErrorCode.java</span></div><h1>HuespedErrorCode.java</h1><pre class="source lang-java linenums">package com.example.roomix.huesped.exception;
+
+import lombok.Getter;
+import org.springframework.http.HttpStatus;
+
+<span class="nc" id="L6">@Getter</span>
+public enum HuespedErrorCode {
+<span class="nc" id="L8">    HUESPED_NO_ENCONTRADO(HttpStatus.NOT_FOUND, &quot;HUE-001&quot;, &quot;No se encontró el huésped con id %s&quot;),</span>
+<span class="nc" id="L9">    DOCUMENTO_DUPLICADO(HttpStatus.CONFLICT, &quot;HUE-002&quot;, &quot;Ya existe un huésped con el documento %s&quot;),</span>
+<span class="nc" id="L10">    HUESPED_INACTIVO(HttpStatus.UNPROCESSABLE_ENTITY, &quot;HUE-003&quot;, &quot;El huésped %s está inactivo&quot;),</span>
+<span class="nc" id="L11">    HUESPED_REQUERIDO(HttpStatus.UNPROCESSABLE_ENTITY, &quot;HUE-004&quot;, &quot;Debe seleccionar un huésped para reservar la habitación&quot;),</span>
+<span class="nc" id="L12">    HUESPED_YA_ASIGNADO(HttpStatus.UNPROCESSABLE_ENTITY, &quot;HUE-005&quot;, &quot;El huésped ya tiene una reserva o estadía activa en la habitación %s&quot;),</span>
+<span class="nc" id="L13">    HUESPED_SIN_ASIGNAR_CHECKIN(HttpStatus.UNPROCESSABLE_ENTITY, &quot;HUE-006&quot;, &quot;No hay huésped asignado a esta reserva para hacer check-in&quot;);</span>
+
+    private final HttpStatus httpStatus;
+    private final String code;
+    private final String messageTemplate;
+
+<span class="nc" id="L19">    HuespedErrorCode(HttpStatus httpStatus, String code, String messageTemplate) {</span>
+<span class="nc" id="L20">        this.httpStatus = httpStatus;</span>
+<span class="nc" id="L21">        this.code = code;</span>
+<span class="nc" id="L22">        this.messageTemplate = messageTemplate;</span>
+<span class="nc" id="L23">    }</span>
+
+    public String formatMessage(Object... args) {
+<span class="nc" id="L26">        return String.format(messageTemplate, args);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

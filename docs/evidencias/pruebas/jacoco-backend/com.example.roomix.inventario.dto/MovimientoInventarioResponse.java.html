@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MovimientoInventarioResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.inventario.dto</a> &gt; <span class="el_source">MovimientoInventarioResponse.java</span></div><h1>MovimientoInventarioResponse.java</h1><pre class="source lang-java linenums">package com.example.roomix.inventario.dto;
+
+import com.example.roomix.inventario.domain.MovimientoInventario;
+import com.example.roomix.inventario.domain.TipoMovimientoStock;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Schema(name = &quot;MovimientoInventarioResponse&quot;)
+<span class="nc" id="L11">public record MovimientoInventarioResponse(</span>
+        Long id,
+        Long articuloId,
+        String articuloNombre,
+        TipoMovimientoStock tipo,
+        Integer cantidad,
+        Integer stockAnterior,
+        Integer stockResultante,
+        BigDecimal costoUnitario,
+        String motivo,
+        String proveedor,
+        String registradoPor,
+        LocalDateTime fechaHora
+) {
+    public static MovimientoInventarioResponse from(MovimientoInventario m) {
+<span class="nc" id="L26">        return new MovimientoInventarioResponse(</span>
+<span class="nc" id="L27">                m.getId(), m.getArticulo().getId(), m.getArticulo().getNombre(), m.getTipo(), m.getCantidad(),</span>
+<span class="nc" id="L28">                m.getStockAnterior(), m.getStockResultante(), m.getCostoUnitario(), m.getMotivo(), m.getProveedor(),</span>
+<span class="nc" id="L29">                m.getRegistradoPor(), m.getFechaHora()</span>
+        );
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,272 @@
+[
+ {
+  "idx": 33,
+  "municipio": "RIVERA",
+  "tipo": "HOTEL",
+  "habitaciones": 1,
+  "camas": 14,
+  "estrato": "1 a 4",
+  "id": "G01"
+ },
+ {
+  "idx": 144,
+  "municipio": "NEIVA",
+  "tipo": "HOTEL",
+  "habitaciones": 1,
+  "camas": 120,
+  "estrato": "1 a 4",
+  "id": "G02"
+ },
+ {
+  "idx": 98,
+  "municipio": "RIVERA",
+  "tipo": "APARTAHOTEL",
+  "habitaciones": 4,
+  "camas": 6,
+  "estrato": "1 a 4",
+  "id": "G03"
+ },
+ {
+  "idx": 99,
+  "municipio": "NEIVA",
+  "tipo": "HOSTAL",
+  "habitaciones": 9,
+  "camas": 12,
+  "estrato": "5 a 10",
+  "id": "G04"
+ },
+ {
+  "idx": 67,
+  "municipio": "NEIVA",
+  "tipo": "HOTEL",
+  "habitaciones": 9,
+  "camas": 12,
+  "estrato": "5 a 10",
+  "id": "G05"
+ },
+ {
+  "idx": 141,
+  "municipio": "RIVERA",
+  "tipo": "HOTEL",
+  "habitaciones": 8,
+  "camas": 30,
+  "estrato": "5 a 10",
+  "id": "G06"
+ },
+ {
+  "idx": 78,
+  "municipio": "NEIVA",
+  "tipo": "HOSTAL",
+  "habitaciones": 7,
+  "camas": 15,
+  "estrato": "5 a 10",
+  "id": "G07"
+ },
+ {
+  "idx": 117,
+  "municipio": "RIVERA",
+  "tipo": "HOTEL",
+  "habitaciones": 5,
+  "camas": 14,
+  "estrato": "5 a 10",
+  "id": "G08"
+ },
+ {
+  "idx": 62,
+  "municipio": "NEIVA",
+  "tipo": "HOSTAL",
+  "habitaciones": 7,
+  "camas": 14,
+  "estrato": "5 a 10",
+  "id": "G09"
+ },
+ {
+  "idx": 101,
+  "municipio": "NEIVA",
+  "tipo": "HOTEL",
+  "habitaciones": 10,
+  "camas": 12,
+  "estrato": "5 a 10",
+  "id": "G10"
+ },
+ {
+  "idx": 40,
+  "municipio": "NEIVA",
+  "tipo": "HOTEL",
+  "habitaciones": 8,
+  "camas": 9,
+  "estrato": "5 a 10",
+  "id": "G11"
+ },
+ {
+  "idx": 102,
+  "municipio": "NEIVA",
+  "tipo": "HOTEL",
+  "habitaciones": 10,
+  "camas": 11,
+  "estrato": "5 a 10",
+  "id": "G12"
+ },
+ {
+  "idx": 56,
+  "municipio": "NEIVA",
+  "tipo": "HOTEL",
+  "habitaciones": 6,
+  "camas": 8,
+  "estrato": "5 a 10",
+  "id": "G13"
+ },
+ {
+  "idx": 27,
+  "municipio": "NEIVA",
+  "tipo": "HOTEL",
+  "habitaciones": 11,
+  "camas": 22,
+  "estrato": "11 a 20",
+  "id": "G14"
+ },
+ {
+  "idx": 50,
+  "municipio": "NEIVA",
+  "tipo": "HOTEL",
+  "habitaciones": 14,
+  "camas": 22,
+  "estrato": "11 a 20",
+  "id": "G15"
+ },
+ {
+  "idx": 72,
+  "municipio": "NEIVA",
+  "tipo": "HOTEL",
+  "habitaciones": 11,
+  "camas": 15,
+  "estrato": "11 a 20",
+  "id": "G16"
+ },
+ {
+  "idx": 81,
+  "municipio": "RIVERA",
+  "tipo": "HOTEL",
+  "habitaciones": 15,
+  "camas": 20,
+  "estrato": "11 a 20",
+  "id": "G17"
+ },
+ {
+  "idx": 10,
+  "municipio": "NEIVA",
+  "tipo": "HOTEL",
+  "habitaciones": 13,
+  "camas": 20,
+  "estrato": "11 a 20",
+  "id": "G18"
+ },
+ {
+  "idx": 22,
+  "municipio": "NEIVA",
+  "tipo": "HOTEL",
+  "habitaciones": 17,
+  "camas": 24,
+  "estrato": "11 a 20",
+  "id": "G19"
+ },
+ {
+  "idx": 178,
+  "municipio": "NEIVA",
+  "tipo": "HOTEL",
+  "habitaciones": 20,
+  "camas": 31,
+  "estrato": "11 a 20",
+  "id": "G20"
+ },
+ {
+  "idx": 199,
+  "municipio": "NEIVA",
+  "tipo": "HOTEL",
+  "habitaciones": 18,
+  "camas": 35,
+  "estrato": "11 a 20",
+  "id": "G21"
+ },
+ {
+  "idx": 87,
+  "municipio": "RIVERA",
+  "tipo": "HOTEL",
+  "habitaciones": 19,
+  "camas": 40,
+  "estrato": "11 a 20",
+  "id": "G22"
+ },
+ {
+  "idx": 140,
+  "municipio": "NEIVA",
+  "tipo": "HOTEL",
+  "habitaciones": 13,
+  "camas": 30,
+  "estrato": "11 a 20",
+  "id": "G23"
+ },
+ {
+  "idx": 3,
+  "municipio": "NEIVA",
+  "tipo": "HOTEL",
+  "habitaciones": 49,
+  "camas": 118,
+  "estrato": "21 a 50",
+  "id": "G24"
+ },
+ {
+  "idx": 41,
+  "municipio": "NEIVA",
+  "tipo": "HOTEL",
+  "habitaciones": 33,
+  "camas": 46,
+  "estrato": "21 a 50",
+  "id": "G25"
+ },
+ {
+  "idx": 128,
+  "municipio": "NEIVA",
+  "tipo": "HOTEL",
+  "habitaciones": 32,
+  "camas": 64,
+  "estrato": "21 a 50",
+  "id": "G26"
+ },
+ {
+  "idx": 7,
+  "municipio": "NEIVA",
+  "tipo": "HOTEL",
+  "habitaciones": 36,
+  "camas": 135,
+  "estrato": "21 a 50",
+  "id": "G27"
+ },
+ {
+  "idx": 53,
+  "municipio": "RIVERA",
+  "tipo": "HOTEL",
+  "habitaciones": 24,
+  "camas": 62,
+  "estrato": "21 a 50",
+  "id": "G28"
+ },
+ {
+  "idx": 35,
+  "municipio": "NEIVA",
+  "tipo": "HOTEL",
+  "habitaciones": 23,
+  "camas": 32,
+  "estrato": "21 a 50",
+  "id": "G29"
+ },
+ {
+  "idx": 4,
+  "municipio": "NEIVA",
+  "tipo": "HOTEL",
+  "habitaciones": 87,
+  "camas": 236,
+  "estrato": "Más de 50",
+  "id": "G30"
+ }
+]

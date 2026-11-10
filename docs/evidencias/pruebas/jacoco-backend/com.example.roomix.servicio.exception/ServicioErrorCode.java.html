@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ServicioErrorCode.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.servicio.exception</a> &gt; <span class="el_source">ServicioErrorCode.java</span></div><h1>ServicioErrorCode.java</h1><pre class="source lang-java linenums">package com.example.roomix.servicio.exception;
+
+import com.example.roomix.common.exception.ModuloErrorCode;
+import lombok.Getter;
+import org.springframework.http.HttpStatus;
+
+<span class="fc" id="L7">@Getter</span>
+public enum ServicioErrorCode implements ModuloErrorCode {
+<span class="fc" id="L9">    SERVICIO_NO_ENCONTRADO(HttpStatus.NOT_FOUND, &quot;SRV-001&quot;, &quot;No se encontró el servicio con id %s&quot;),</span>
+<span class="fc" id="L10">    NOMBRE_DUPLICADO(HttpStatus.CONFLICT, &quot;SRV-002&quot;, &quot;Ya existe un servicio llamado %s&quot;),</span>
+<span class="fc" id="L11">    SERVICIO_INACTIVO(HttpStatus.UNPROCESSABLE_ENTITY, &quot;SRV-003&quot;, &quot;El servicio %s no está disponible&quot;),</span>
+<span class="fc" id="L12">    SOLICITUD_NO_ENCONTRADA(HttpStatus.NOT_FOUND, &quot;SRV-004&quot;, &quot;No se encontró la solicitud con id %s&quot;),</span>
+<span class="fc" id="L13">    RESERVA_NO_ENCONTRADA(HttpStatus.NOT_FOUND, &quot;SRV-005&quot;, &quot;No se encontró la reserva con id %s&quot;),</span>
+<span class="fc" id="L14">    RESERVA_NO_ACTIVA(HttpStatus.UNPROCESSABLE_ENTITY, &quot;SRV-006&quot;, &quot;Solo se pueden solicitar servicios para reservas confirmadas o en curso&quot;),</span>
+<span class="fc" id="L15">    TRANSICION_INVALIDA(HttpStatus.UNPROCESSABLE_ENTITY, &quot;SRV-007&quot;, &quot;No se puede pasar la solicitud de %s a %s&quot;),</span>
+<span class="fc" id="L16">    MOTIVO_REQUERIDO(HttpStatus.BAD_REQUEST, &quot;SRV-008&quot;, &quot;Indique el motivo de la cancelación&quot;),</span>
+<span class="fc" id="L17">    SOLICITUD_FACTURADA(HttpStatus.UNPROCESSABLE_ENTITY, &quot;SRV-009&quot;, &quot;La solicitud ya fue facturada y no se puede cancelar&quot;);</span>
+
+    private final HttpStatus httpStatus;
+    private final String code;
+    private final String messageTemplate;
+
+<span class="fc" id="L23">    ServicioErrorCode(HttpStatus httpStatus, String code, String messageTemplate) {</span>
+<span class="fc" id="L24">        this.httpStatus = httpStatus;</span>
+<span class="fc" id="L25">        this.code = code;</span>
+<span class="fc" id="L26">        this.messageTemplate = messageTemplate;</span>
+<span class="fc" id="L27">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

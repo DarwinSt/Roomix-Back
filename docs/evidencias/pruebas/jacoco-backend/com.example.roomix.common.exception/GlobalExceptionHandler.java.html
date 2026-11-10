@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GlobalExceptionHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.common.exception</a> &gt; <span class="el_source">GlobalExceptionHandler.java</span></div><h1>GlobalExceptionHandler.java</h1><pre class="source lang-java linenums">package com.example.roomix.common.exception;
+
+import com.example.roomix.habitacion.exception.HabitacionNoDisponibleException;
+import com.example.roomix.habitacion.exception.HabitacionNotFoundException;
+import com.example.roomix.habitacion.exception.NumeroHabitacionDuplicadoException;
+import com.example.roomix.habitacion.exception.TransicionEstadoInvalidaException;
+import com.example.roomix.huesped.exception.HuespedException;
+import com.example.roomix.inventario.exception.InventarioException;
+import com.example.roomix.incidencia.exception.IncidenciaException;
+import com.example.roomix.reserva.exception.ReservaException;
+import io.swagger.v3.oas.annotations.Hidden;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+
+@Hidden
+@RestControllerAdvice
+<span class="fc" id="L25">public class GlobalExceptionHandler {</span>
+
+    @ExceptionHandler(HuespedException.class)
+    public ProblemDetail handleHuesped(HuespedException ex) {
+<span class="nc" id="L29">        ProblemDetail detail = ProblemDetail.forStatusAndDetail(ex.getHttpStatus(), ex.getMessage());</span>
+<span class="nc" id="L30">        detail.setTitle(ex.getHuespedErrorCode().name());</span>
+<span class="nc" id="L31">        detail.setProperty(&quot;codigo&quot;, ex.getErrorCode());</span>
+<span class="nc" id="L32">        detail.setProperty(&quot;modulo&quot;, &quot;HUESPEDES&quot;);</span>
+<span class="nc" id="L33">        detail.setProperty(&quot;timestamp&quot;, Instant.now());</span>
+<span class="nc" id="L34">        return detail;</span>
+    }
+
+    @ExceptionHandler(InventarioException.class)
+    public ProblemDetail handleInventario(InventarioException ex) {
+<span class="nc" id="L39">        ProblemDetail detail = ProblemDetail.forStatusAndDetail(ex.getHttpStatus(), ex.getMessage());</span>
+<span class="nc" id="L40">        detail.setTitle(ex.getInventarioErrorCode().name());</span>
+<span class="nc" id="L41">        detail.setProperty(&quot;codigo&quot;, ex.getErrorCode());</span>
+<span class="nc" id="L42">        detail.setProperty(&quot;modulo&quot;, &quot;INVENTARIO&quot;);</span>
+<span class="nc" id="L43">        detail.setProperty(&quot;timestamp&quot;, Instant.now());</span>
+<span class="nc" id="L44">        return detail;</span>
+    }
+
+    @ExceptionHandler(IncidenciaException.class)
+    public ProblemDetail handleIncidencia(IncidenciaException ex) {
+<span class="nc" id="L49">        ProblemDetail detail = ProblemDetail.forStatusAndDetail(ex.getHttpStatus(), ex.getMessage());</span>
+<span class="nc" id="L50">        detail.setTitle(ex.getIncidenciaErrorCode().name());</span>
+<span class="nc" id="L51">        detail.setProperty(&quot;codigo&quot;, ex.getErrorCode());</span>
+<span class="nc" id="L52">        detail.setProperty(&quot;modulo&quot;, &quot;INCIDENCIAS&quot;);</span>
+<span class="nc" id="L53">        detail.setProperty(&quot;timestamp&quot;, Instant.now());</span>
+<span class="nc" id="L54">        return detail;</span>
+    }
+
+    @ExceptionHandler(ReservaException.class)
+    public ProblemDetail handleReserva(ReservaException ex) {
+<span class="fc" id="L59">        ProblemDetail detail = ProblemDetail.forStatusAndDetail(ex.getHttpStatus(), ex.getMessage());</span>
+<span class="fc" id="L60">        detail.setTitle(ex.getReservaErrorCode().name());</span>
+<span class="fc" id="L61">        detail.setProperty(&quot;codigo&quot;, ex.getErrorCode());</span>
+<span class="fc" id="L62">        detail.setProperty(&quot;modulo&quot;, &quot;RESERVAS&quot;);</span>
+<span class="fc" id="L63">        detail.setProperty(&quot;timestamp&quot;, Instant.now());</span>
+<span class="fc" id="L64">        return detail;</span>
+    }
+
+    @ExceptionHandler(HabitacionNoDisponibleException.class)
+    public ProblemDetail handleHabitacionNoDisponible(HabitacionNoDisponibleException ex) {
+<span class="nc" id="L69">        ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());</span>
+<span class="nc" id="L70">        detail.setTitle(&quot;Habitación no disponible&quot;);</span>
+<span class="nc" id="L71">        detail.setProperty(&quot;codigo&quot;, &quot;HAB-001&quot;);</span>
+<span class="nc" id="L72">        detail.setProperty(&quot;modulo&quot;, &quot;HABITACIONES&quot;);</span>
+<span class="nc" id="L73">        detail.setProperty(&quot;timestamp&quot;, Instant.now());</span>
+<span class="nc" id="L74">        return detail;</span>
+    }
+
+    @ExceptionHandler(HabitacionNotFoundException.class)
+    public ProblemDetail handleHabitacionNotFound(HabitacionNotFoundException ex) {
+<span class="nc" id="L79">        ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());</span>
+<span class="nc" id="L80">        detail.setTitle(&quot;Habitación no encontrada&quot;);</span>
+<span class="nc" id="L81">        detail.setProperty(&quot;timestamp&quot;, Instant.now());</span>
+<span class="nc" id="L82">        return detail;</span>
+    }
+
+    @ExceptionHandler(TransicionEstadoInvalidaException.class)
+    public ProblemDetail handleTransicionInvalida(TransicionEstadoInvalidaException ex) {
+<span class="nc" id="L87">        ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());</span>
+<span class="nc" id="L88">        detail.setTitle(&quot;Transición de estado no permitida&quot;);</span>
+<span class="nc" id="L89">        detail.setProperty(&quot;timestamp&quot;, Instant.now());</span>
+<span class="nc" id="L90">        return detail;</span>
+    }
+
+    @ExceptionHandler(NumeroHabitacionDuplicadoException.class)
+    public ProblemDetail handleNumeroDuplicado(NumeroHabitacionDuplicadoException ex) {
+<span class="nc" id="L95">        ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());</span>
+<span class="nc" id="L96">        detail.setTitle(&quot;Número de habitación duplicado&quot;);</span>
+<span class="nc" id="L97">        detail.setProperty(&quot;timestamp&quot;, Instant.now());</span>
+<span class="nc" id="L98">        return detail;</span>
+    }
+
+    /** Excepciones de negocio de los módulos que no tienen un manejador específico. */
+    @ExceptionHandler(BusinessException.class)
+    public ProblemDetail handleBusiness(BusinessException ex) {
+<span class="fc" id="L104">        ProblemDetail detail = ProblemDetail.forStatusAndDetail(ex.getHttpStatus(), ex.getMessage());</span>
+<span class="fc" id="L105">        detail.setTitle(ex.getTitulo());</span>
+<span class="fc" id="L106">        detail.setProperty(&quot;codigo&quot;, ex.getErrorCode());</span>
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">        if (ex.getModulo() != null) {</span>
+<span class="fc" id="L108">            detail.setProperty(&quot;modulo&quot;, ex.getModulo());</span>
+        }
+<span class="fc" id="L110">        detail.setProperty(&quot;timestamp&quot;, Instant.now());</span>
+<span class="fc" id="L111">        return detail;</span>
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ProblemDetail handleValidation(MethodArgumentNotValidException ex) {
+<span class="nc" id="L116">        Map&lt;String, String&gt; errores = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">        for (FieldError error : ex.getBindingResult().getFieldErrors()) {</span>
+<span class="nc" id="L118">            errores.put(error.getField(), error.getDefaultMessage());</span>
+<span class="nc" id="L119">        }</span>
+
+<span class="nc" id="L121">        ProblemDetail detail = ProblemDetail.forStatusAndDetail(</span>
+                HttpStatus.BAD_REQUEST,
+                &quot;Error de validación en los datos enviados&quot;
+        );
+<span class="nc" id="L125">        detail.setTitle(&quot;Datos inválidos&quot;);</span>
+<span class="nc" id="L126">        detail.setProperty(&quot;codigo&quot;, &quot;VAL-001&quot;);</span>
+<span class="nc" id="L127">        detail.setProperty(&quot;errores&quot;, errores);</span>
+<span class="nc" id="L128">        detail.setProperty(&quot;timestamp&quot;, Instant.now());</span>
+<span class="nc" id="L129">        return detail;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

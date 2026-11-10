@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TarifaService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.reserva.service</a> &gt; <span class="el_source">TarifaService.java</span></div><h1>TarifaService.java</h1><pre class="source lang-java linenums">package com.example.roomix.reserva.service;
+
+import com.example.roomix.habitacion.domain.TipoHabitacion;
+import com.example.roomix.reserva.domain.TarifaTipoHabitacion;
+import com.example.roomix.reserva.dto.ActualizarTarifaRequest;
+import com.example.roomix.reserva.dto.TarifaTipoResponse;
+import com.example.roomix.reserva.repository.TarifaTipoHabitacionRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class TarifaService {
+
+    private final TarifaTipoHabitacionRepository tarifaRepository;
+
+    public List&lt;TarifaTipoResponse&gt; listar() {
+<span class="nc" id="L23">        return tarifaRepository.findAll().stream()</span>
+<span class="nc" id="L24">                .map(TarifaTipoResponse::from)</span>
+<span class="nc" id="L25">                .toList();</span>
+    }
+
+    @Transactional
+    public BigDecimal obtenerPrecioNoche(TipoHabitacion tipo) {
+<span class="nc" id="L30">        return tarifaRepository.findById(tipo)</span>
+<span class="nc" id="L31">                .map(TarifaTipoHabitacion::getPrecioNoche)</span>
+<span class="nc" id="L32">                .orElseGet(() -&gt; tarifaRepository.save(TarifaTipoHabitacion.builder()</span>
+<span class="nc" id="L33">                        .tipoHabitacion(tipo)</span>
+<span class="nc" id="L34">                        .precioNoche(precioPorDefecto(tipo))</span>
+<span class="nc" id="L35">                        .build()).getPrecioNoche());</span>
+    }
+
+    @Transactional
+    public TarifaTipoResponse actualizar(TipoHabitacion tipo, ActualizarTarifaRequest request) {
+<span class="nc" id="L40">        TarifaTipoHabitacion tarifa = tarifaRepository.findById(tipo)</span>
+<span class="nc" id="L41">                .orElseGet(() -&gt; TarifaTipoHabitacion.builder().tipoHabitacion(tipo).build());</span>
+<span class="nc" id="L42">        tarifa.setPrecioNoche(request.precioNoche());</span>
+<span class="nc" id="L43">        return TarifaTipoResponse.from(tarifaRepository.save(tarifa));</span>
+    }
+
+    @Transactional
+    public void asegurarTarifasPorDefecto() {
+<span class="fc bfc" id="L48" title="All 2 branches covered.">        for (TipoHabitacion tipo : TipoHabitacion.values()) {</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">            if (!tarifaRepository.existsById(tipo)) {</span>
+<span class="fc" id="L50">                tarifaRepository.save(TarifaTipoHabitacion.builder()</span>
+<span class="fc" id="L51">                        .tipoHabitacion(tipo)</span>
+<span class="fc" id="L52">                        .precioNoche(precioPorDefecto(tipo))</span>
+<span class="fc" id="L53">                        .build());</span>
+            }
+        }
+<span class="fc" id="L56">    }</span>
+
+    /** Tarifas base por noche en pesos colombianos (COP). */
+    private BigDecimal precioPorDefecto(TipoHabitacion tipo) {
+<span class="fc bfc" id="L60" title="All 6 branches covered.">        return switch (tipo) {</span>
+<span class="fc" id="L61">            case INDIVIDUAL -&gt; BigDecimal.valueOf(185_000);</span>
+<span class="fc" id="L62">            case DOBLE -&gt; BigDecimal.valueOf(265_000);</span>
+<span class="fc" id="L63">            case TRIPLE -&gt; BigDecimal.valueOf(330_000);</span>
+<span class="fc" id="L64">            case SUITE -&gt; BigDecimal.valueOf(680_000);</span>
+<span class="fc" id="L65">            case FAMILIAR -&gt; BigDecimal.valueOf(390_000);</span>
+<span class="fc" id="L66">            case EJECUTIVA -&gt; BigDecimal.valueOf(430_000);</span>
+        };
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

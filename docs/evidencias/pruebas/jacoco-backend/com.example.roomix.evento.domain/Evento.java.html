@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Evento.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.evento.domain</a> &gt; <span class="el_source">Evento.java</span></div><h1>Evento.java</h1><pre class="source lang-java linenums">package com.example.roomix.evento.domain;
+
+import com.example.roomix.evento.domain.EventoEnums.EstadoEvento;
+import com.example.roomix.evento.domain.EventoEnums.TipoAcceso;
+import com.example.roomix.evento.domain.EventoEnums.TipoEvento;
+import com.example.roomix.personal.domain.Personal;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = &quot;eventos&quot;, indexes = @Index(name = &quot;idx_evento_inicio&quot;, columnList = &quot;fecha_hora_inicio&quot;))
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Evento {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 150)
+    private String nombre;
+
+    @Column(length = 600)
+    private String descripcion;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private TipoEvento tipo;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = &quot;tipo_acceso&quot;, nullable = false, length = 20)
+    private TipoAcceso tipoAcceso;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private EstadoEvento estado = EstadoEvento.PROGRAMADO;
+
+    @Column(name = &quot;fecha_hora_inicio&quot;, nullable = false)
+    private LocalDateTime fechaHoraInicio;
+
+    @Column(name = &quot;fecha_hora_fin&quot;, nullable = false)
+    private LocalDateTime fechaHoraFin;
+
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = &quot;salon_id&quot;, nullable = false)
+    private Salon salon;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = &quot;responsable_id&quot;)
+    private Personal responsable;
+
+    /** Máximo de participantes (no puede superar la capacidad del salón). */
+    @Column(nullable = false)
+    private Integer capacidad;
+
+    @Column(name = &quot;organizador_nombre&quot;, nullable = false, length = 150)
+    private String organizadorNombre;
+
+    @Column(name = &quot;organizador_documento&quot;, length = 40)
+    private String organizadorDocumento;
+
+    @Column(name = &quot;organizador_telefono&quot;, length = 30)
+    private String organizadorTelefono;
+
+    @Column(name = &quot;organizador_email&quot;, length = 120)
+    private String organizadorEmail;
+
+    /** Valor acordado por el uso del espacio / paquete base. */
+    @Column(name = &quot;valor_base&quot;, nullable = false, precision = 14, scale = 2)
+    private BigDecimal valorBase;
+
+    @Column(length = 500)
+    private String notas;
+
+    @Column(name = &quot;motivo_cancelacion&quot;, length = 200)
+    private String motivoCancelacion;
+
+    @Column(name = &quot;creado_por&quot;, nullable = false, length = 50)
+    private String creadoPor;
+
+    @OneToMany(mappedBy = &quot;evento&quot;, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy(&quot;id ASC&quot;)
+    @Builder.Default
+    private List&lt;EventoRecurso&gt; recursos = new ArrayList&lt;&gt;();
+
+    @OneToMany(mappedBy = &quot;evento&quot;, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy(&quot;nombre ASC&quot;)
+    @Builder.Default
+    private List&lt;EventoParticipante&gt; participantes = new ArrayList&lt;&gt;();
+
+    @CreationTimestamp
+    @Column(name = &quot;fecha_hora_creacion&quot;, nullable = false, updatable = false)
+    private LocalDateTime fechaHoraCreacion;
+
+    @UpdateTimestamp
+    @Column(name = &quot;fecha_hora_ultima_actualizacion&quot;, nullable = false)
+    private LocalDateTime fechaHoraUltimaActualizacion;
+
+    public BigDecimal totalRecursos() {
+<span class="nc" id="L129">        return recursos.stream().map(EventoRecurso::getTotal).reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+    }
+
+    public BigDecimal valorTotal() {
+<span class="nc" id="L133">        return valorBase.add(totalRecursos());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,1299 @@
+{
+  "proyecto": "SCRUM",
+  "sitio": "https://fet-team-wb2md9i9.atlassian.net",
+  "sprints": [
+    {
+      "id": "S1",
+      "nombre": "Sprint 1 — Fundación del proyecto",
+      "inicio": "2026-01-12",
+      "fin": "2026-02-15",
+      "objetivo": "Repositorios, arquitectura base, modelo de datos y levantamiento de requisitos."
+    },
+    {
+      "id": "S2",
+      "nombre": "Sprint 2 — Seguridad y acceso",
+      "inicio": "2026-02-16",
+      "fin": "2026-03-22",
+      "objetivo": "Login seguro con JWT y BCrypt, usuarios, 6 roles y recuperación de contraseña."
+    },
+    {
+      "id": "S3",
+      "nombre": "Sprint 3 — Reservas y huéspedes",
+      "inicio": "2026-03-23",
+      "fin": "2026-04-26",
+      "objetivo": "Registro de huéspedes (Ley 1581), reservas con disponibilidad en tiempo real, check-in y check-out."
+    },
+    {
+      "id": "S4",
+      "nombre": "Sprint 4 — Habitaciones y operación",
+      "inicio": "2026-04-27",
+      "fin": "2026-05-31",
+      "objetivo": "Estados de habitación, plano por piso, fotos, limpieza, mantenimiento y personal."
+    },
+    {
+      "id": "S5",
+      "nombre": "Sprint 5 — Inventario",
+      "inicio": "2026-06-01",
+      "fin": "2026-07-05",
+      "objetivo": "Artículos, categorías, proveedores, movimientos de stock y alertas de mínimos."
+    },
+    {
+      "id": "S6",
+      "nombre": "Sprint 6 — Módulo financiero",
+      "inicio": "2026-07-06",
+      "fin": "2026-08-09",
+      "objetivo": "Facturación con IVA, pagos, ingresos y egresos; validación de requisitos con hoteles (encuesta)."
+    },
+    {
+      "id": "S7",
+      "nombre": "Sprint 7 — Servicios y eventos",
+      "inicio": "2026-08-10",
+      "fin": "2026-09-13",
+      "objetivo": "Catálogo y solicitudes de servicios cargadas a la cuenta; salones, eventos, recursos y participantes."
+    },
+    {
+      "id": "S8",
+      "nombre": "Sprint 8 — Dashboard, reportes y calidad",
+      "inicio": "2026-09-14",
+      "fin": "2026-10-18",
+      "objetivo": "Panel del día, reportes ADR/RevPAR, auditoría, pruebas automatizadas, despliegue y documentación."
+    },
+    {
+      "id": "S9",
+      "nombre": "Sprint 9 — Validación y entrega",
+      "inicio": "2026-10-19",
+      "fin": "2026-11-15",
+      "objetivo": "Correcciones de la revisión, pruebas de aceptación (UAT), encuesta SUS y entrega final.",
+      "activo": true
+    }
+  ],
+  "epicas": [
+    {
+      "id": "E01",
+      "nombre": "Infraestructura y arquitectura",
+      "descripcion": "Repositorios, arquitectura en capas, base de datos PostgreSQL, integración y despliegue.",
+      "jira": "SCRUM-5"
+    },
+    {
+      "id": "E02",
+      "nombre": "Autenticación y control de acceso",
+      "descripcion": "Login seguro, roles y permisos, recuperación de contraseña y auditoría (Módulo 1).",
+      "jira": "SCRUM-6"
+    },
+    {
+      "id": "E03",
+      "nombre": "Dashboard y navegación central",
+      "descripcion": "Panel del día por rol, check-in/out rápido, alertas y resumen financiero (Módulo 2).",
+      "jira": "SCRUM-7"
+    },
+    {
+      "id": "E04",
+      "nombre": "Gestión de reservas y huéspedes",
+      "descripcion": "Ciclo de vida de la reserva y registro de huéspedes con autorización de datos (Módulo 3).",
+      "jira": "SCRUM-8"
+    },
+    {
+      "id": "E05",
+      "nombre": "Gestión de habitaciones",
+      "descripcion": "Estados, plano por planta, ficha con fotos e historial (Módulo 4).",
+      "jira": "SCRUM-9"
+    },
+    {
+      "id": "E06",
+      "nombre": "Limpieza, mantenimiento y personal",
+      "descripcion": "Tareas operativas asignadas al personal y su efecto en el estado de las habitaciones.",
+      "jira": "SCRUM-10"
+    },
+    {
+      "id": "E07",
+      "nombre": "Gestión de inventario",
+      "descripcion": "Productos, proveedores, movimientos, alertas y valorización (Módulo 5).",
+      "jira": "SCRUM-11"
+    },
+    {
+      "id": "E08",
+      "nombre": "Módulo financiero y facturación",
+      "descripcion": "Facturas con IVA, pagos, ingresos, egresos y gráficos (Módulo 6).",
+      "jira": "SCRUM-12"
+    },
+    {
+      "id": "E09",
+      "nombre": "Gestión de servicios",
+      "descripcion": "Catálogo, solicitudes, programación y cargo a la cuenta del huésped (Módulo 7).",
+      "jira": "SCRUM-13"
+    },
+    {
+      "id": "E10",
+      "nombre": "Gestión de eventos",
+      "descripcion": "Salones, eventos, recursos, participantes y facturación (Módulo 8).",
+      "jira": "SCRUM-14"
+    },
+    {
+      "id": "E11",
+      "nombre": "Reportes y analítica",
+      "descripcion": "Indicadores hoteleros, exportación y reportes por módulo.",
+      "jira": "SCRUM-15"
+    },
+    {
+      "id": "E12",
+      "nombre": "Calidad, documentación y entrega",
+      "descripcion": "Pruebas, manuales, diagramas, validación con usuarios y entrega del proyecto de grado.",
+      "jira": "SCRUM-16"
+    }
+  ],
+  "historias": [
+    {
+      "id": "HU-01",
+      "epica": "E01",
+      "sprint": "S1",
+      "pts": 3,
+      "estado": "Finalizada",
+      "titulo": "Configurar repositorios y estructura del proyecto",
+      "rol": "equipo de desarrollo",
+      "quiero": "contar con repositorios para backend y frontend con la estructura base",
+      "para": "trabajar de forma ordenada y versionada",
+      "criterios": [
+        "Repositorios Roomix-Back y Roomix-FRONT en GitHub",
+        "Backend Spring Boot 4 con Java 21 y frontend Angular 21 compilando",
+        "Ramas y convenciones de commits acordadas"
+      ],
+      "jira": "SCRUM-17"
+    },
+    {
+      "id": "HU-02",
+      "epica": "E01",
+      "sprint": "S1",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Definir la arquitectura en capas y la API REST",
+      "rol": "equipo de desarrollo",
+      "quiero": "una arquitectura por módulos (controlador, servicio, repositorio)",
+      "para": "que el sistema sea mantenible y escalable",
+      "criterios": [
+        "Paquetes por módulo en el backend",
+        "Manejo global de errores con códigos por módulo",
+        "Documentación OpenAPI/Swagger disponible"
+      ],
+      "jira": "SCRUM-18"
+    },
+    {
+      "id": "HU-03",
+      "epica": "E01",
+      "sprint": "S1",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Diseñar el modelo de datos en PostgreSQL",
+      "rol": "equipo de desarrollo",
+      "quiero": "el modelo entidad-relación del hotel",
+      "para": "persistir habitaciones, huéspedes, reservas y demás módulos",
+      "criterios": [
+        "Entidades JPA con relaciones y restricciones",
+        "Esquema creado automáticamente al iniciar",
+        "Diagrama entidad-relación documentado"
+      ],
+      "jira": "SCRUM-19"
+    },
+    {
+      "id": "HU-04",
+      "epica": "E12",
+      "sprint": "S1",
+      "pts": 3,
+      "estado": "Finalizada",
+      "titulo": "Levantar requisitos y priorizar el backlog",
+      "rol": "Product Owner",
+      "quiero": "historias de usuario priorizadas por módulo",
+      "para": "planificar los sprints según el valor para el hotel",
+      "criterios": [
+        "Historias con criterios de aceptación",
+        "Backlog priorizado en Jira",
+        "Roles del sistema definidos"
+      ],
+      "jira": "SCRUM-20"
+    },
+    {
+      "id": "HU-05",
+      "epica": "E02",
+      "sprint": "S2",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Iniciar sesión de forma segura",
+      "rol": "usuario del hotel",
+      "quiero": "ingresar con usuario y contraseña",
+      "para": "acceder solo a la información que me corresponde",
+      "criterios": [
+        "Contraseñas almacenadas con BCrypt",
+        "Token JWT con vigencia de 8 horas",
+        "Bloqueo de 15 minutos tras 5 intentos fallidos"
+      ],
+      "jira": "SCRUM-21"
+    },
+    {
+      "id": "HU-06",
+      "epica": "E02",
+      "sprint": "S2",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Gestionar usuarios y roles",
+      "rol": "administrador",
+      "quiero": "crear, editar, activar y desactivar usuarios con uno de los 6 roles",
+      "para": "controlar quién usa el sistema",
+      "criterios": [
+        "Roles: Administrador, Recepción, Housekeeping, Finanzas, Eventos y Almacén",
+        "No se puede desactivar al último administrador",
+        "Restablecer contraseña genera una clave temporal"
+      ],
+      "jira": "SCRUM-22"
+    },
+    {
+      "id": "HU-07",
+      "epica": "E02",
+      "sprint": "S2",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Restringir el acceso según el rol",
+      "rol": "administrador",
+      "quiero": "que cada rol vea y use solo sus módulos",
+      "para": "proteger la información del hotel",
+      "criterios": [
+        "El servidor responde 403 a acciones no permitidas",
+        "El menú y los botones se ajustan al rol",
+        "Un usuario desactivado pierde el acceso de inmediato"
+      ],
+      "jira": "SCRUM-23"
+    },
+    {
+      "id": "HU-08",
+      "epica": "E02",
+      "sprint": "S2",
+      "pts": 3,
+      "estado": "Finalizada",
+      "titulo": "Recuperar la contraseña por correo",
+      "rol": "usuario del hotel",
+      "quiero": "restablecer mi contraseña si la olvido",
+      "para": "no depender del administrador",
+      "criterios": [
+        "Enlace de un solo uso válido por 30 minutos",
+        "Token guardado como hash",
+        "Política de contraseña segura al restablecer"
+      ],
+      "jira": "SCRUM-24"
+    },
+    {
+      "id": "HU-09",
+      "epica": "E02",
+      "sprint": "S2",
+      "pts": 2,
+      "estado": "Finalizada",
+      "titulo": "Cambiar la contraseña temporal en el primer ingreso",
+      "rol": "usuario del hotel",
+      "quiero": "que el sistema me obligue a cambiar la clave temporal",
+      "para": "que nadie más la conozca",
+      "criterios": [
+        "Redirección obligatoria a Mi cuenta",
+        "Mínimo 8 caracteres con mayúscula, minúscula y número"
+      ],
+      "jira": "SCRUM-25"
+    },
+    {
+      "id": "HU-10",
+      "epica": "E04",
+      "sprint": "S3",
+      "pts": 3,
+      "estado": "Finalizada",
+      "titulo": "Registrar huéspedes con autorización de datos",
+      "rol": "recepcionista",
+      "quiero": "registrar los datos del huésped y su autorización de tratamiento de datos",
+      "para": "cumplir la Ley 1581 de 2012",
+      "criterios": [
+        "Documento único por huésped",
+        "La autorización es obligatoria y queda con fecha y hora",
+        "Búsqueda por nombre, documento o correo"
+      ],
+      "jira": "SCRUM-26"
+    },
+    {
+      "id": "HU-11",
+      "epica": "E04",
+      "sprint": "S3",
+      "pts": 8,
+      "estado": "Finalizada",
+      "titulo": "Crear una reserva validando la disponibilidad",
+      "rol": "recepcionista",
+      "quiero": "reservar una habitación para unas fechas",
+      "para": "evitar la doble asignación",
+      "criterios": [
+        "Rechaza fechas que se cruzan con otra reserva o mantenimiento",
+        "Calcula noches y total con la tarifa vigente",
+        "Registra el canal de la reserva y observaciones"
+      ],
+      "jira": "SCRUM-27"
+    },
+    {
+      "id": "HU-12",
+      "epica": "E04",
+      "sprint": "S3",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Editar y cancelar reservas con motivo",
+      "rol": "recepcionista",
+      "quiero": "modificar fechas o cancelar una reserva indicando el motivo",
+      "para": "mantener la trazabilidad de los cambios",
+      "criterios": [
+        "Revalida disponibilidad al cambiar fechas",
+        "La cancelación exige motivo y libera la habitación",
+        "El historial no se borra"
+      ],
+      "jira": "SCRUM-28"
+    },
+    {
+      "id": "HU-13",
+      "epica": "E04",
+      "sprint": "S3",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Registrar check-in y check-out",
+      "rol": "recepcionista",
+      "quiero": "registrar la llegada y la salida del huésped",
+      "para": "mantener actualizado el estado de las habitaciones",
+      "criterios": [
+        "Check-in desde la fecha de llegada",
+        "Check-out deja la habitación en limpieza",
+        "Se registran las horas reales"
+      ],
+      "jira": "SCRUM-29"
+    },
+    {
+      "id": "HU-14",
+      "epica": "E04",
+      "sprint": "S3",
+      "pts": 3,
+      "estado": "Finalizada",
+      "titulo": "Consultar reservas en listado y calendario",
+      "rol": "recepcionista",
+      "quiero": "ver las reservas filtradas por estado y fechas",
+      "para": "planificar la ocupación",
+      "criterios": [
+        "Filtros por estado, huésped y habitación",
+        "Vista de calendario mensual",
+        "Acceso al detalle de cada reserva"
+      ],
+      "jira": "SCRUM-30"
+    },
+    {
+      "id": "HU-15",
+      "epica": "E04",
+      "sprint": "S3",
+      "pts": 2,
+      "estado": "Finalizada",
+      "titulo": "Generar el comprobante de la reserva",
+      "rol": "recepcionista",
+      "quiero": "imprimir o guardar en PDF el comprobante",
+      "para": "entregarlo al huésped",
+      "criterios": [
+        "Incluye datos del hotel, estancia y cuenta",
+        "Formato apto para impresión"
+      ],
+      "jira": "SCRUM-31"
+    },
+    {
+      "id": "HU-16",
+      "epica": "E05",
+      "sprint": "S4",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Gestionar el estado de las habitaciones",
+      "rol": "recepcionista",
+      "quiero": "ver y cambiar el estado de cada habitación",
+      "para": "saber cuáles están disponibles",
+      "criterios": [
+        "Estados: Disponible, Reservada, Ocupada, En limpieza y En mantenimiento",
+        "Transiciones válidas según el ciclo de la reserva",
+        "Colores por estado"
+      ],
+      "jira": "SCRUM-32"
+    },
+    {
+      "id": "HU-17",
+      "epica": "E05",
+      "sprint": "S4",
+      "pts": 3,
+      "estado": "Finalizada",
+      "titulo": "Crear y editar habitaciones",
+      "rol": "administrador",
+      "quiero": "registrar habitaciones con tipo, tarifa, piso, capacidad y características",
+      "para": "mantener actualizada la oferta del hotel",
+      "criterios": [
+        "Número único",
+        "Tarifa en COP",
+        "Piso y capacidad deducidos si se dejan vacíos"
+      ],
+      "jira": "SCRUM-33"
+    },
+    {
+      "id": "HU-18",
+      "epica": "E05",
+      "sprint": "S4",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Visualizar el plano del hotel por piso",
+      "rol": "recepcionista",
+      "quiero": "ver las habitaciones agrupadas por planta con su estado",
+      "para": "ubicar rápidamente la disponibilidad",
+      "criterios": [
+        "Un bloque por piso con su ocupación",
+        "Acceso al detalle desde el plano"
+      ],
+      "jira": "SCRUM-34"
+    },
+    {
+      "id": "HU-19",
+      "epica": "E05",
+      "sprint": "S4",
+      "pts": 3,
+      "estado": "Finalizada",
+      "titulo": "Consultar la ficha de la habitación con fotos e historial",
+      "rol": "recepcionista",
+      "quiero": "ver fotos, características e historial de ocupación",
+      "para": "informar al huésped y analizar su uso",
+      "criterios": [
+        "Hasta 6 fotos JPG, PNG o WebP de 2 MB",
+        "Historial de reservas con noches e ingresos"
+      ],
+      "jira": "SCRUM-35"
+    },
+    {
+      "id": "HU-20",
+      "epica": "E06",
+      "sprint": "S4",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Gestionar tareas de limpieza y mantenimiento",
+      "rol": "ama de llaves",
+      "quiero": "asignar, iniciar y finalizar tareas con lista de chequeo",
+      "para": "dejar las habitaciones listas",
+      "criterios": [
+        "La limpieza post check-out se crea automáticamente",
+        "Al finalizar, la habitación vuelve a su estado",
+        "Filtros por estado y por responsable"
+      ],
+      "jira": "SCRUM-36"
+    },
+    {
+      "id": "HU-21",
+      "epica": "E06",
+      "sprint": "S4",
+      "pts": 3,
+      "estado": "Finalizada",
+      "titulo": "Consultar el personal y su disponibilidad",
+      "rol": "ama de llaves",
+      "quiero": "ver qué personas están libres u ocupadas",
+      "para": "asignar las tareas adecuadamente",
+      "criterios": [
+        "Indicador de ocupado o disponible",
+        "Acceso a la cola de tareas de cada persona"
+      ],
+      "jira": "SCRUM-37"
+    },
+    {
+      "id": "HU-22",
+      "epica": "E07",
+      "sprint": "S5",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Gestionar artículos y categorías de inventario",
+      "rol": "almacenista",
+      "quiero": "registrar productos con categoría, unidad, proveedor y precio",
+      "para": "controlar las existencias",
+      "criterios": [
+        "Categorías predefinidas y personalizadas",
+        "Stock mínimo por artículo",
+        "Dar de baja conserva el historial"
+      ],
+      "jira": "SCRUM-38"
+    },
+    {
+      "id": "HU-23",
+      "epica": "E07",
+      "sprint": "S5",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Registrar movimientos de stock",
+      "rol": "almacenista",
+      "quiero": "registrar entradas, salidas y ajustes",
+      "para": "tener trazabilidad del inventario",
+      "criterios": [
+        "Cada movimiento guarda fecha, cantidad y responsable",
+        "Las salidas no dejan stock negativo",
+        "Historial (kárdex) por artículo"
+      ],
+      "jira": "SCRUM-39"
+    },
+    {
+      "id": "HU-24",
+      "epica": "E07",
+      "sprint": "S5",
+      "pts": 3,
+      "estado": "Finalizada",
+      "titulo": "Recibir alertas de stock mínimo",
+      "rol": "almacenista",
+      "quiero": "ver los artículos en o bajo el mínimo",
+      "para": "reponerlos a tiempo",
+      "criterios": [
+        "Alerta en el panel del día",
+        "Filtro de solo stock bajo"
+      ],
+      "jira": "SCRUM-40"
+    },
+    {
+      "id": "HU-25",
+      "epica": "E07",
+      "sprint": "S5",
+      "pts": 3,
+      "estado": "Finalizada",
+      "titulo": "Consultar valorización y artículos más usados",
+      "rol": "almacenista",
+      "quiero": "un reporte del valor del inventario y el consumo",
+      "para": "optimizar las compras",
+      "criterios": [
+        "Valor total y por categoría",
+        "Ranking de los más usados del periodo",
+        "Exportación a CSV"
+      ],
+      "jira": "SCRUM-41"
+    },
+    {
+      "id": "HU-26",
+      "epica": "E08",
+      "sprint": "S6",
+      "pts": 8,
+      "estado": "Finalizada",
+      "titulo": "Generar facturas con IVA",
+      "rol": "contador",
+      "quiero": "facturar alojamiento, servicios y eventos",
+      "para": "cobrar correctamente",
+      "criterios": [
+        "IVA del 19 % con exención para extranjeros no residentes",
+        "Numeración consecutiva FV-######",
+        "Factura imprimible"
+      ],
+      "jira": "SCRUM-42"
+    },
+    {
+      "id": "HU-27",
+      "epica": "E08",
+      "sprint": "S6",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Registrar pagos parciales y totales",
+      "rol": "recepcionista",
+      "quiero": "registrar pagos con distintos métodos",
+      "para": "llevar el saldo de cada factura",
+      "criterios": [
+        "Efectivo, tarjeta, transferencia y pago digital",
+        "Estados Pendiente, Pagada parcial y Pagada",
+        "Cada pago genera el ingreso en finanzas"
+      ],
+      "jira": "SCRUM-43"
+    },
+    {
+      "id": "HU-28",
+      "epica": "E08",
+      "sprint": "S6",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Registrar ingresos y egresos",
+      "rol": "contador",
+      "quiero": "registrar movimientos manuales por categoría",
+      "para": "controlar el flujo de caja",
+      "criterios": [
+        "Categorías de ingreso y egreso",
+        "Las compras de inventario generan egresos",
+        "Anulación con motivo"
+      ],
+      "jira": "SCRUM-44"
+    },
+    {
+      "id": "HU-29",
+      "epica": "E08",
+      "sprint": "S6",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Visualizar el desempeño financiero",
+      "rol": "contador",
+      "quiero": "gráficos de ingresos y egresos por periodo",
+      "para": "tomar decisiones",
+      "criterios": [
+        "Serie diaria o mensual",
+        "Comparativo con el periodo anterior",
+        "Totales por categoría"
+      ],
+      "jira": "SCRUM-45"
+    },
+    {
+      "id": "HU-30",
+      "epica": "E08",
+      "sprint": "S6",
+      "pts": 2,
+      "estado": "Finalizada",
+      "titulo": "Anular facturas con motivo",
+      "rol": "contador",
+      "quiero": "anular una factura emitida por error",
+      "para": "corregir la información",
+      "criterios": [
+        "Solo facturas sin pagos",
+        "Motivo obligatorio y auditado"
+      ],
+      "jira": "SCRUM-46"
+    },
+    {
+      "id": "HU-31",
+      "epica": "E12",
+      "sprint": "S6",
+      "pts": 3,
+      "estado": "Finalizada",
+      "titulo": "Validar requisitos con hoteles mediante encuesta",
+      "rol": "Product Owner",
+      "quiero": "aplicar un cuestionario a hoteles",
+      "para": "confirmar las necesidades que atiende Roomix",
+      "criterios": [
+        "8 respuestas de hoteles",
+        "Resultados analizados e incluidos en la tesis",
+        "Hallazgos relacionados con las funcionalidades"
+      ],
+      "jira": "SCRUM-47"
+    },
+    {
+      "id": "HU-32",
+      "epica": "E09",
+      "sprint": "S7",
+      "pts": 3,
+      "estado": "Finalizada",
+      "titulo": "Gestionar el catálogo de servicios",
+      "rol": "coordinador de eventos",
+      "quiero": "definir servicios con precio y unidad",
+      "para": "ofrecerlos a los huéspedes",
+      "criterios": [
+        "Categorías: room service, lavandería, spa, transporte, tours",
+        "Activar y desactivar servicios"
+      ],
+      "jira": "SCRUM-48"
+    },
+    {
+      "id": "HU-33",
+      "epica": "E09",
+      "sprint": "S7",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Registrar solicitudes cargadas a la cuenta",
+      "rol": "recepcionista",
+      "quiero": "registrar un servicio para una reserva en curso",
+      "para": "cobrarlo en el check-out",
+      "criterios": [
+        "Solo reservas en curso",
+        "El valor se suma a la cuenta del huésped",
+        "Cancelar retira el cargo si no está facturado"
+      ],
+      "jira": "SCRUM-49"
+    },
+    {
+      "id": "HU-34",
+      "epica": "E09",
+      "sprint": "S7",
+      "pts": 3,
+      "estado": "Finalizada",
+      "titulo": "Programar y atender solicitudes de servicio",
+      "rol": "ama de llaves",
+      "quiero": "asignar responsable y hora y marcar el avance",
+      "para": "cumplir con el huésped",
+      "criterios": [
+        "Estados Solicitada, En proceso, Completada y Cancelada",
+        "Agenda de servicios del día"
+      ],
+      "jira": "SCRUM-50"
+    },
+    {
+      "id": "HU-35",
+      "epica": "E10",
+      "sprint": "S7",
+      "pts": 3,
+      "estado": "Finalizada",
+      "titulo": "Gestionar salones",
+      "rol": "coordinador de eventos",
+      "quiero": "registrar salones con capacidad y tarifa por hora",
+      "para": "ofrecerlos para eventos",
+      "criterios": [
+        "Nombre único",
+        "Activar y desactivar salones"
+      ],
+      "jira": "SCRUM-51"
+    },
+    {
+      "id": "HU-36",
+      "epica": "E10",
+      "sprint": "S7",
+      "pts": 8,
+      "estado": "Finalizada",
+      "titulo": "Crear eventos con recursos",
+      "rol": "coordinador de eventos",
+      "quiero": "planificar un evento con salón, horario, acceso y recursos",
+      "para": "organizarlo y cotizarlo",
+      "criterios": [
+        "Impide cruces de horario en el salón",
+        "La capacidad no supera la del salón",
+        "Acceso público, privado o solo huéspedes"
+      ],
+      "jira": "SCRUM-52"
+    },
+    {
+      "id": "HU-37",
+      "epica": "E10",
+      "sprint": "S7",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Gestionar participantes y asistencia",
+      "rol": "coordinador de eventos",
+      "quiero": "inscribir participantes y registrar confirmación y asistencia",
+      "para": "controlar el aforo",
+      "criterios": [
+        "No supera la capacidad",
+        "Exportación de la lista a CSV"
+      ],
+      "jira": "SCRUM-53"
+    },
+    {
+      "id": "HU-38",
+      "epica": "E10",
+      "sprint": "S7",
+      "pts": 3,
+      "estado": "Finalizada",
+      "titulo": "Controlar el estado y la facturación del evento",
+      "rol": "coordinador de eventos",
+      "quiero": "iniciar, finalizar o cancelar el evento y facturarlo",
+      "para": "cerrar su ciclo",
+      "criterios": [
+        "Estados Programado, En curso, Finalizado y Cancelado",
+        "Factura con alquiler y recursos"
+      ],
+      "jira": "SCRUM-54"
+    },
+    {
+      "id": "HU-39",
+      "epica": "E03",
+      "sprint": "S8",
+      "pts": 8,
+      "estado": "Finalizada",
+      "titulo": "Consultar el panel del día por rol",
+      "rol": "usuario del hotel",
+      "quiero": "ver los indicadores del día que me corresponden",
+      "para": "priorizar mi trabajo",
+      "criterios": [
+        "Ocupación y habitaciones por estado",
+        "Llegadas y salidas con check-in/out rápido",
+        "Alertas y resumen financiero según el rol"
+      ],
+      "jira": "SCRUM-55"
+    },
+    {
+      "id": "HU-40",
+      "epica": "E11",
+      "sprint": "S8",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Consultar reportes de ocupación, ADR y RevPAR",
+      "rol": "contador",
+      "quiero": "indicadores hoteleros por periodo",
+      "para": "evaluar el desempeño del hotel",
+      "criterios": [
+        "Ocupación, ADR, RevPAR y cancelaciones",
+        "Canales, tipos de habitación, procedencia y servicios",
+        "Exportación a CSV e impresión"
+      ],
+      "jira": "SCRUM-56"
+    },
+    {
+      "id": "HU-41",
+      "epica": "E02",
+      "sprint": "S8",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Consultar la auditoría de acciones",
+      "rol": "administrador",
+      "quiero": "saber quién hizo cada operación",
+      "para": "tener trazabilidad y control",
+      "criterios": [
+        "Usuario, acción, módulo, IP y resultado",
+        "Filtros por usuario, módulo y fecha",
+        "Exportación a CSV"
+      ],
+      "jira": "SCRUM-57"
+    },
+    {
+      "id": "HU-42",
+      "epica": "E12",
+      "sprint": "S8",
+      "pts": 8,
+      "estado": "Finalizada",
+      "titulo": "Automatizar pruebas unitarias y de integración",
+      "rol": "equipo de desarrollo",
+      "quiero": "pruebas automatizadas de backend y frontend",
+      "para": "asegurar la calidad en cada cambio",
+      "criterios": [
+        "Pruebas de seguridad por rol y flujo hotelero completo",
+        "Pruebas de guards e interceptor en el frontend",
+        "Todas las pruebas aprobadas"
+      ],
+      "jira": "SCRUM-58"
+    },
+    {
+      "id": "HU-43",
+      "epica": "E01",
+      "sprint": "S8",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Desplegar en la nube",
+      "rol": "equipo de desarrollo",
+      "quiero": "publicar el sistema en un entorno productivo",
+      "para": "que el hotel lo use desde internet",
+      "criterios": [
+        "Base de datos en Neon",
+        "Backend en Docker sobre Render",
+        "Frontend como sitio estático en Render con HTTPS"
+      ],
+      "jira": "SCRUM-59"
+    },
+    {
+      "id": "HU-44",
+      "epica": "E01",
+      "sprint": "S8",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Usar Roomix desde el teléfono",
+      "rol": "usuario del hotel",
+      "quiero": "una interfaz adaptable y una app Android",
+      "para": "trabajar desde cualquier lugar del hotel",
+      "criterios": [
+        "Diseño responsive de 320 px en adelante",
+        "APK generado con Capacitor"
+      ],
+      "jira": "SCRUM-60"
+    },
+    {
+      "id": "HU-45",
+      "epica": "E12",
+      "sprint": "S8",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Elaborar manuales de usuario e instalación",
+      "rol": "Product Owner",
+      "quiero": "manuales con capturas del sistema",
+      "para": "facilitar la adopción y el mantenimiento",
+      "criterios": [
+        "Manual de usuario por rol",
+        "Manual de instalación y configuración",
+        "Ayuda integrada en la aplicación"
+      ],
+      "jira": "SCRUM-61"
+    },
+    {
+      "id": "HU-46",
+      "epica": "E12",
+      "sprint": "S8",
+      "pts": 3,
+      "estado": "Finalizada",
+      "titulo": "Elaborar los diagramas UML del sistema",
+      "rol": "Product Owner",
+      "quiero": "diagramas de casos de uso, clases, actividades, estados, secuencia, ER, componentes y despliegue",
+      "para": "documentar el diseño en la tesis",
+      "criterios": [
+        "8 diagramas en PNG y SVG",
+        "Fuentes editables en el repositorio"
+      ],
+      "jira": "SCRUM-62"
+    },
+    {
+      "id": "HU-47",
+      "epica": "E04",
+      "sprint": "S9",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Buscar huéspedes registrados al reservar",
+      "rol": "recepcionista",
+      "quiero": "buscar al huésped por nombre o documento mientras escribo",
+      "para": "no registrarlo dos veces",
+      "criterios": [
+        "Búsqueda por palabras sin importar tildes",
+        "Máximo 8 resultados",
+        "Reutiliza la autorización de datos existente"
+      ],
+      "jira": "SCRUM-63"
+    },
+    {
+      "id": "HU-48",
+      "epica": "E04",
+      "sprint": "S9",
+      "pts": 3,
+      "estado": "Finalizada",
+      "titulo": "Sugerir fechas y habitaciones alternativas",
+      "rol": "recepcionista",
+      "quiero": "ver por qué no hay disponibilidad y qué alternativas existen",
+      "para": "concretar la reserva",
+      "criterios": [
+        "Muestra las reservas que se cruzan",
+        "Propone fechas libres",
+        "Lista habitaciones del mismo tipo disponibles"
+      ],
+      "jira": "SCRUM-64"
+    },
+    {
+      "id": "HU-49",
+      "epica": "E04",
+      "sprint": "S9",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Paginar el listado y ver el calendario por día, semana y mes",
+      "rol": "recepcionista",
+      "quiero": "navegar las reservas de forma ágil",
+      "para": "no saturarme con información",
+      "criterios": [
+        "Paginación de 10, 25 o 50 filas",
+        "Vistas Día, Semana y Mes",
+        "Acciones por reserva desde el listado"
+      ],
+      "jira": "SCRUM-65"
+    },
+    {
+      "id": "HU-50",
+      "epica": "E06",
+      "sprint": "S9",
+      "pts": 3,
+      "estado": "Finalizada",
+      "titulo": "Registrar y editar el personal",
+      "rol": "administrador",
+      "quiero": "agregar, editar y desactivar personal",
+      "para": "mantener actualizado el equipo",
+      "criterios": [
+        "Nombre único",
+        "No se desactiva a quien tiene tareas en curso",
+        "Cola de tareas por persona"
+      ],
+      "jira": "SCRUM-66"
+    },
+    {
+      "id": "HU-51",
+      "epica": "E05",
+      "sprint": "S9",
+      "pts": 2,
+      "estado": "Finalizada",
+      "titulo": "Seleccionar características de la habitación con etiquetas",
+      "rol": "administrador",
+      "quiero": "elegir las características tocando etiquetas",
+      "para": "registrarlas rápido y sin errores",
+      "criterios": [
+        "Catálogo base y características usadas en el hotel",
+        "Agregar características nuevas"
+      ],
+      "jira": "SCRUM-67"
+    },
+    {
+      "id": "HU-52",
+      "epica": "E12",
+      "sprint": "S9",
+      "pts": 5,
+      "estado": "Por hacer",
+      "titulo": "Ejecutar pruebas de aceptación con usuarios (UAT)",
+      "rol": "Product Owner",
+      "quiero": "que usuarios de cada rol validen el sistema",
+      "para": "aceptarlo formalmente",
+      "criterios": [
+        "10 escenarios por rol ejecutados",
+        "Acta de aceptación firmada",
+        "Hallazgos registrados y atendidos"
+      ],
+      "jira": "SCRUM-68"
+    },
+    {
+      "id": "HU-53",
+      "epica": "E12",
+      "sprint": "S9",
+      "pts": 3,
+      "estado": "Por hacer",
+      "titulo": "Aplicar la encuesta de usabilidad SUS",
+      "rol": "Product Owner",
+      "quiero": "medir la usabilidad percibida",
+      "para": "reportarla en la tesis",
+      "criterios": [
+        "Mínimo 5 participantes",
+        "Puntaje promedio ≥ 68",
+        "Resultados en la tesis"
+      ],
+      "jira": "SCRUM-69"
+    },
+    {
+      "id": "HU-54",
+      "epica": "E12",
+      "sprint": "S9",
+      "pts": 2,
+      "estado": "Por hacer",
+      "titulo": "Preparar la sustentación y la entrega final",
+      "rol": "equipo de desarrollo",
+      "quiero": "el documento final y la presentación listos",
+      "para": "sustentar el proyecto de grado",
+      "criterios": [
+        "Documento final aprobado por el asesor",
+        "Presentación y demostración del sistema"
+      ],
+      "jira": "SCRUM-70"
+    },
+    {
+      "id": "HU-55",
+      "epica": "E04",
+      "sprint": "S9",
+      "pts": 8,
+      "estado": "Finalizada",
+      "titulo": "Admitir varias reservas futuras por habitación",
+      "rol": "recepcionista",
+      "quiero": "reservar los días libres de una habitación que ya tiene otra reserva",
+      "para": "aprovechar toda la disponibilidad",
+      "criterios": [
+        "Reservas sin cruce en la misma habitación",
+        "Al salir un huésped se activa la siguiente reserva",
+        "Check-in y cancelación coherentes con varias reservas"
+      ],
+      "jira": "SCRUM-71"
+    },
+    {
+      "id": "HU-56",
+      "epica": "E04",
+      "sprint": null,
+      "pts": 13,
+      "estado": "Por hacer",
+      "titulo": "Integrar canales de venta OTA",
+      "rol": "administrador",
+      "quiero": "recibir reservas de Booking.com y Expedia",
+      "para": "evitar sobreventas",
+      "criterios": [
+        "Sincronización de disponibilidad",
+        "Registro automático de reservas externas"
+      ],
+      "jira": "SCRUM-72"
+    },
+    {
+      "id": "HU-57",
+      "epica": "E05",
+      "sprint": null,
+      "pts": 5,
+      "estado": "Por hacer",
+      "titulo": "Administrar tipos de habitación desde la aplicación",
+      "rol": "administrador",
+      "quiero": "crear tipos de habitación propios",
+      "para": "adaptar el sistema a cada hotel",
+      "criterios": [
+        "Tipos con tarifa y capacidad por defecto",
+        "Sin cambios en el código"
+      ],
+      "jira": "SCRUM-73"
+    },
+    {
+      "id": "HU-58",
+      "epica": "E04",
+      "sprint": null,
+      "pts": 3,
+      "estado": "Por hacer",
+      "titulo": "Enviar la confirmación de reserva por correo",
+      "rol": "recepcionista",
+      "quiero": "que el huésped reciba su comprobante por correo",
+      "para": "confirmarle la reserva",
+      "criterios": [
+        "Correo con los datos de la estancia",
+        "Reenvío desde el detalle de la reserva"
+      ],
+      "jira": "SCRUM-74"
+    },
+    {
+      "id": "HU-59",
+      "epica": "E08",
+      "sprint": "S9",
+      "pts": 3,
+      "estado": "Finalizada",
+      "titulo": "Devolver los pagos al anular una factura",
+      "rol": "contador / finanzas",
+      "quiero": "que al anular una factura pagada se registre la devolución de sus pagos",
+      "para": "que la caja refleje el dinero devuelto",
+      "criterios": [
+        "Pagos y abonos aplicados quedan devueltos",
+        "Egreso de devolución por el mismo valor",
+        "Factura anulada con saldo $0"
+      ],
+      "jira": "SCRUM-75"
+    },
+    {
+      "id": "HU-60",
+      "epica": "E04",
+      "sprint": "S9",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Exigir el pago completo o un abono al reservar",
+      "rol": "recepcionista",
+      "quiero": "registrar al reservar si el huésped paga completo o deja un abono",
+      "para": "no confirmar reservas sin dinero recibido",
+      "criterios": [
+        "Opciones pago completo / abono parcial",
+        "Sin pago no se reserva (RES-015)",
+        "Sin reservas por cambio de estado (RES-016)"
+      ],
+      "jira": "SCRUM-76"
+    },
+    {
+      "id": "HU-61",
+      "epica": "E04",
+      "sprint": "S9",
+      "pts": 3,
+      "estado": "Finalizada",
+      "titulo": "Ver y registrar los abonos de una reserva",
+      "rol": "recepcionista",
+      "quiero": "ver y registrar los abonos en el detalle de la reserva",
+      "para": "saber cuánto ha pagado el huésped",
+      "criterios": [
+        "Resumen total / mínimo / abonado / saldo",
+        "Abono no supera el saldo",
+        "Abonos aplicados en la factura sin doble conteo"
+      ],
+      "jira": "SCRUM-77"
+    },
+    {
+      "id": "HU-62",
+      "epica": "E04",
+      "sprint": "S9",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Configurar promociones de reserva",
+      "rol": "administrador",
+      "quiero": "crear promociones con condiciones y descuento",
+      "para": "que recepción las ofrezca al reservar",
+      "criterios": [
+        "Solo Admin las gestiona",
+        "Recepción ve solo las que aplican",
+        "IVA sobre el subtotal con descuento"
+      ],
+      "jira": "SCRUM-78"
+    },
+    {
+      "id": "HU-63",
+      "epica": "E04",
+      "sprint": "S9",
+      "pts": 3,
+      "estado": "Finalizada",
+      "titulo": "Definir el abono mínimo y la penalidad por cancelación",
+      "rol": "administrador",
+      "quiero": "fijar el abono mínimo y la penalidad",
+      "para": "proteger al hotel frente a cancelaciones",
+      "criterios": [
+        "Porcentajes 0–100",
+        "Se retiene la penalidad y se devuelve el resto",
+        "Detalle muestra penalidad y devolución"
+      ],
+      "jira": "SCRUM-79"
+    },
+    {
+      "id": "HU-64",
+      "epica": "E08",
+      "sprint": "S9",
+      "pts": 3,
+      "estado": "Finalizada",
+      "titulo": "Registrar gastos por pagar",
+      "rol": "contador / finanzas",
+      "quiero": "registrar gastos que quedan por pagar",
+      "para": "controlar las obligaciones del hotel",
+      "criterios": [
+        "No cuentan hasta pagarse",
+        "KPI por pagar y vencidos",
+        "Pago una sola vez"
+      ],
+      "jira": "SCRUM-80"
+    },
+    {
+      "id": "HU-65",
+      "epica": "E08",
+      "sprint": "S9",
+      "pts": 3,
+      "estado": "Finalizada",
+      "titulo": "Programar gastos recurrentes mensuales",
+      "rol": "contador / finanzas",
+      "quiero": "programar gastos que se repiten cada mes",
+      "para": "no registrarlos a mano",
+      "criterios": [
+        "Un pendiente por mes sin duplicar",
+        "Al editar se actualiza el pendiente del mes",
+        "Solo Finanzas y Admin"
+      ],
+      "jira": "SCRUM-81"
+    },
+    {
+      "id": "HU-66",
+      "epica": "E01",
+      "sprint": "S9",
+      "pts": 1,
+      "estado": "Finalizada",
+      "titulo": "Corregir el «Not Found» al refrescar en el despliegue",
+      "rol": "usuario",
+      "quiero": "refrescar cualquier pantalla",
+      "para": "no perder el trabajo con un Not Found",
+      "criterios": [
+        "404.html generado en el build",
+        "Regla /* → /index.html en Render",
+        "Rutas verificadas en el E2E"
+      ],
+      "jira": "SCRUM-82"
+    },
+    {
+      "id": "HU-67",
+      "epica": "E12",
+      "sprint": "S9",
+      "pts": 8,
+      "estado": "Finalizada",
+      "titulo": "Validar con 30 gemelos sintéticos y prueba de carga",
+      "rol": "equipo de desarrollo",
+      "quiero": "simular 30 establecimientos del RNT y medir la carga",
+      "para": "tener evidencia de exactitud y rendimiento",
+      "criterios": [
+        "Indicadores y caja coinciden en los 30",
+        "Bases y dumps conservados",
+        "JMeter 10/50/100 usuarios"
+      ],
+      "jira": "SCRUM-83"
+    },
+    {
+      "id": "HU-68",
+      "epica": "E12",
+      "sprint": "S9",
+      "pts": 5,
+      "estado": "Finalizada",
+      "titulo": "Pruebas E2E de los flujos y corrección de inconsistencias",
+      "rol": "equipo de desarrollo",
+      "quiero": "recorrer todos los flujos en un ambiente aislado",
+      "para": "corregir inconsistencias antes de la entrega",
+      "criterios": [
+        "31 + 12 casos y barrido de 30 pantallas",
+        "4 inconsistencias corregidas",
+        "Evidencia en docs/evidencias/e2e"
+      ],
+      "jira": "SCRUM-84"
+    },
+    {
+      "id": "HU-69",
+      "epica": "E08",
+      "sprint": null,
+      "pts": 8,
+      "estado": "Por hacer",
+      "titulo": "Llevar la contabilidad del bar integrada a Finanzas",
+      "rol": "administrador",
+      "quiero": "registrar ventas y compras del bar",
+      "para": "verlas en el reporte financiero del hotel",
+      "criterios": [
+        "Ventas al contado o a la habitación",
+        "Categoría propia en Finanzas"
+      ],
+      "jira": "SCRUM-85"
+    }
+  ]
+}

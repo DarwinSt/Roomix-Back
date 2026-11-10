@@ -7,3 +7,5 @@ target/
 # Credenciales locales: nunca deben llegar a la imagen
 src/main/resources/application-local.properties
 .env
+# Documentación y evidencias del proyecto: no hacen parte de la imagen
+docs/

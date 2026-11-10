@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FinanzasDtos.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.finanzas.dto</a> &gt; <span class="el_source">FinanzasDtos.java</span></div><h1>FinanzasDtos.java</h1><pre class="source lang-java linenums">package com.example.roomix.finanzas.dto;
+
+import com.example.roomix.finanzas.domain.CategoriaFinanciera;
+import com.example.roomix.finanzas.domain.MetodoPago;
+import com.example.roomix.finanzas.domain.MovimientoFinanciero;
+import com.example.roomix.finanzas.domain.TipoMovimiento;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
+public final class FinanzasDtos {
+
+    private FinanzasDtos() {
+    }
+
+    @Schema(name = &quot;MovimientoFinancieroRequest&quot;)
+<span class="fc" id="L24">    public record MovimientoRequest(</span>
+            @NotNull(message = &quot;El tipo es obligatorio&quot;) TipoMovimiento tipo,
+            @NotNull(message = &quot;La categoría es obligatoria&quot;) CategoriaFinanciera categoria,
+            @NotBlank(message = &quot;El concepto es obligatorio&quot;) @Size(max = 200) String concepto,
+            @NotNull(message = &quot;El valor es obligatorio&quot;)
+            @DecimalMin(value = &quot;0.01&quot;, message = &quot;El valor debe ser mayor que cero&quot;)
+            BigDecimal valor,
+            @Schema(description = &quot;Por defecto, hoy&quot;) LocalDate fecha,
+            MetodoPago metodoPago,
+            @Size(max = 150) String tercero,
+            @Size(max = 60) String referencia,
+            @Schema(description = &quot;Egreso por pagar: no cuenta en los totales hasta confirmar el pago&quot;) Boolean pendiente,
+            @Schema(description = &quot;Vencimiento del egreso por pagar&quot;) LocalDate fechaVencimiento
+    ) {
+        /** Compatibilidad: movimiento pagado. */
+        public MovimientoRequest(TipoMovimiento tipo, CategoriaFinanciera categoria, String concepto, BigDecimal valor,
+                                 LocalDate fecha, MetodoPago metodoPago, String tercero, String referencia) {
+<span class="fc" id="L41">            this(tipo, categoria, concepto, valor, fecha, metodoPago, tercero, referencia, null, null);</span>
+<span class="fc" id="L42">        }</span>
+    }
+
+    @Schema(name = &quot;MovimientoFinancieroResponse&quot;)
+<span class="fc" id="L46">    public record MovimientoResponse(</span>
+            Long id,
+            TipoMovimiento tipo,
+            CategoriaFinanciera categoria,
+            String categoriaNombre,
+            String concepto,
+            BigDecimal valor,
+            LocalDate fecha,
+            MetodoPago metodoPago,
+            String tercero,
+            String referencia,
+            Long facturaId,
+            boolean automatico,
+            String registradoPor,
+            boolean anulado,
+            String motivoAnulacion,
+            LocalDateTime fechaHoraCreacion,
+            boolean pendiente,
+            LocalDate fechaVencimiento,
+            boolean vencido,
+            Long gastoRecurrenteId,
+            @Schema(description = &quot;Abono de reserva que originó el ingreso (si aplica)&quot;) Long abonoId
+    ) {
+        public static MovimientoResponse from(MovimientoFinanciero m) {
+<span class="fc" id="L70">            return new MovimientoResponse(</span>
+<span class="fc" id="L71">                    m.getId(), m.getTipo(), m.getCategoria(), m.getCategoria().getNombre(), m.getConcepto(),</span>
+<span class="fc" id="L72">                    m.getValor(), m.getFecha(), m.getMetodoPago(), m.getTercero(), m.getReferencia(),</span>
+<span class="fc bfc" id="L73" title="All 6 branches covered.">                    m.getFacturaId(), m.getPagoId() != null || m.getAbonoId() != null || m.getGastoRecurrenteId() != null, m.getRegistradoPor(), m.isAnulado(),</span>
+<span class="fc" id="L74">                    m.getMotivoAnulacion(), m.getFechaHoraCreacion(),</span>
+<span class="fc" id="L75">                    m.isPendiente(), m.getFechaVencimiento(),</span>
+<span class="pc bpc" id="L76" title="2 of 6 branches missed.">                    m.isPendiente() &amp;&amp; m.getFechaVencimiento() != null &amp;&amp; m.getFechaVencimiento().isBefore(LocalDate.now()),</span>
+<span class="fc" id="L77">                    m.getGastoRecurrenteId(),</span>
+<span class="fc" id="L78">                    m.getAbonoId()</span>
+            );
+        }
+    }
+
+    @Schema(name = &quot;AnularRequest&quot;)
+<span class="fc" id="L84">    public record AnularRequest(</span>
+            @NotBlank(message = &quot;El motivo es obligatorio&quot;) @Size(max = 200) String motivo
+    ) {
+    }
+
+    @Schema(name = &quot;CategoriaFinancieraResponse&quot;)
+<span class="nc" id="L90">    public record CategoriaResponse(CategoriaFinanciera codigo, String nombre, TipoMovimiento tipo) {</span>
+    }
+
+    @Schema(name = &quot;TotalCategoria&quot;)
+<span class="fc" id="L94">    public record TotalCategoria(CategoriaFinanciera categoria, String nombre, BigDecimal valor, double porcentaje) {</span>
+    }
+
+    @Schema(name = &quot;PuntoSerieFinanciera&quot;)
+<span class="fc" id="L98">    public record PuntoSerie(String etiqueta, LocalDate desde, BigDecimal ingresos, BigDecimal egresos) {</span>
+    }
+
+    @Schema(name = &quot;ComparativoPeriodo&quot;)
+<span class="fc" id="L102">    public record Comparativo(</span>
+            LocalDate desde,
+            LocalDate hasta,
+            BigDecimal ingresos,
+            BigDecimal egresos,
+            BigDecimal utilidad,
+            Double variacionIngresosPct,
+            Double variacionEgresosPct,
+            Double variacionUtilidadPct
+    ) {
+    }
+
+    @Schema(name = &quot;ResumenFinancieroResponse&quot;, description = &quot;Estado de resultados simplificado del periodo&quot;)
+<span class="fc" id="L115">    public record ResumenFinanciero(</span>
+            LocalDate desde,
+            LocalDate hasta,
+            BigDecimal totalIngresos,
+            BigDecimal totalEgresos,
+            BigDecimal utilidad,
+            Double margenPct,
+            BigDecimal saldoPorCobrar,
+            @Schema(description = &quot;DIA o MES según la longitud del periodo&quot;) String granularidad,
+            List&lt;TotalCategoria&gt; ingresosPorCategoria,
+            List&lt;TotalCategoria&gt; egresosPorCategoria,
+            List&lt;PuntoSerie&gt; serie,
+            Comparativo periodoAnterior,
+            @Schema(description = &quot;Egresos pendientes de pago (todas las fechas)&quot;) BigDecimal porPagar,
+            long cantidadPorPagar,
+            @Schema(description = &quot;Egresos pendientes con el vencimiento ya cumplido&quot;) BigDecimal porPagarVencido,
+            long cantidadVencidos
+    ) {
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

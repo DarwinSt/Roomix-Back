@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FinanzasService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.finanzas.service</a> &gt; <span class="el_source">FinanzasService.java</span></div><h1>FinanzasService.java</h1><pre class="source lang-java linenums">package com.example.roomix.finanzas.service;
+
+import com.example.roomix.auth.service.UsuarioActual;
+import com.example.roomix.common.dto.PaginaResponse;
+import com.example.roomix.finanzas.domain.CategoriaFinanciera;
+import com.example.roomix.finanzas.domain.EstadoFactura;
+import com.example.roomix.finanzas.domain.MetodoPago;
+import com.example.roomix.finanzas.domain.MovimientoFinanciero;
+import com.example.roomix.finanzas.domain.TipoMovimiento;
+import com.example.roomix.finanzas.dto.FinanzasDtos.CategoriaResponse;
+import com.example.roomix.finanzas.dto.FinanzasDtos.Comparativo;
+import com.example.roomix.finanzas.dto.FinanzasDtos.MovimientoRequest;
+import com.example.roomix.finanzas.dto.FinanzasDtos.MovimientoResponse;
+import com.example.roomix.finanzas.dto.FinanzasDtos.PuntoSerie;
+import com.example.roomix.finanzas.dto.FinanzasDtos.ResumenFinanciero;
+import com.example.roomix.finanzas.dto.FinanzasDtos.TotalCategoria;
+import com.example.roomix.finanzas.exception.FinanzasErrorCode;
+import com.example.roomix.finanzas.exception.FinanzasException;
+import com.example.roomix.finanzas.repository.FacturaRepository;
+import com.example.roomix.finanzas.repository.MovimientoFinancieroRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.format.TextStyle;
+import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+/**
+ * Registro de ingresos y egresos y reportes financieros (estado de resultados, flujo, comparativos).
+ */
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class FinanzasService {
+
+<span class="fc" id="L48">    private static final Locale ES = Locale.forLanguageTag(&quot;es-CO&quot;);</span>
+
+    private final MovimientoFinancieroRepository movimientoRepository;
+    private final FacturaRepository facturaRepository;
+
+    public PaginaResponse&lt;MovimientoResponse&gt; listar(
+            TipoMovimiento tipo,
+            CategoriaFinanciera categoria,
+            LocalDate desde,
+            LocalDate hasta,
+            boolean incluirAnulados,
+            String texto,
+            Boolean pendiente,
+            int pagina,
+            int tamano
+    ) {
+<span class="fc" id="L64">        return PaginaResponse.de(</span>
+<span class="fc" id="L65">                movimientoRepository.findAll(</span>
+<span class="fc" id="L66">                        MovimientoFinancieroRepository.conFiltros(tipo, categoria, desde, hasta, incluirAnulados, texto, pendiente),</span>
+<span class="fc" id="L67">                        PageRequest.of(Math.max(pagina, 0), Math.min(Math.max(tamano, 1), 200),</span>
+<span class="fc" id="L68">                                Sort.by(Sort.Direction.DESC, &quot;fecha&quot;, &quot;id&quot;))</span>
+                ),
+                MovimientoResponse::from
+        );
+    }
+
+    public List&lt;CategoriaResponse&gt; categorias() {
+<span class="nc" id="L75">        return Arrays.stream(CategoriaFinanciera.values())</span>
+<span class="nc" id="L76">                .map(c -&gt; new CategoriaResponse(c, c.getNombre(), c.getTipo()))</span>
+<span class="nc" id="L77">                .toList();</span>
+    }
+
+    @Transactional
+    public MovimientoResponse registrarManual(MovimientoRequest request) {
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">        if (request.categoria().getTipo() != request.tipo()) {</span>
+<span class="fc" id="L83">            throw new FinanzasException(FinanzasErrorCode.CATEGORIA_NO_COINCIDE,</span>
+<span class="fc" id="L84">                    request.categoria().getNombre(), request.tipo().name().toLowerCase());</span>
+        }
+<span class="nc" id="L86">        boolean pendiente = Boolean.TRUE.equals(request.pendiente());</span>
+<span class="nc bnc" id="L87" title="All 4 branches missed.">        if (pendiente &amp;&amp; request.tipo() != TipoMovimiento.EGRESO) {</span>
+<span class="nc" id="L88">            throw new FinanzasException(FinanzasErrorCode.PENDIENTE_SOLO_EGRESOS);</span>
+        }
+<span class="nc bnc" id="L90" title="All 4 branches missed.">        LocalDate fecha = pendiente &amp;&amp; request.fechaVencimiento() != null ? request.fechaVencimiento()</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">                : request.fecha() != null ? request.fecha() : LocalDate.now();</span>
+<span class="nc" id="L92">        MovimientoFinanciero movimiento = MovimientoFinanciero.builder()</span>
+<span class="nc" id="L93">                .tipo(request.tipo())</span>
+<span class="nc" id="L94">                .categoria(request.categoria())</span>
+<span class="nc" id="L95">                .concepto(request.concepto().trim())</span>
+<span class="nc" id="L96">                .valor(request.valor().setScale(2, RoundingMode.HALF_UP))</span>
+<span class="nc" id="L97">                .fecha(fecha)</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">                .pendiente(pendiente ? Boolean.TRUE : null)</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">                .fechaVencimiento(pendiente ? fecha : null)</span>
+<span class="nc" id="L100">                .metodoPago(request.metodoPago())</span>
+<span class="nc" id="L101">                .tercero(textoOpcional(request.tercero()))</span>
+<span class="nc" id="L102">                .referencia(textoOpcional(request.referencia()))</span>
+<span class="nc" id="L103">                .registradoPor(UsuarioActual.username())</span>
+<span class="nc" id="L104">                .build();</span>
+<span class="nc" id="L105">        return MovimientoResponse.from(movimientoRepository.save(movimiento));</span>
+    }
+
+    /** Registro automático desde otros módulos (pagos de facturas, compras de inventario). */
+    @Transactional
+    public MovimientoFinanciero registrarAutomatico(
+            CategoriaFinanciera categoria,
+            String concepto,
+            BigDecimal valor,
+            MetodoPago metodoPago,
+            String tercero,
+            String referencia,
+            Long facturaId,
+            Long pagoId
+    ) {
+<span class="fc" id="L120">        return movimientoRepository.save(MovimientoFinanciero.builder()</span>
+<span class="fc" id="L121">                .tipo(categoria.getTipo())</span>
+<span class="fc" id="L122">                .categoria(categoria)</span>
+<span class="fc" id="L123">                .concepto(concepto)</span>
+<span class="fc" id="L124">                .valor(valor.setScale(2, RoundingMode.HALF_UP))</span>
+<span class="fc" id="L125">                .fecha(LocalDate.now())</span>
+<span class="fc" id="L126">                .metodoPago(metodoPago)</span>
+<span class="fc" id="L127">                .tercero(tercero)</span>
+<span class="fc" id="L128">                .referencia(referencia)</span>
+<span class="fc" id="L129">                .facturaId(facturaId)</span>
+<span class="fc" id="L130">                .pagoId(pagoId)</span>
+<span class="fc" id="L131">                .registradoPor(UsuarioActual.username())</span>
+<span class="fc" id="L132">                .build());</span>
+    }
+
+    /** Confirma el pago de un egreso pendiente: deja de estar «por pagar» y cuenta en la fecha del pago. */
+    @Transactional
+    public MovimientoResponse pagar(Long id, com.example.roomix.finanzas.dto.GastoDtos.PagarGastoRequest request) {
+<span class="fc" id="L138">        MovimientoFinanciero m = movimientoRepository.findById(id)</span>
+<span class="pc" id="L139">                .orElseThrow(() -&gt; new FinanzasException(FinanzasErrorCode.MOVIMIENTO_NO_ENCONTRADO, id));</span>
+<span class="pc bpc" id="L140" title="1 of 4 branches missed.">        if (!m.isPendiente() || m.isAnulado()) {</span>
+<span class="fc" id="L141">            throw new FinanzasException(FinanzasErrorCode.MOVIMIENTO_NO_PENDIENTE);</span>
+        }
+<span class="fc" id="L143">        m.setPendiente(false);</span>
+<span class="pc bpc" id="L144" title="2 of 4 branches missed.">        m.setFecha(request != null &amp;&amp; request.fecha() != null ? request.fecha() : LocalDate.now());</span>
+<span class="pc bpc" id="L145" title="2 of 4 branches missed.">        if (request != null &amp;&amp; request.metodoPago() != null) {</span>
+<span class="fc" id="L146">            m.setMetodoPago(request.metodoPago());</span>
+        }
+<span class="pc bpc" id="L148" title="2 of 4 branches missed.">        if (request != null &amp;&amp; request.valor() != null) {</span>
+<span class="nc" id="L149">            m.setValor(request.valor().setScale(2, RoundingMode.HALF_UP));</span>
+        }
+<span class="pc bpc" id="L151" title="3 of 6 branches missed.">        if (request != null &amp;&amp; request.referencia() != null &amp;&amp; !request.referencia().isBlank()) {</span>
+<span class="fc" id="L152">            m.setReferencia(request.referencia().trim());</span>
+        }
+<span class="fc" id="L154">        return MovimientoResponse.from(movimientoRepository.save(m));</span>
+    }
+
+    @Transactional
+    public MovimientoResponse anular(Long id, String motivo) {
+<span class="fc" id="L159">        MovimientoFinanciero movimiento = movimientoRepository.findById(id)</span>
+<span class="pc" id="L160">                .orElseThrow(() -&gt; new FinanzasException(FinanzasErrorCode.MOVIMIENTO_NO_ENCONTRADO, id));</span>
+<span class="pc bpc" id="L161" title="1 of 2 branches missed.">        if (movimiento.isAnulado()) {</span>
+<span class="nc" id="L162">            throw new FinanzasException(FinanzasErrorCode.MOVIMIENTO_YA_ANULADO);</span>
+        }
+<span class="pc bpc" id="L164" title="3 of 4 branches missed.">        if (movimiento.getPagoId() != null || movimiento.getAbonoId() != null) {</span>
+<span class="fc" id="L165">            throw new FinanzasException(FinanzasErrorCode.MOVIMIENTO_AUTOMATICO, movimiento.getReferencia());</span>
+        }
+<span class="nc" id="L167">        movimiento.setAnulado(true);</span>
+<span class="nc" id="L168">        movimiento.setMotivoAnulacion(motivo.trim());</span>
+<span class="nc" id="L169">        return MovimientoResponse.from(movimientoRepository.save(movimiento));</span>
+    }
+
+    /** Anula los ingresos generados por un pago (al anular el pago o la factura). */
+    @Transactional
+    public void anularPorPago(Long pagoId, String motivo) {
+<span class="nc bnc" id="L175" title="All 2 branches missed.">        for (MovimientoFinanciero m : movimientoRepository.findByPagoIdAndAnuladoFalse(pagoId)) {</span>
+<span class="nc" id="L176">            m.setAnulado(true);</span>
+<span class="nc" id="L177">            m.setMotivoAnulacion(motivo);</span>
+<span class="nc" id="L178">            movimientoRepository.save(m);</span>
+<span class="nc" id="L179">        }</span>
+<span class="nc" id="L180">    }</span>
+
+    public ResumenFinanciero resumen(LocalDate desde, LocalDate hasta) {
+<span class="fc bfc" id="L183" title="All 2 branches covered.">        LocalDate fin = hasta != null ? hasta : LocalDate.now();</span>
+<span class="fc bfc" id="L184" title="All 2 branches covered.">        LocalDate inicio = desde != null ? desde : fin.withDayOfMonth(1);</span>
+<span class="pc bpc" id="L185" title="1 of 2 branches missed.">        if (inicio.isAfter(fin)) {</span>
+<span class="nc" id="L186">            LocalDate t = inicio;</span>
+<span class="nc" id="L187">            inicio = fin;</span>
+<span class="nc" id="L188">            fin = t;</span>
+        }
+
+<span class="fc" id="L191">        Map&lt;CategoriaFinanciera, BigDecimal&gt; totales = totalesPorCategoria(inicio, fin);</span>
+<span class="fc" id="L192">        BigDecimal ingresos = sumar(totales, TipoMovimiento.INGRESO);</span>
+<span class="fc" id="L193">        BigDecimal egresos = sumar(totales, TipoMovimiento.EGRESO);</span>
+<span class="fc" id="L194">        BigDecimal utilidad = ingresos.subtract(egresos);</span>
+
+<span class="fc" id="L196">        long dias = ChronoUnit.DAYS.between(inicio, fin) + 1;</span>
+<span class="fc" id="L197">        LocalDate antFin = inicio.minusDays(1);</span>
+<span class="fc" id="L198">        LocalDate antInicio = antFin.minusDays(dias - 1);</span>
+<span class="fc" id="L199">        Map&lt;CategoriaFinanciera, BigDecimal&gt; totalesAnt = totalesPorCategoria(antInicio, antFin);</span>
+<span class="fc" id="L200">        BigDecimal ingresosAnt = sumar(totalesAnt, TipoMovimiento.INGRESO);</span>
+<span class="fc" id="L201">        BigDecimal egresosAnt = sumar(totalesAnt, TipoMovimiento.EGRESO);</span>
+<span class="fc" id="L202">        BigDecimal utilidadAnt = ingresosAnt.subtract(egresosAnt);</span>
+
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">        String granularidad = dias &gt; 62 ? &quot;MES&quot; : &quot;DIA&quot;;</span>
+<span class="fc" id="L205">        List&lt;Object[]&gt; filasPorPagar = movimientoRepository.resumenPorPagar(LocalDate.now());</span>
+<span class="pc bpc" id="L206" title="1 of 4 branches missed.">        Object[] porPagar = filasPorPagar.isEmpty() || filasPorPagar.getFirst()[0] == null</span>
+<span class="fc" id="L207">                ? new Object[]{0L, BigDecimal.ZERO, 0L, BigDecimal.ZERO} : filasPorPagar.getFirst();</span>
+<span class="fc" id="L208">        return new ResumenFinanciero(</span>
+                inicio,
+                fin,
+                ingresos,
+                egresos,
+                utilidad,
+<span class="pc bpc" id="L214" title="1 of 2 branches missed.">                ingresos.signum() == 0 ? null : porcentaje(utilidad, ingresos),</span>
+<span class="fc" id="L215">                facturaRepository.saldoPendiente(List.of(EstadoFactura.PENDIENTE, EstadoFactura.PAGADA_PARCIAL)),</span>
+                granularidad,
+<span class="fc" id="L217">                desglose(totales, TipoMovimiento.INGRESO, ingresos),</span>
+<span class="fc" id="L218">                desglose(totales, TipoMovimiento.EGRESO, egresos),</span>
+<span class="fc" id="L219">                serie(inicio, fin, granularidad),</span>
+                new Comparativo(antInicio, antFin, ingresosAnt, egresosAnt, utilidadAnt,
+<span class="fc" id="L221">                        variacion(ingresos, ingresosAnt), variacion(egresos, egresosAnt), variacion(utilidad, utilidadAnt)),</span>
+<span class="pc bpc" id="L222" title="1 of 2 branches missed.">                porPagar[1] instanceof BigDecimal v1 ? v1 : BigDecimal.ZERO,</span>
+<span class="fc" id="L223">                ((Number) porPagar[0]).longValue(),</span>
+<span class="pc bpc" id="L224" title="1 of 2 branches missed.">                porPagar[3] instanceof BigDecimal v3 ? v3 : BigDecimal.ZERO,</span>
+<span class="fc bfc" id="L225" title="All 2 branches covered.">                porPagar[2] == null ? 0 : ((Number) porPagar[2]).longValue()</span>
+        );
+    }
+
+    /** Ingresos (no anulados) en un rango, usado por el dashboard. */
+    public BigDecimal ingresosEntre(LocalDate desde, LocalDate hasta) {
+<span class="nc" id="L231">        return sumar(totalesPorCategoria(desde, hasta), TipoMovimiento.INGRESO);</span>
+    }
+
+    public Map&lt;CategoriaFinanciera, BigDecimal&gt; totalesPorCategoria(LocalDate desde, LocalDate hasta) {
+<span class="fc" id="L235">        Map&lt;CategoriaFinanciera, BigDecimal&gt; mapa = new EnumMap&lt;&gt;(CategoriaFinanciera.class);</span>
+<span class="fc bfc" id="L236" title="All 2 branches covered.">        for (Object[] fila : movimientoRepository.totalesPorCategoria(desde, hasta)) {</span>
+<span class="fc" id="L237">            mapa.put((CategoriaFinanciera) fila[0], (BigDecimal) fila[1]);</span>
+<span class="fc" id="L238">        }</span>
+<span class="fc" id="L239">        return mapa;</span>
+    }
+
+    private List&lt;PuntoSerie&gt; serie(LocalDate inicio, LocalDate fin, String granularidad) {
+<span class="fc" id="L243">        Map&lt;LocalDate, BigDecimal[]&gt; puntos = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L244">        boolean mensual = &quot;MES&quot;.equals(granularidad);</span>
+<span class="pc bpc" id="L245" title="1 of 2 branches missed.">        LocalDate cursor = mensual ? inicio.withDayOfMonth(1) : inicio;</span>
+<span class="fc bfc" id="L246" title="All 2 branches covered.">        while (!cursor.isAfter(fin)) {</span>
+<span class="fc" id="L247">            puntos.put(cursor, new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO});</span>
+<span class="pc bpc" id="L248" title="1 of 2 branches missed.">            cursor = mensual ? cursor.plusMonths(1) : cursor.plusDays(1);</span>
+        }
+<span class="fc bfc" id="L250" title="All 2 branches covered.">        for (Object[] fila : movimientoRepository.totalesDiarios(inicio, fin)) {</span>
+<span class="fc" id="L251">            LocalDate fecha = (LocalDate) fila[0];</span>
+<span class="pc bpc" id="L252" title="1 of 2 branches missed.">            LocalDate clave = mensual ? fecha.withDayOfMonth(1) : fecha;</span>
+<span class="pc" id="L253">            BigDecimal[] valores = puntos.computeIfAbsent(clave, k -&gt; new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO});</span>
+<span class="fc bfc" id="L254" title="All 2 branches covered.">            int idx = fila[1] == TipoMovimiento.INGRESO ? 0 : 1;</span>
+<span class="fc" id="L255">            valores[idx] = valores[idx].add((BigDecimal) fila[2]);</span>
+<span class="fc" id="L256">        }</span>
+<span class="fc" id="L257">        return puntos.entrySet().stream()</span>
+<span class="fc" id="L258">                .map(e -&gt; new PuntoSerie(</span>
+<span class="pc bpc" id="L259" title="1 of 2 branches missed.">                        mensual</span>
+<span class="nc" id="L260">                                ? e.getKey().getMonth().getDisplayName(TextStyle.SHORT, ES) + &quot; &quot; + e.getKey().getYear()</span>
+<span class="fc" id="L261">                                : e.getKey().getDayOfMonth() + &quot; &quot; + e.getKey().getMonth().getDisplayName(TextStyle.SHORT, ES),</span>
+<span class="fc" id="L262">                        e.getKey(),</span>
+<span class="fc" id="L263">                        e.getValue()[0],</span>
+<span class="fc" id="L264">                        e.getValue()[1]))</span>
+<span class="fc" id="L265">                .toList();</span>
+    }
+
+    private static List&lt;TotalCategoria&gt; desglose(
+            Map&lt;CategoriaFinanciera, BigDecimal&gt; totales,
+            TipoMovimiento tipo,
+            BigDecimal total
+    ) {
+<span class="fc" id="L273">        return totales.entrySet().stream()</span>
+<span class="fc bfc" id="L274" title="All 2 branches covered.">                .filter(e -&gt; e.getKey().getTipo() == tipo)</span>
+<span class="fc" id="L275">                .sorted(Map.Entry.&lt;CategoriaFinanciera, BigDecimal&gt;comparingByValue(Comparator.reverseOrder()))</span>
+<span class="fc" id="L276">                .map(e -&gt; new TotalCategoria(e.getKey(), e.getKey().getNombre(), e.getValue(),</span>
+<span class="pc bpc" id="L277" title="1 of 2 branches missed.">                        total.signum() == 0 ? 0 : porcentaje(e.getValue(), total)))</span>
+<span class="fc" id="L278">                .toList();</span>
+    }
+
+    private static BigDecimal sumar(Map&lt;CategoriaFinanciera, BigDecimal&gt; totales, TipoMovimiento tipo) {
+<span class="fc" id="L282">        return totales.entrySet().stream()</span>
+<span class="fc bfc" id="L283" title="All 2 branches covered.">                .filter(e -&gt; e.getKey().getTipo() == tipo)</span>
+<span class="fc" id="L284">                .map(Map.Entry::getValue)</span>
+<span class="fc" id="L285">                .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+    }
+
+    private static double porcentaje(BigDecimal parte, BigDecimal total) {
+<span class="fc" id="L289">        return parte.multiply(BigDecimal.valueOf(100)).divide(total, 1, RoundingMode.HALF_UP).doubleValue();</span>
+    }
+
+    private static Double variacion(BigDecimal actual, BigDecimal anterior) {
+<span class="fc bfc" id="L293" title="All 2 branches covered.">        if (anterior.signum() == 0) {</span>
+<span class="fc" id="L294">            return null;</span>
+        }
+<span class="fc" id="L296">        return actual.subtract(anterior).multiply(BigDecimal.valueOf(100))</span>
+<span class="fc" id="L297">                .divide(anterior.abs(), 1, RoundingMode.HALF_UP).doubleValue();</span>
+    }
+
+    private static String textoOpcional(String valor) {
+<span class="nc bnc" id="L301" title="All 4 branches missed.">        return valor == null || valor.isBlank() ? null : valor.trim();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

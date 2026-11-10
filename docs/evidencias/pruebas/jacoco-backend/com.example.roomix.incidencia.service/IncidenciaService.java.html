@@ -1,0 +1,527 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IncidenciaService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.incidencia.service</a> &gt; <span class="el_source">IncidenciaService.java</span></div><h1>IncidenciaService.java</h1><pre class="source lang-java linenums">package com.example.roomix.incidencia.service;
+
+import com.example.roomix.habitacion.domain.Habitacion;
+import com.example.roomix.habitacion.domain.EstadoHabitacion;
+import com.example.roomix.habitacion.repository.HabitacionRepository;
+import com.example.roomix.habitacion.service.HabitacionInhabilitacionService;
+import com.example.roomix.incidencia.domain.AlcanceIncidencia;
+import com.example.roomix.incidencia.domain.ContextoLimpieza;
+import com.example.roomix.incidencia.domain.EstadoIncidencia;
+import com.example.roomix.incidencia.domain.Incidencia;
+import com.example.roomix.incidencia.domain.IncidenciaTarea;
+import com.example.roomix.incidencia.domain.TipoIncidencia;
+import com.example.roomix.incidencia.dto.ActualizarTareaIncidenciaRequest;
+import com.example.roomix.incidencia.dto.AsignarIncidenciaRequest;
+import com.example.roomix.incidencia.dto.CrearIncidenciaRequest;
+import com.example.roomix.incidencia.dto.IncidenciaResponse;
+import com.example.roomix.incidencia.exception.IncidenciaErrorCode;
+import com.example.roomix.incidencia.exception.IncidenciaException;
+import com.example.roomix.incidencia.repository.IncidenciaRepository;
+import com.example.roomix.personal.domain.Personal;
+import com.example.roomix.personal.service.PersonalService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class IncidenciaService {
+
+<span class="fc" id="L35">    private static final List&lt;EstadoIncidencia&gt; ESTADOS_CERRADOS = List.of(</span>
+            EstadoIncidencia.FINALIZADA,
+            EstadoIncidencia.CANCELADA
+    );
+
+<span class="fc" id="L40">    private static final List&lt;EstadoIncidencia&gt; ESTADOS_PERSONAL_OCUPADO = List.of(</span>
+            EstadoIncidencia.ASIGNADA,
+            EstadoIncidencia.EN_PROGRESO
+    );
+
+<span class="fc" id="L45">    private static final Map&lt;TipoIncidencia, List&lt;String&gt;&gt; TAREAS_POR_TIPO = Map.of(</span>
+<span class="fc" id="L46">            TipoIncidencia.LIMPIEZA, List.of(</span>
+                    &quot;Preparar materiales de limpieza&quot;,
+                    &quot;Ingresar a la habitación&quot;,
+                    &quot;Limpiar baño&quot;,
+                    &quot;Cambiar ropa de cama&quot;,
+                    &quot;Limpiar superficies y piso&quot;,
+                    &quot;Revisión final del servicio&quot;
+            ),
+<span class="fc" id="L54">            TipoIncidencia.MANTENIMIENTO, List.of(</span>
+                    &quot;Revisión técnica inicial&quot;,
+                    &quot;Ejecutar reparación o adecuación&quot;,
+                    &quot;Verificación de funcionamiento&quot;,
+                    &quot;Cierre de mantenimiento&quot;
+            ),
+<span class="fc" id="L60">            TipoIncidencia.SERVICIO_CUARTO, List.of(</span>
+                    &quot;Preparar pedido en cocina&quot;,
+                    &quot;Entregar servicio en habitación&quot;,
+                    &quot;Retirar vajilla y residuos&quot;,
+                    &quot;Confirmar servicio con huésped o recepción&quot;
+            ),
+<span class="fc" id="L66">            TipoIncidencia.OTRO, List.of(</span>
+                    &quot;Iniciar servicio&quot;,
+                    &quot;Ejecutar tareas del servicio&quot;,
+                    &quot;Verificación final&quot;
+            )
+    );
+
+<span class="fc" id="L73">    private static final Map&lt;TipoIncidencia, List&lt;String&gt;&gt; TAREAS_ZONA_COMUN = Map.of(</span>
+<span class="fc" id="L74">            TipoIncidencia.MANTENIMIENTO, List.of(</span>
+                    &quot;Revisión inicial del área&quot;,
+                    &quot;Ejecutar reparación o adecuación&quot;,
+                    &quot;Verificación de funcionamiento&quot;,
+                    &quot;Cierre de mantenimiento&quot;
+            ),
+<span class="fc" id="L80">            TipoIncidencia.OTRO, List.of(</span>
+                    &quot;Iniciar servicio en zona común&quot;,
+                    &quot;Ejecutar tareas del servicio&quot;,
+                    &quot;Verificación final&quot;
+            )
+    );
+
+    private final IncidenciaRepository incidenciaRepository;
+    private final HabitacionRepository habitacionRepository;
+    private final HabitacionInhabilitacionService inhabilitacionService;
+    private final PersonalService personalService;
+
+    public List&lt;IncidenciaResponse&gt; listar(
+            EstadoIncidencia estado,
+            Long habitacionId,
+            Long personalId,
+            Boolean activas
+    ) {
+<span class="fc" id="L98">        return incidenciaRepository.buscarConFiltros(</span>
+                        estado,
+                        habitacionId,
+                        personalId,
+                        activas,
+                        ESTADOS_CERRADOS
+                )
+<span class="fc" id="L105">                .stream()</span>
+<span class="fc" id="L106">                .map(IncidenciaResponse::from)</span>
+<span class="fc" id="L107">                .toList();</span>
+    }
+
+    public IncidenciaResponse obtenerPorId(Long id) {
+<span class="nc" id="L111">        return IncidenciaResponse.from(buscarEntidad(id));</span>
+    }
+
+    public List&lt;IncidenciaResponse&gt; listarActivasPorHabitacion(Long habitacionId) {
+<span class="nc" id="L115">        return incidenciaRepository.findActivasPorHabitacion(habitacionId, ESTADOS_CERRADOS)</span>
+<span class="nc" id="L116">                .stream()</span>
+<span class="nc" id="L117">                .map(IncidenciaResponse::from)</span>
+<span class="nc" id="L118">                .toList();</span>
+    }
+
+    @Transactional
+    public IncidenciaResponse crear(CrearIncidenciaRequest request) {
+<span class="nc" id="L123">        AlcanceIncidencia alcance = request.alcance();</span>
+<span class="nc" id="L124">        Habitacion habitacion = null;</span>
+<span class="nc" id="L125">        String ubicacion = normalizarUbicacion(request.ubicacion());</span>
+        String referenciaTitulo;
+
+<span class="nc bnc" id="L128" title="All 2 branches missed.">        if (alcance == AlcanceIncidencia.HABITACION) {</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">            if (request.habitacionId() == null) {</span>
+<span class="nc" id="L130">                throw new IncidenciaException(IncidenciaErrorCode.HABITACION_REQUERIDA);</span>
+            }
+<span class="nc" id="L132">            habitacion = habitacionRepository.findById(request.habitacionId())</span>
+<span class="nc" id="L133">                    .orElseThrow(() -&gt; new IncidenciaException(</span>
+                            IncidenciaErrorCode.HABITACION_NO_ENCONTRADA,
+<span class="nc" id="L135">                            request.habitacionId()</span>
+                    ));
+<span class="nc" id="L137">            inhabilitacionService.sincronizar(habitacion);</span>
+<span class="nc" id="L138">            habitacionRepository.save(habitacion);</span>
+<span class="nc" id="L139">            validarCreacionServicio(habitacion, request.tipo(), request.contextoLimpieza());</span>
+<span class="nc" id="L140">            referenciaTitulo = &quot;habitación &quot; + habitacion.getNumero();</span>
+
+<span class="nc bnc" id="L142" title="All 4 branches missed.">            if (request.tipo() == TipoIncidencia.MANTENIMIENTO &amp;&amp; request.fechaHoraProgramada() == null) {</span>
+<span class="nc" id="L143">                throw new IncidenciaException(IncidenciaErrorCode.FECHA_PROGRAMADA_REQUERIDA);</span>
+            }
+
+<span class="nc" id="L146">            validarIncidenciaActivaDuplicada(habitacion, request.tipo(), request.contextoLimpieza());</span>
+        } else {
+<span class="nc bnc" id="L148" title="All 4 branches missed.">            if (ubicacion == null || ubicacion.isBlank()) {</span>
+<span class="nc" id="L149">                throw new IncidenciaException(IncidenciaErrorCode.UBICACION_REQUERIDA);</span>
+            }
+<span class="nc" id="L151">            validarTipoZonaComun(request.tipo());</span>
+<span class="nc" id="L152">            referenciaTitulo = ubicacion;</span>
+        }
+
+<span class="nc" id="L155">        Incidencia incidencia = Incidencia.builder()</span>
+<span class="nc" id="L156">                .alcance(alcance)</span>
+<span class="nc" id="L157">                .habitacion(habitacion)</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">                .ubicacion(alcance == AlcanceIncidencia.ZONA_COMUN ? ubicacion : null)</span>
+<span class="nc" id="L159">                .tipo(request.tipo())</span>
+<span class="nc" id="L160">                .contextoLimpieza(resolverContextoLimpieza(request.tipo(), request.contextoLimpieza()))</span>
+<span class="nc" id="L161">                .titulo(tituloParaTipo(request.tipo(), request.contextoLimpieza(), alcance, referenciaTitulo))</span>
+<span class="nc bnc" id="L162" title="All 4 branches missed.">                .descripcion(request.descripcion() != null &amp;&amp; !request.descripcion().isBlank()</span>
+<span class="nc" id="L163">                        ? request.descripcion().trim()</span>
+<span class="nc" id="L164">                        : descripcionPorDefecto(request.tipo(), request.contextoLimpieza(), alcance))</span>
+<span class="nc" id="L165">                .estado(EstadoIncidencia.CREADA)</span>
+<span class="nc" id="L166">                .fechaHoraProgramada(request.fechaHoraProgramada())</span>
+<span class="nc" id="L167">                .build();</span>
+
+<span class="nc" id="L169">        agregarTareas(incidencia, request.tipo(), alcance);</span>
+<span class="nc" id="L170">        Incidencia guardada = incidenciaRepository.save(incidencia);</span>
+<span class="nc" id="L171">        sincronizarHabitacionSiAplica(guardada);</span>
+<span class="nc" id="L172">        return IncidenciaResponse.from(guardada);</span>
+    }
+
+    @Transactional
+    public IncidenciaResponse crearLimpiezaPostCheckout(Habitacion habitacion) {
+<span class="pc bpc" id="L177" title="1 of 2 branches missed.">        if (incidenciaRepository.existsLimpiezaPostCheckoutActiva(</span>
+<span class="fc" id="L178">                habitacion.getId(),</span>
+                TipoIncidencia.LIMPIEZA,
+                ContextoLimpieza.POST_CHECKOUT,
+                ESTADOS_CERRADOS
+        )) {
+<span class="nc" id="L183">            return incidenciaRepository.findActivasPorHabitacion(habitacion.getId(), ESTADOS_CERRADOS)</span>
+<span class="nc" id="L184">                    .stream()</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">                    .filter(i -&gt; i.getTipo() == TipoIncidencia.LIMPIEZA</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">                            &amp;&amp; i.getContextoLimpieza() == ContextoLimpieza.POST_CHECKOUT)</span>
+<span class="nc" id="L187">                    .findFirst()</span>
+<span class="nc" id="L188">                    .map(IncidenciaResponse::from)</span>
+<span class="nc" id="L189">                    .orElseThrow();</span>
+        }
+
+<span class="fc" id="L192">        Incidencia incidencia = Incidencia.builder()</span>
+<span class="fc" id="L193">                .alcance(AlcanceIncidencia.HABITACION)</span>
+<span class="fc" id="L194">                .habitacion(habitacion)</span>
+<span class="fc" id="L195">                .tipo(TipoIncidencia.LIMPIEZA)</span>
+<span class="fc" id="L196">                .contextoLimpieza(ContextoLimpieza.POST_CHECKOUT)</span>
+<span class="fc" id="L197">                .titulo(tituloParaTipo(</span>
+                        TipoIncidencia.LIMPIEZA,
+                        ContextoLimpieza.POST_CHECKOUT,
+                        AlcanceIncidencia.HABITACION,
+<span class="fc" id="L201">                        &quot;habitación &quot; + habitacion.getNumero()</span>
+                ))
+<span class="fc" id="L203">                .descripcion(&quot;Limpieza obligatoria tras check-out. La habitación no se puede reservar hasta finalizarla.&quot;)</span>
+<span class="fc" id="L204">                .estado(EstadoIncidencia.CREADA)</span>
+<span class="fc" id="L205">                .build();</span>
+<span class="fc" id="L206">        agregarTareas(incidencia, TipoIncidencia.LIMPIEZA, AlcanceIncidencia.HABITACION);</span>
+<span class="fc" id="L207">        return IncidenciaResponse.from(incidenciaRepository.save(incidencia));</span>
+    }
+
+    @Transactional
+    public IncidenciaResponse asignar(Long id, AsignarIncidenciaRequest request) {
+<span class="nc" id="L212">        Incidencia incidencia = buscarEntidad(id);</span>
+<span class="nc" id="L213">        validarEstado(incidencia, EstadoIncidencia.CREADA);</span>
+
+<span class="nc" id="L215">        Personal personal = personalService.buscarEntidad(request.personalId());</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">        if (!personal.isActivo()) {</span>
+<span class="nc" id="L217">            throw new IncidenciaException(IncidenciaErrorCode.PERSONAL_INACTIVO, personal.getNombre());</span>
+        }
+
+<span class="nc bnc" id="L220" title="All 2 branches missed.">        if (incidenciaRepository.personalTieneIncidenciaActiva(</span>
+<span class="nc" id="L221">                personal.getId(),</span>
+                ESTADOS_PERSONAL_OCUPADO,
+<span class="nc" id="L223">                incidencia.getId()</span>
+        )) {
+<span class="nc" id="L225">            throw new IncidenciaException(IncidenciaErrorCode.PERSONAL_OCUPADO, personal.getNombre());</span>
+        }
+
+<span class="nc" id="L228">        incidencia.setPersonalAsignado(personal);</span>
+<span class="nc" id="L229">        incidencia.setEstado(EstadoIncidencia.ASIGNADA);</span>
+<span class="nc" id="L230">        return IncidenciaResponse.from(incidenciaRepository.save(incidencia));</span>
+    }
+
+    @Transactional
+    public IncidenciaResponse iniciar(Long id) {
+<span class="nc" id="L235">        Incidencia incidencia = buscarEntidad(id);</span>
+<span class="nc" id="L236">        validarEstado(incidencia, EstadoIncidencia.ASIGNADA);</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">        if (incidencia.getPersonalAsignado() == null) {</span>
+<span class="nc" id="L238">            throw new IncidenciaException(IncidenciaErrorCode.SIN_PERSONAL_ASIGNADO);</span>
+        }
+
+<span class="nc" id="L241">        incidencia.setEstado(EstadoIncidencia.EN_PROGRESO);</span>
+<span class="nc" id="L242">        marcarPrimeraTareaDeIngreso(incidencia);</span>
+<span class="nc" id="L243">        return IncidenciaResponse.from(incidenciaRepository.save(incidencia));</span>
+    }
+
+    @Transactional
+    public IncidenciaResponse actualizarTarea(Long incidenciaId, Long tareaId, ActualizarTareaIncidenciaRequest request) {
+<span class="nc" id="L248">        Incidencia incidencia = buscarEntidad(incidenciaId);</span>
+<span class="nc bnc" id="L249" title="All 2 branches missed.">        if (incidencia.getEstado() != EstadoIncidencia.EN_PROGRESO) {</span>
+<span class="nc" id="L250">            throw new IncidenciaException(IncidenciaErrorCode.ESTADO_INVALIDO, incidencia.getEstado());</span>
+        }
+
+<span class="nc" id="L253">        IncidenciaTarea tarea = incidencia.getTareas().stream()</span>
+<span class="nc" id="L254">                .filter(t -&gt; t.getId().equals(tareaId))</span>
+<span class="nc" id="L255">                .findFirst()</span>
+<span class="nc" id="L256">                .orElseThrow(() -&gt; new IncidenciaException(IncidenciaErrorCode.TAREA_NO_ENCONTRADA, tareaId));</span>
+
+<span class="nc" id="L258">        boolean completada = Boolean.TRUE.equals(request.completada());</span>
+<span class="nc" id="L259">        tarea.setCompletada(completada);</span>
+<span class="nc bnc" id="L260" title="All 2 branches missed.">        tarea.setFechaHoraCompletado(completada ? LocalDateTime.now() : null);</span>
+
+<span class="nc" id="L262">        return IncidenciaResponse.from(incidenciaRepository.save(incidencia));</span>
+    }
+
+    @Transactional
+    public IncidenciaResponse finalizar(Long id) {
+<span class="nc" id="L267">        Incidencia incidencia = buscarEntidad(id);</span>
+<span class="nc bnc" id="L268" title="All 2 branches missed.">        if (incidencia.getEstado() != EstadoIncidencia.EN_PROGRESO) {</span>
+<span class="nc" id="L269">            throw new IncidenciaException(IncidenciaErrorCode.ESTADO_INVALIDO, incidencia.getEstado());</span>
+        }
+
+<span class="nc" id="L272">        boolean todasCompletas = incidencia.getTareas().stream().allMatch(IncidenciaTarea::isCompletada);</span>
+<span class="nc bnc" id="L273" title="All 2 branches missed.">        if (!todasCompletas) {</span>
+<span class="nc" id="L274">            throw new IncidenciaException(IncidenciaErrorCode.TAREAS_INCOMPLETAS);</span>
+        }
+
+<span class="nc" id="L277">        incidencia.setEstado(EstadoIncidencia.FINALIZADA);</span>
+<span class="nc" id="L278">        incidencia.setFechaHoraFinalizacion(LocalDateTime.now());</span>
+<span class="nc" id="L279">        incidenciaRepository.save(incidencia);</span>
+<span class="nc" id="L280">        sincronizarHabitacionSiAplica(incidencia);</span>
+<span class="nc" id="L281">        return IncidenciaResponse.from(incidencia);</span>
+    }
+
+    @Transactional
+    public IncidenciaResponse cancelar(Long id) {
+<span class="nc" id="L286">        Incidencia incidencia = buscarEntidad(id);</span>
+<span class="nc bnc" id="L287" title="All 2 branches missed.">        if (ESTADOS_CERRADOS.contains(incidencia.getEstado())) {</span>
+<span class="nc" id="L288">            throw new IncidenciaException(IncidenciaErrorCode.ESTADO_INVALIDO, incidencia.getEstado());</span>
+        }
+<span class="nc" id="L290">        incidencia.setEstado(EstadoIncidencia.CANCELADA);</span>
+<span class="nc" id="L291">        incidencia.setFechaHoraFinalizacion(LocalDateTime.now());</span>
+<span class="nc" id="L292">        incidenciaRepository.save(incidencia);</span>
+
+<span class="nc" id="L294">        sincronizarHabitacionSiAplica(incidencia);</span>
+<span class="nc" id="L295">        return IncidenciaResponse.from(incidencia);</span>
+    }
+
+    private void sincronizarHabitacionSiAplica(Incidencia incidencia) {
+<span class="nc bnc" id="L299" title="All 4 branches missed.">        if (incidencia.getHabitacion() != null &amp;&amp; afectaDisponibilidadHabitacion(incidencia)) {</span>
+<span class="nc" id="L300">            inhabilitacionService.sincronizar(incidencia.getHabitacion());</span>
+<span class="nc" id="L301">            habitacionRepository.save(incidencia.getHabitacion());</span>
+        }
+<span class="nc" id="L303">    }</span>
+
+    private boolean afectaDisponibilidadHabitacion(Incidencia incidencia) {
+<span class="nc bnc" id="L306" title="All 2 branches missed.">        if (incidencia.getTipo() == TipoIncidencia.MANTENIMIENTO) {</span>
+<span class="nc" id="L307">            return true;</span>
+        }
+<span class="nc bnc" id="L309" title="All 2 branches missed.">        return incidencia.getTipo() == TipoIncidencia.LIMPIEZA</span>
+<span class="nc bnc" id="L310" title="All 2 branches missed.">                &amp;&amp; incidencia.getContextoLimpieza() == ContextoLimpieza.POST_CHECKOUT;</span>
+    }
+
+    private void validarTipoZonaComun(TipoIncidencia tipo) {
+<span class="nc bnc" id="L314" title="All 4 branches missed.">        if (tipo != TipoIncidencia.MANTENIMIENTO &amp;&amp; tipo != TipoIncidencia.OTRO) {</span>
+<span class="nc" id="L315">            throw new IncidenciaException(</span>
+                    IncidenciaErrorCode.ALCANCE_TIPO_INVALIDO,
+                    tipo,
+                    AlcanceIncidencia.ZONA_COMUN
+            );
+        }
+<span class="nc" id="L321">    }</span>
+
+    private String normalizarUbicacion(String ubicacion) {
+<span class="nc bnc" id="L324" title="All 2 branches missed.">        return ubicacion != null ? ubicacion.trim() : null;</span>
+    }
+
+    private void validarCreacionServicio(
+            Habitacion habitacion,
+            TipoIncidencia tipo,
+            ContextoLimpieza contextoLimpieza
+    ) {
+<span class="nc bnc" id="L332" title="All 2 branches missed.">        if (habitacion.getEstado() == EstadoHabitacion.INHABILITADO) {</span>
+<span class="nc bnc" id="L333" title="All 4 branches missed.">            if (tipo != TipoIncidencia.MANTENIMIENTO &amp;&amp; tipo != TipoIncidencia.OTRO) {</span>
+<span class="nc" id="L334">                throw new IncidenciaException(</span>
+                        IncidenciaErrorCode.TIPO_NO_PERMITIDO,
+                        tipo,
+<span class="nc" id="L337">                        habitacion.getEstado()</span>
+                );
+            }
+<span class="nc" id="L340">            return;</span>
+        }
+<span class="nc bnc" id="L342" title="All 2 branches missed.">        if (habitacion.getEstado() == EstadoHabitacion.OCUPADO) {</span>
+<span class="nc bnc" id="L343" title="All 2 branches missed.">            if (tipo == TipoIncidencia.MANTENIMIENTO) {</span>
+<span class="nc" id="L344">                throw new IncidenciaException(</span>
+                        IncidenciaErrorCode.TIPO_NO_PERMITIDO,
+                        tipo,
+<span class="nc" id="L347">                        habitacion.getEstado()</span>
+                );
+            }
+<span class="nc bnc" id="L350" title="All 2 branches missed.">            if (tipo == TipoIncidencia.LIMPIEZA) {</span>
+<span class="nc bnc" id="L351" title="All 6 branches missed.">                if (contextoLimpieza == null</span>
+                        || (contextoLimpieza != ContextoLimpieza.URGENCIA
+                        &amp;&amp; contextoLimpieza != ContextoLimpieza.HUESPED_AUSENTE)) {
+<span class="nc" id="L354">                    throw new IncidenciaException(</span>
+                            IncidenciaErrorCode.TIPO_NO_PERMITIDO,
+                            tipo,
+<span class="nc" id="L357">                            habitacion.getEstado()</span>
+                    );
+                }
+            }
+<span class="nc bnc" id="L361" title="All 2 branches missed.">            if (contextoLimpieza == ContextoLimpieza.POST_CHECKOUT) {</span>
+<span class="nc" id="L362">                throw new IncidenciaException(</span>
+                        IncidenciaErrorCode.TIPO_NO_PERMITIDO,
+                        tipo,
+<span class="nc" id="L365">                        habitacion.getEstado()</span>
+                );
+            }
+<span class="nc" id="L368">            return;</span>
+        }
+<span class="nc bnc" id="L370" title="All 2 branches missed.">        if (habitacion.getEstado() == EstadoHabitacion.LIBRE</span>
+<span class="nc bnc" id="L371" title="All 2 branches missed.">                || habitacion.getEstado() == EstadoHabitacion.RESERVADO) {</span>
+<span class="nc bnc" id="L372" title="All 4 branches missed.">            if (tipo != TipoIncidencia.MANTENIMIENTO &amp;&amp; tipo != TipoIncidencia.OTRO) {</span>
+<span class="nc" id="L373">                throw new IncidenciaException(</span>
+                        IncidenciaErrorCode.TIPO_NO_PERMITIDO,
+                        tipo,
+<span class="nc" id="L376">                        habitacion.getEstado()</span>
+                );
+            }
+<span class="nc" id="L379">            return;</span>
+        }
+<span class="nc" id="L381">        throw new IncidenciaException(</span>
+                IncidenciaErrorCode.HABITACION_ESTADO_INVALIDO,
+                tipo,
+<span class="nc" id="L384">                habitacion.getNumero()</span>
+        );
+    }
+
+    private void validarIncidenciaActivaDuplicada(
+            Habitacion habitacion,
+            TipoIncidencia tipo,
+            ContextoLimpieza contextoLimpieza
+    ) {
+<span class="nc bnc" id="L393" title="All 2 branches missed.">        if (tipo == TipoIncidencia.LIMPIEZA) {</span>
+<span class="nc" id="L394">            ContextoLimpieza ctx = resolverContextoLimpieza(tipo, contextoLimpieza);</span>
+<span class="nc bnc" id="L395" title="All 2 branches missed.">            if (incidenciaRepository.existsLimpiezaActivaConContexto(</span>
+<span class="nc" id="L396">                    habitacion.getId(),</span>
+                    TipoIncidencia.LIMPIEZA,
+                    ctx,
+                    ESTADOS_CERRADOS
+            )) {
+<span class="nc" id="L401">                throw new IncidenciaException(</span>
+                        IncidenciaErrorCode.INCIDENCIA_ACTIVA_EXISTENTE,
+                        tipo,
+<span class="nc" id="L404">                        habitacion.getNumero()</span>
+                );
+            }
+<span class="nc" id="L407">            return;</span>
+        }
+<span class="nc bnc" id="L409" title="All 2 branches missed.">        if (incidenciaRepository.existsByHabitacionIdAndTipoAndEstadoNotIn(</span>
+<span class="nc" id="L410">                habitacion.getId(),</span>
+                tipo,
+                ESTADOS_CERRADOS
+        )) {
+<span class="nc" id="L414">            throw new IncidenciaException(</span>
+                    IncidenciaErrorCode.INCIDENCIA_ACTIVA_EXISTENTE,
+                    tipo,
+<span class="nc" id="L417">                    habitacion.getNumero()</span>
+            );
+        }
+<span class="nc" id="L420">    }</span>
+
+    private ContextoLimpieza resolverContextoLimpieza(TipoIncidencia tipo, ContextoLimpieza contexto) {
+<span class="nc bnc" id="L423" title="All 2 branches missed.">        if (tipo != TipoIncidencia.LIMPIEZA) {</span>
+<span class="nc" id="L424">            return null;</span>
+        }
+<span class="nc" id="L426">        return contexto;</span>
+    }
+
+    private Incidencia buscarEntidad(Long id) {
+<span class="nc" id="L430">        return incidenciaRepository.findDetalleById(id)</span>
+<span class="nc" id="L431">                .orElseThrow(() -&gt; new IncidenciaException(IncidenciaErrorCode.INCIDENCIA_NO_ENCONTRADA, id));</span>
+    }
+
+    private void validarEstado(Incidencia incidencia, EstadoIncidencia esperado) {
+<span class="nc bnc" id="L435" title="All 2 branches missed.">        if (incidencia.getEstado() != esperado) {</span>
+<span class="nc" id="L436">            throw new IncidenciaException(IncidenciaErrorCode.ESTADO_INVALIDO, incidencia.getEstado());</span>
+        }
+<span class="nc" id="L438">    }</span>
+
+    private void agregarTareas(Incidencia incidencia, TipoIncidencia tipo, AlcanceIncidencia alcance) {
+<span class="pc bpc" id="L441" title="1 of 2 branches missed.">        Map&lt;TipoIncidencia, List&lt;String&gt;&gt; mapa = alcance == AlcanceIncidencia.ZONA_COMUN</span>
+<span class="nc" id="L442">                ? TAREAS_ZONA_COMUN</span>
+<span class="fc" id="L443">                : TAREAS_POR_TIPO;</span>
+<span class="fc" id="L444">        List&lt;String&gt; tareas = mapa.getOrDefault(tipo, mapa.get(TipoIncidencia.OTRO));</span>
+<span class="fc bfc" id="L445" title="All 2 branches covered.">        for (int i = 0; i &lt; tareas.size(); i++) {</span>
+<span class="fc" id="L446">            incidencia.getTareas().add(IncidenciaTarea.builder()</span>
+<span class="fc" id="L447">                    .incidencia(incidencia)</span>
+<span class="fc" id="L448">                    .descripcion(tareas.get(i))</span>
+<span class="fc" id="L449">                    .orden(i + 1)</span>
+<span class="fc" id="L450">                    .build());</span>
+        }
+<span class="fc" id="L452">    }</span>
+
+    private void marcarPrimeraTareaDeIngreso(Incidencia incidencia) {
+<span class="nc" id="L455">        incidencia.getTareas().stream()</span>
+<span class="nc bnc" id="L456" title="All 2 branches missed.">                .filter(t -&gt; t.getDescripcion().toLowerCase().contains(&quot;ingresar&quot;)</span>
+<span class="nc bnc" id="L457" title="All 2 branches missed.">                        || t.getDescripcion().toLowerCase().contains(&quot;entregar&quot;)</span>
+<span class="nc bnc" id="L458" title="All 2 branches missed.">                        || t.getOrden() == 2)</span>
+<span class="nc" id="L459">                .findFirst()</span>
+<span class="nc" id="L460">                .ifPresent(t -&gt; {</span>
+<span class="nc" id="L461">                    t.setCompletada(true);</span>
+<span class="nc" id="L462">                    t.setFechaHoraCompletado(LocalDateTime.now());</span>
+<span class="nc" id="L463">                });</span>
+<span class="nc" id="L464">    }</span>
+
+    private String tituloParaTipo(
+            TipoIncidencia tipo,
+            ContextoLimpieza contexto,
+            AlcanceIncidencia alcance,
+            String referencia
+    ) {
+<span class="pc bpc" id="L472" title="1 of 2 branches missed.">        if (alcance == AlcanceIncidencia.ZONA_COMUN) {</span>
+<span class="nc bnc" id="L473" title="All 3 branches missed.">            return switch (tipo) {</span>
+<span class="nc" id="L474">                case MANTENIMIENTO -&gt; &quot;Mantenimiento — &quot; + referencia;</span>
+<span class="nc" id="L475">                case OTRO -&gt; &quot;Servicio — &quot; + referencia;</span>
+<span class="nc" id="L476">                default -&gt; &quot;Incidencia — &quot; + referencia;</span>
+            };
+        }
+<span class="pc bpc" id="L479" title="1 of 2 branches missed.">        if (tipo == TipoIncidencia.LIMPIEZA) {</span>
+<span class="pc bpc" id="L480" title="2 of 4 branches missed.">            if (contexto == null || contexto == ContextoLimpieza.POST_CHECKOUT) {</span>
+<span class="fc" id="L481">                return &quot;Limpieza post check-out — &quot; + referencia;</span>
+            }
+<span class="nc bnc" id="L483" title="All 3 branches missed.">            return switch (contexto) {</span>
+<span class="nc" id="L484">                case URGENCIA -&gt; &quot;Limpieza urgente — &quot; + referencia;</span>
+<span class="nc" id="L485">                case HUESPED_AUSENTE -&gt; &quot;Limpieza (huésped ausente) — &quot; + referencia;</span>
+<span class="nc" id="L486">                case POST_CHECKOUT -&gt; &quot;Limpieza post check-out — &quot; + referencia;</span>
+            };
+        }
+<span class="nc bnc" id="L489" title="All 4 branches missed.">        return switch (tipo) {</span>
+<span class="nc" id="L490">            case MANTENIMIENTO -&gt; &quot;Mantenimiento &quot; + referencia;</span>
+<span class="nc" id="L491">            case SERVICIO_CUARTO -&gt; &quot;Servicio al cuarto — &quot; + referencia;</span>
+<span class="nc" id="L492">            case OTRO -&gt; &quot;Servicio &quot; + referencia;</span>
+<span class="nc" id="L493">            default -&gt; &quot;Incidencia &quot; + referencia;</span>
+        };
+    }
+
+    private String descripcionPorDefecto(
+            TipoIncidencia tipo,
+            ContextoLimpieza contexto,
+            AlcanceIncidencia alcance
+    ) {
+<span class="nc bnc" id="L502" title="All 2 branches missed.">        if (alcance == AlcanceIncidencia.ZONA_COMUN) {</span>
+<span class="nc bnc" id="L503" title="All 3 branches missed.">            return switch (tipo) {</span>
+<span class="nc" id="L504">                case MANTENIMIENTO -&gt; &quot;Mantenimiento o reparación en zona común del hotel.&quot;;</span>
+<span class="nc" id="L505">                case OTRO -&gt; &quot;Servicio adicional en área común.&quot;;</span>
+<span class="nc" id="L506">                default -&gt; &quot;Incidencia en zona común.&quot;;</span>
+            };
+        }
+<span class="nc bnc" id="L509" title="All 2 branches missed.">        if (tipo == TipoIncidencia.LIMPIEZA) {</span>
+<span class="nc bnc" id="L510" title="All 4 branches missed.">            if (contexto == null || contexto == ContextoLimpieza.POST_CHECKOUT) {</span>
+<span class="nc" id="L511">                return &quot;Limpieza obligatoria tras check-out antes de una nueva reserva.&quot;;</span>
+            }
+<span class="nc bnc" id="L513" title="All 3 branches missed.">            return switch (contexto) {</span>
+<span class="nc" id="L514">                case URGENCIA -&gt; &quot;Limpieza urgente con huésped en la habitación.&quot;;</span>
+<span class="nc" id="L515">                case HUESPED_AUSENTE -&gt; &quot;Limpieza mientras el huésped está fuera; la reserva sigue activa.&quot;;</span>
+<span class="nc" id="L516">                case POST_CHECKOUT -&gt; &quot;Limpieza obligatoria tras check-out antes de una nueva reserva.&quot;;</span>
+            };
+        }
+<span class="nc bnc" id="L519" title="All 4 branches missed.">        return switch (tipo) {</span>
+<span class="nc" id="L520">            case MANTENIMIENTO -&gt; &quot;Mantenimiento programado; inhabilita la habitación solo el día indicado.&quot;;</span>
+<span class="nc" id="L521">            case SERVICIO_CUARTO -&gt; &quot;Entrega de comida o amenities al huésped.&quot;;</span>
+<span class="nc" id="L522">            case OTRO -&gt; &quot;Servicio adicional en habitación.&quot;;</span>
+<span class="nc" id="L523">            default -&gt; &quot;Servicio en habitación.&quot;;</span>
+        };
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

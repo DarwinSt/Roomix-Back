@@ -1,0 +1,77 @@
+{
+ "fecha": "2026-11-02T23:02:08.055Z",
+ "resultados": [
+  {
+   "id": "N-01",
+   "flujo": "Políticas de reserva",
+   "resultado": "OK",
+   "observacion": "Solo Admin la cambia (recepción 403, 150 % → 400); queda abono mínimo 50 % y penalidad 20 %"
+  },
+  {
+   "id": "N-02",
+   "flujo": "Promociones",
+   "resultado": "OK",
+   "observacion": "5 noches × $200.000 − $30.000 = $970.000 + IVA = 1154300; abono mínimo 577150; no aplica a 2 noches (422)"
+  },
+  {
+   "id": "N-03",
+   "flujo": "Reserva con pago obligatorio",
+   "resultado": "OK",
+   "observacion": "Sin pago, bajo el mínimo, sobre el total y por cambio de estado: rechazados sin dejar reservas; con abono de 577150: confirmada y habitación Reservada"
+  },
+  {
+   "id": "N-04",
+   "flujo": "Abonos de la reserva",
+   "resultado": "OK",
+   "observacion": "Total 1154300 (detalle muestra totalEstimado 970000); 2 abonos visibles; saldo 477150; abono mayor al saldo 422; cada abono es un ingreso en Finanzas"
+  },
+  {
+   "id": "N-05",
+   "flujo": "Check-in → check-out → factura con abonos",
+   "resultado": "OK",
+   "observacion": "Factura FV-000371 = cotización (1154300); abonos aplicados 677150; saldo pagado; Finanzas suma exactamente el total (sin doble conteo)"
+  },
+  {
+   "id": "N-06",
+   "flujo": "Anular factura pagada con abonos",
+   "resultado": "OK",
+   "observacion": "Todos los pagos (incluidos los abonos aplicados) quedan devueltos; egresos de devolución = 1154300; el ingreso de un abono no se anula a mano (422)"
+  },
+  {
+   "id": "N-07",
+   "flujo": "Cancelación con penalidad",
+   "resultado": "OK",
+   "observacion": "Pagó 357000; se retiene el 20 % (71400) y se devuelve 285600; habitación Libre; no se cancela dos veces"
+  },
+  {
+   "id": "N-08",
+   "flujo": "Huésped extranjero sin IVA",
+   "resultado": "OK",
+   "observacion": "Cotización sin huésped 238000 (con IVA); extranjero 200000 (exento); el pago completo se acepta"
+  },
+  {
+   "id": "N-09",
+   "flujo": "Gastos por pagar",
+   "resultado": "OK",
+   "observacion": "Por pagar no suma en egresos hasta pagarse; KPI y vencidos correctos; pagado suma 350000; no se paga dos veces; ingreso \"por pagar\": 400"
+  },
+  {
+   "id": "N-10",
+   "flujo": "Gastos recurrentes",
+   "resultado": "OK",
+   "observacion": "Se genera 1 egreso por pagar del mes (vence 2026-11-28); editar (200) no lo duplica; valor del pendiente tras editar: 2600000; recepción 403"
+  },
+  {
+   "id": "N-11",
+   "flujo": "Reporte con promoción",
+   "resultado": "OK",
+   "observacion": "Reporte SUITE: ADR 387250 (esperado con descuento prorrateado ≈ 294000 si es la única suite ocupada), ingreso 23235000"
+  },
+  {
+   "id": "N-12",
+   "flujo": "Pantallas por rol: F5, consola y red",
+   "resultado": "OK",
+   "observacion": "Todas las rutas cargan directo (F5) sin errores de consola ni respuestas 4xx/5xx"
+  }
+ ]
+}

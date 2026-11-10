@@ -1,0 +1,87 @@
+@startuml actividades
+!include _estilo.iuml
+title Roomix 1.1 — Diagrama de actividades: ciclo de una estadía\n(reserva con pago → check-in → servicios → check-out → cobro del saldo → limpieza)
+
+|Recepción|
+start
+:Buscar huésped por nombre o documento;
+if (¿Huésped registrado?) then (sí)
+  :Seleccionar huésped existente;
+else (no)
+  :Registrar datos del huésped;
+  :Registrar autorización de\ntratamiento de datos (Ley 1581);
+endif
+:Elegir habitación, fechas y canal;
+
+|Sistema|
+:Validar disponibilidad\n(cruces, mantenimiento, limpieza);
+if (¿Disponible?) then (no)
+  :Mostrar reservas que se cruzan,\nfechas libres y habitaciones alternativas;
+  |Recepción|
+  :Ajustar fechas o\ncambiar de habitación;
+  |Sistema|
+  :Validar disponibilidad;
+endif
+:Cotizar: alojamiento, promociones que aplican,\nIVA (exento extranjero) y abono mínimo de la política;
+
+|Recepción|
+:Escoger promoción (opcional);
+:Registrar el pago: completo o abono parcial,\ncon medio de pago y referencia;
+
+|Sistema|
+if (¿Pago ≥ abono mínimo y ≤ total?) then (no)
+  :Rechazar la reserva (RES-015)\ne indicar el valor exigido;
+  stop
+endif
+:Crear reserva CONFIRMADA;
+:Registrar el abono como ingreso en Finanzas;
+:Marcar habitación RESERVADA\n(o asociar la reserva futura);
+:Registrar acción en auditoría;
+
+|Recepción|
+:Recibir al huésped el día de llegada;
+:Registrar check-in;
+
+|Sistema|
+:Reserva EN_CURSO\nHabitación OCUPADA;
+
+|Recepción|
+while (¿Solicita servicios durante la estadía?) is (sí)
+  :Registrar solicitud de servicio;
+  |Housekeeping|
+  :Asignar responsable, atender\ny completar la solicitud;
+  |Sistema|
+  :Cargar el servicio a la cuenta;
+  |Recepción|
+endwhile (no)
+:Registrar check-out;
+
+|Sistema|
+fork
+  :Generar factura\n(alojamiento con la promoción + servicios + IVA 19 %,\nexento extranjeros no residentes);
+  :Aplicar los abonos de la reserva\ncomo pagos de la factura;
+fork again
+  :Reserva FINALIZADA;
+  :Habitación EN LIMPIEZA;
+  :Crear tarea de limpieza post check-out;
+end fork
+
+|Finanzas|
+:Registrar el pago del saldo (total o parcial);
+|Sistema|
+:Registrar ingreso en finanzas\npor categoría;
+if (¿Saldo pendiente?) then (sí)
+  :Factura PAGADA_PARCIAL;
+else (no)
+  :Factura PAGADA;
+endif
+
+|Housekeeping|
+:Asignar personal a la limpieza;
+:Completar lista de chequeo;
+:Finalizar tarea;
+
+|Sistema|
+:Habitación DISPONIBLE;
+stop
+@enduml

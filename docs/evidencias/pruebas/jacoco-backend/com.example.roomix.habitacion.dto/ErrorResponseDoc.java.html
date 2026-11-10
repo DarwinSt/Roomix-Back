@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ErrorResponseDoc.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.habitacion.dto</a> &gt; <span class="el_source">ErrorResponseDoc.java</span></div><h1>ErrorResponseDoc.java</h1><pre class="source lang-java linenums">package com.example.roomix.habitacion.dto;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.time.Instant;
+import java.util.Map;
+
+/**
+ * Documentación OpenAPI del formato RFC 7807 ({@code ProblemDetail}) usado en errores.
+ */
+@Schema(
+        name = &quot;ProblemDetail&quot;,
+        description = &quot;Respuesta de error estándar (RFC 7807)&quot;,
+        example = &quot;&quot;&quot;
+                {
+                  &quot;type&quot;: &quot;about:blank&quot;,
+                  &quot;title&quot;: &quot;Habitación no encontrada&quot;,
+                  &quot;status&quot;: 404,
+                  &quot;detail&quot;: &quot;Habitación no encontrada con id: 99&quot;,
+                  &quot;timestamp&quot;: &quot;2026-05-23T15:30:00Z&quot;
+                }
+                &quot;&quot;&quot;
+)
+<span class="nc" id="L24">public record ErrorResponseDoc(</span>
+        @Schema(description = &quot;URI de referencia del tipo de error&quot;, example = &quot;about:blank&quot;)
+        String type,
+        @Schema(description = &quot;Título breve del error&quot;, example = &quot;Datos inválidos&quot;)
+        String title,
+        @Schema(description = &quot;Código HTTP&quot;, example = &quot;400&quot;)
+        int status,
+        @Schema(description = &quot;Detalle legible del error&quot;)
+        String detail,
+        @Schema(description = &quot;Marca de tiempo del error&quot;)
+        Instant timestamp,
+        @Schema(description = &quot;Errores por campo (solo en validación 400)&quot;)
+        Map&lt;String, String&gt; errores
+) {
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

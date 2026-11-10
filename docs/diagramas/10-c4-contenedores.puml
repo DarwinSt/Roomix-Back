@@ -1,0 +1,18 @@
+@startuml c4-contenedores
+!include _estilo.iuml
+title Roomix — Contenedores (C4, nivel 2)
+actor "Usuario del hotel" as U
+rectangle "Roomix" {
+  rectangle "**Aplicación web (SPA)**\nAngular 21 + Angular Material\nSitio estático en Render" as WEB #F1F8F3
+  rectangle "**Aplicación Android**\nMisma base de código\nempaquetada con Capacitor" as APK #F1F8F3
+  rectangle "**API REST — monolito modular**\nJava 21 + Spring Boot 4\nSpring Security (JWT), Spring Data JPA\nContenedor Docker en Railway" as API #DDEFE3
+  database "**Base de datos**\nPostgreSQL (Railway)\n29 tablas" as DB
+}
+rectangle "Servidor SMTP" as SMTP
+U --> WEB : HTTPS
+U --> APK
+WEB --> API : JSON / HTTPS\nAuthorization: Bearer JWT
+APK --> API : JSON / HTTPS\nAuthorization: Bearer JWT
+API --> DB : JDBC / TLS\n(transacciones ACID)
+API --> SMTP : SMTP
+@enduml

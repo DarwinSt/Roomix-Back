@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JwtService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.auth.service</a> &gt; <span class="el_source">JwtService.java</span></div><h1>JwtService.java</h1><pre class="source lang-java linenums">package com.example.roomix.auth.service;
+
+import com.example.roomix.auth.domain.Usuario;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwsHeader;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+import java.time.Instant;
+
+/**
+ * Emite los JWT de sesión (HS256). La duración por defecto cubre un turno de trabajo.
+ */
+@Service
+@RequiredArgsConstructor
+public class JwtService {
+
+    private final JwtEncoder jwtEncoder;
+
+    @Value(&quot;${app.security.jwt-expiration-horas:8}&quot;)
+    private long expiracionHoras;
+
+    public TokenEmitido emitir(Usuario usuario) {
+<span class="fc" id="L29">        Instant ahora = Instant.now();</span>
+<span class="fc" id="L30">        Instant expira = ahora.plus(Duration.ofHours(expiracionHoras));</span>
+<span class="fc" id="L31">        JwtClaimsSet claims = JwtClaimsSet.builder()</span>
+<span class="fc" id="L32">                .issuer(&quot;roomix&quot;)</span>
+<span class="fc" id="L33">                .issuedAt(ahora)</span>
+<span class="fc" id="L34">                .expiresAt(expira)</span>
+<span class="fc" id="L35">                .subject(usuario.getUsername())</span>
+<span class="fc" id="L36">                .claim(&quot;uid&quot;, usuario.getId())</span>
+<span class="fc" id="L37">                .claim(&quot;nombre&quot;, usuario.getNombreCompleto())</span>
+<span class="fc" id="L38">                .claim(&quot;rol&quot;, usuario.getRol().name())</span>
+<span class="fc" id="L39">                .build();</span>
+<span class="fc" id="L40">        JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();</span>
+<span class="fc" id="L41">        String token = jwtEncoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();</span>
+<span class="fc" id="L42">        return new TokenEmitido(token, expira);</span>
+    }
+
+<span class="fc" id="L45">    public record TokenEmitido(String token, Instant expiraEn) {</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

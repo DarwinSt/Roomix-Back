@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReporteOcupacionResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.reporte</a> &gt; <span class="el_source">ReporteOcupacionResponse.java</span></div><h1>ReporteOcupacionResponse.java</h1><pre class="source lang-java linenums">package com.example.roomix.reporte;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+@Schema(name = &quot;ReporteOcupacionResponse&quot;,
+        description = &quot;Indicadores hoteleros del periodo: ocupación, ADR (tarifa promedio) y RevPAR (ingreso por habitación disponible)&quot;)
+<span class="nc" id="L11">public record ReporteOcupacionResponse(</span>
+        LocalDate desde,
+        LocalDate hasta,
+        int habitaciones,
+        long nochesDisponibles,
+        long nochesVendidas,
+        double ocupacionPct,
+        @Schema(description = &quot;Average Daily Rate: ingreso de alojamiento / noches vendidas&quot;) BigDecimal adr,
+        @Schema(description = &quot;Revenue per Available Room: ingreso de alojamiento / noches disponibles&quot;) BigDecimal revpar,
+        BigDecimal ingresoAlojamiento,
+        long reservas,
+        long cancelaciones,
+        double tasaCancelacionPct,
+        double estanciaPromedioNoches,
+        List&lt;PuntoDia&gt; serie,
+        List&lt;Grupo&gt; porCanal,
+        List&lt;Grupo&gt; porTipoHabitacion,
+        List&lt;Grupo&gt; porProcedencia,
+        List&lt;Grupo&gt; serviciosMasVendidos
+) {
+    @Schema(name = &quot;PuntoOcupacion&quot;)
+<span class="nc" id="L32">    public record PuntoDia(LocalDate fecha, long nochesVendidas, double ocupacionPct, BigDecimal ingreso) {</span>
+    }
+
+    @Schema(name = &quot;GrupoReporte&quot;)
+<span class="nc" id="L36">    public record Grupo(String nombre, long cantidad, BigDecimal valor) {</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

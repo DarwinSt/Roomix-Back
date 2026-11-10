@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReporteService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.reporte</a> &gt; <span class="el_source">ReporteService.java</span></div><h1>ReporteService.java</h1><pre class="source lang-java linenums">package com.example.roomix.reporte;
+
+import com.example.roomix.habitacion.domain.EstadoReserva;
+import com.example.roomix.habitacion.repository.HabitacionRepository;
+import com.example.roomix.reporte.ReporteOcupacionResponse.Grupo;
+import com.example.roomix.reporte.ReporteOcupacionResponse.PuntoDia;
+import com.example.roomix.reserva.domain.Reserva;
+import com.example.roomix.reserva.repository.ReservaRepository;
+import com.example.roomix.servicio.repository.SolicitudServicioRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Reportes de gestión hotelera calculados a partir de las reservas.
+ * Las noches se cuentan día a día: una reserva del 3 al 5 ocupa las noches del 3 y del 4.
+ */
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class ReporteService {
+
+<span class="fc" id="L33">    private static final List&lt;EstadoReserva&gt; VENDIDAS = List.of(</span>
+            EstadoReserva.CONFIRMADA, EstadoReserva.EN_CURSO, EstadoReserva.FINALIZADA);
+
+    private final ReservaRepository reservaRepository;
+    private final HabitacionRepository habitacionRepository;
+    private final SolicitudServicioRepository solicitudRepository;
+
+    public ReporteOcupacionResponse ocupacion(LocalDate desde, LocalDate hasta) {
+<span class="nc bnc" id="L41" title="All 2 branches missed.">        LocalDate fin = hasta != null ? hasta : LocalDate.now();</span>
+<span class="nc bnc" id="L42" title="All 2 branches missed.">        LocalDate inicio = desde != null ? desde : fin.minusDays(29);</span>
+<span class="nc bnc" id="L43" title="All 2 branches missed.">        if (inicio.isAfter(fin)) {</span>
+<span class="nc" id="L44">            LocalDate t = inicio;</span>
+<span class="nc" id="L45">            inicio = fin;</span>
+<span class="nc" id="L46">            fin = t;</span>
+        }
+<span class="nc" id="L48">        LocalDate finExclusivo = fin.plusDays(1);</span>
+<span class="nc" id="L49">        int habitaciones = (int) habitacionRepository.count();</span>
+<span class="nc" id="L50">        long dias = ChronoUnit.DAYS.between(inicio, finExclusivo);</span>
+<span class="nc" id="L51">        long nochesDisponibles = habitaciones * dias;</span>
+
+<span class="nc" id="L53">        List&lt;Reserva&gt; ocupan = reservaRepository.queOcupanRango(inicio, finExclusivo, VENDIDAS);</span>
+
+        // Serie diaria
+<span class="nc" id="L56">        Map&lt;LocalDate, long[]&gt; noches = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L57">        Map&lt;LocalDate, BigDecimal&gt; ingresos = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">        for (LocalDate d = inicio; d.isBefore(finExclusivo); d = d.plusDays(1)) {</span>
+<span class="nc" id="L59">            noches.put(d, new long[]{0});</span>
+<span class="nc" id="L60">            ingresos.put(d, BigDecimal.ZERO);</span>
+        }
+<span class="nc" id="L62">        Map&lt;String, long[]&gt; nochesPorTipo = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L63">        Map&lt;String, BigDecimal&gt; ingresoPorTipo = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        for (Reserva r : ocupan) {</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">            LocalDate d0 = r.getFechaEntrada().isBefore(inicio) ? inicio : r.getFechaEntrada();</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">            LocalDate d1 = r.getFechaSalida().isAfter(finExclusivo) ? finExclusivo : r.getFechaSalida();</span>
+<span class="nc" id="L67">            String tipo = r.getHabitacion().getTipoHabitacion().name();</span>
+            // Ingreso por noche: total de la reserva (con descuento) prorrateado entre sus noches
+<span class="nc bnc" id="L69" title="All 4 branches missed.">            BigDecimal porNoche = r.getDescuento() != null &amp;&amp; r.getDescuento().signum() &gt; 0</span>
+<span class="nc" id="L70">                    ? r.getTotalEstimado().divide(BigDecimal.valueOf(r.getCantidadNoches()), 2, RoundingMode.HALF_UP)</span>
+<span class="nc" id="L71">                    : r.getTarifaNoche();</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">            for (LocalDate d = d0; d.isBefore(d1); d = d.plusDays(1)) {</span>
+<span class="nc" id="L73">                noches.get(d)[0]++;</span>
+<span class="nc" id="L74">                ingresos.merge(d, porNoche, BigDecimal::add);</span>
+<span class="nc" id="L75">                nochesPorTipo.computeIfAbsent(tipo, k -&gt; new long[]{0})[0]++;</span>
+<span class="nc" id="L76">                ingresoPorTipo.merge(tipo, porNoche, BigDecimal::add);</span>
+            }
+<span class="nc" id="L78">        }</span>
+
+<span class="nc" id="L80">        List&lt;PuntoDia&gt; serie = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L81">        long nochesVendidas = 0;</span>
+<span class="nc" id="L82">        BigDecimal ingresoTotal = BigDecimal.ZERO;</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">        for (Map.Entry&lt;LocalDate, long[]&gt; e : noches.entrySet()) {</span>
+<span class="nc" id="L84">            long n = e.getValue()[0];</span>
+<span class="nc" id="L85">            BigDecimal ingreso = ingresos.get(e.getKey());</span>
+<span class="nc" id="L86">            nochesVendidas += n;</span>
+<span class="nc" id="L87">            ingresoTotal = ingresoTotal.add(ingreso);</span>
+<span class="nc" id="L88">            serie.add(new PuntoDia(e.getKey(), n, pct(n, habitaciones), ingreso));</span>
+<span class="nc" id="L89">        }</span>
+
+        // Reservas que llegan en el periodo (canal, procedencia, estancia y cancelaciones)
+<span class="nc" id="L92">        LocalDate primerDia = inicio;</span>
+<span class="nc" id="L93">        LocalDate ultimoDia = fin;</span>
+<span class="nc" id="L94">        List&lt;Reserva&gt; llegadas = reservaRepository.findAll((root, q, cb) -&gt; cb.and(</span>
+<span class="nc" id="L95">                cb.greaterThanOrEqualTo(root.get(&quot;fechaEntrada&quot;), primerDia),</span>
+<span class="nc" id="L96">                cb.lessThanOrEqualTo(root.get(&quot;fechaEntrada&quot;), ultimoDia)));</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        long cancelaciones = llegadas.stream().filter(r -&gt; r.getEstadoReserva() == EstadoReserva.CANCELADA).count();</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">        List&lt;Reserva&gt; efectivas = llegadas.stream().filter(r -&gt; r.getEstadoReserva() != EstadoReserva.CANCELADA).toList();</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        double estancia = efectivas.isEmpty() ? 0</span>
+<span class="nc" id="L100">                : redondear(efectivas.stream().mapToInt(Reserva::getCantidadNoches).average().orElse(0));</span>
+
+<span class="nc" id="L102">        Map&lt;String, long[]&gt; canal = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L103">        Map&lt;String, BigDecimal&gt; canalValor = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L104">        Map&lt;String, long[]&gt; procedencia = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L105">        Map&lt;String, BigDecimal&gt; procedenciaValor = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">        for (Reserva r : efectivas) {</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">            String c = r.getCanal() != null ? r.getCanal().getNombre() : &quot;Presencial&quot;;</span>
+<span class="nc" id="L108">            canal.computeIfAbsent(c, k -&gt; new long[]{0})[0]++;</span>
+<span class="nc" id="L109">            canalValor.merge(c, r.getTotalEstimado(), BigDecimal::add);</span>
+<span class="nc" id="L110">            String nac = r.getHuesped().getNacionalidad();</span>
+<span class="nc bnc" id="L111" title="All 6 branches missed.">            String p = nac == null || nac.isBlank() || nac.equalsIgnoreCase(&quot;Colombia&quot;) ? &quot;Nacional (Colombia)&quot; : nac;</span>
+<span class="nc" id="L112">            procedencia.computeIfAbsent(p, k -&gt; new long[]{0})[0]++;</span>
+<span class="nc" id="L113">            procedenciaValor.merge(p, r.getTotalEstimado(), BigDecimal::add);</span>
+<span class="nc" id="L114">        }</span>
+
+<span class="nc" id="L116">        List&lt;Grupo&gt; servicios = solicitudRepository.ranking(inicio.atStartOfDay(), finExclusivo.atStartOfDay()).stream()</span>
+<span class="nc" id="L117">                .limit(10)</span>
+<span class="nc" id="L118">                .map(f -&gt; new Grupo((String) f[0], ((Number) f[1]).longValue(), (BigDecimal) f[2]))</span>
+<span class="nc" id="L119">                .toList();</span>
+
+<span class="nc" id="L121">        return new ReporteOcupacionResponse(</span>
+                inicio, fin, habitaciones, nochesDisponibles, nochesVendidas,
+<span class="nc" id="L123">                pct(nochesVendidas, nochesDisponibles),</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">                nochesVendidas == 0 ? BigDecimal.ZERO : ingresoTotal.divide(BigDecimal.valueOf(nochesVendidas), 0, RoundingMode.HALF_UP),</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">                nochesDisponibles == 0 ? BigDecimal.ZERO : ingresoTotal.divide(BigDecimal.valueOf(nochesDisponibles), 0, RoundingMode.HALF_UP),</span>
+                ingresoTotal,
+<span class="nc" id="L127">                llegadas.size(),</span>
+                cancelaciones,
+<span class="nc" id="L129">                pct(cancelaciones, llegadas.size()),</span>
+                estancia,
+                serie,
+<span class="nc" id="L132">                grupos(canal, canalValor),</span>
+<span class="nc" id="L133">                grupos(nochesPorTipo, ingresoPorTipo),</span>
+<span class="nc" id="L134">                grupos(procedencia, procedenciaValor),</span>
+                servicios
+        );
+    }
+
+    private static List&lt;Grupo&gt; grupos(Map&lt;String, long[]&gt; conteo, Map&lt;String, BigDecimal&gt; valor) {
+<span class="nc" id="L140">        return conteo.entrySet().stream()</span>
+<span class="nc" id="L141">                .map(e -&gt; new Grupo(e.getKey(), e.getValue()[0], valor.getOrDefault(e.getKey(), BigDecimal.ZERO)))</span>
+<span class="nc" id="L142">                .sorted(Comparator.comparingLong(Grupo::cantidad).reversed())</span>
+<span class="nc" id="L143">                .toList();</span>
+    }
+
+    private static double pct(long parte, long total) {
+<span class="nc bnc" id="L147" title="All 2 branches missed.">        return total == 0 ? 0 : redondear(parte * 100.0 / total);</span>
+    }
+
+    private static double redondear(double v) {
+<span class="nc" id="L151">        return BigDecimal.valueOf(v).setScale(1, RoundingMode.HALF_UP).doubleValue();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

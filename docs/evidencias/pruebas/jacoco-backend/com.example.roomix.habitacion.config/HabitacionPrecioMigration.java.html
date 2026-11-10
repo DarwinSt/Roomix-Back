@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HabitacionPrecioMigration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.habitacion.config</a> &gt; <span class="el_source">HabitacionPrecioMigration.java</span></div><h1>HabitacionPrecioMigration.java</h1><pre class="source lang-java linenums">package com.example.roomix.habitacion.config;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+<span class="fc" id="L12">@Slf4j</span>
+public class HabitacionPrecioMigration implements ApplicationRunner {
+
+    private final JdbcTemplate jdbcTemplate;
+
+    @Override
+    public void run(ApplicationArguments args) {
+        try {
+<span class="fc" id="L20">            jdbcTemplate.execute(&quot;&quot;&quot;</span>
+                    ALTER TABLE habitaciones
+                    ADD COLUMN IF NOT EXISTS precio_noche DECIMAL(10,2)
+                    &quot;&quot;&quot;);
+
+<span class="fc" id="L25">            jdbcTemplate.update(&quot;&quot;&quot;</span>
+                    UPDATE habitaciones h
+                    SET precio_noche = t.precio_noche
+                    FROM tarifas_tipo_habitacion t
+                    WHERE h.tipo_habitacion = t.tipo_habitacion
+                      AND h.precio_noche IS NULL
+                    &quot;&quot;&quot;);
+
+<span class="fc" id="L33">            log.info(&quot;Migración de precio por habitación aplicada correctamente&quot;);</span>
+<span class="nc" id="L34">        } catch (Exception ex) {</span>
+<span class="nc" id="L35">            log.error(&quot;Error al aplicar migración de precio por habitación: {}&quot;, ex.getMessage(), ex);</span>
+<span class="fc" id="L36">        }</span>
+<span class="fc" id="L37">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

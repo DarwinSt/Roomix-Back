@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HabitacionInhabilitacionService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.habitacion.service</a> &gt; <span class="el_source">HabitacionInhabilitacionService.java</span></div><h1>HabitacionInhabilitacionService.java</h1><pre class="source lang-java linenums">package com.example.roomix.habitacion.service;
+
+import com.example.roomix.habitacion.domain.EstadoHabitacion;
+import com.example.roomix.habitacion.domain.Habitacion;
+import com.example.roomix.habitacion.domain.MotivoInhabilitacion;
+import com.example.roomix.habitacion.repository.HabitacionRepository;
+import com.example.roomix.incidencia.domain.ContextoLimpieza;
+import com.example.roomix.incidencia.domain.EstadoIncidencia;
+import com.example.roomix.incidencia.domain.TipoIncidencia;
+import com.example.roomix.incidencia.repository.IncidenciaRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
+
+/**
+ * Sincroniza INHABILITADO por mantenimiento del día actual o limpieza post check-out pendiente.
+ */
+@Service
+@RequiredArgsConstructor
+public class HabitacionInhabilitacionService {
+
+<span class="fc" id="L27">    private static final List&lt;EstadoIncidencia&gt; ESTADOS_CERRADOS = List.of(</span>
+            EstadoIncidencia.FINALIZADA,
+            EstadoIncidencia.CANCELADA
+    );
+
+    private final HabitacionRepository habitacionRepository;
+    private final IncidenciaRepository incidenciaRepository;
+
+    @Transactional
+    public void sincronizar(Habitacion habitacion) {
+<span class="fc" id="L37">        boolean mantenimientoHoy = tieneMantenimientoHoy(habitacion.getId());</span>
+<span class="fc" id="L38">        boolean limpiezaPendiente = tieneLimpiezaPendiente(habitacion.getId());</span>
+
+<span class="pc bpc" id="L40" title="2 of 4 branches missed.">        if (mantenimientoHoy || limpiezaPendiente) {</span>
+<span class="nc bnc" id="L41" title="All 4 branches missed.">            if (habitacion.getEstado() == EstadoHabitacion.RESERVADO &amp;&amp; !reservaIncluyeHoy(habitacion)) {</span>
+<span class="nc" id="L42">                return;</span>
+            }
+<span class="nc bnc" id="L44" title="All 2 branches missed.">            if (habitacion.getEstado() != EstadoHabitacion.INHABILITADO) {</span>
+<span class="nc" id="L45">                habitacion.setEstadoRetorno(habitacion.getEstado());</span>
+<span class="nc" id="L46">                habitacion.setEstado(EstadoHabitacion.INHABILITADO);</span>
+            }
+<span class="nc" id="L48">            habitacion.setMotivoInhabilitacion(</span>
+<span class="nc bnc" id="L49" title="All 4 branches missed.">                    limpiezaPendiente &amp;&amp; !mantenimientoHoy</span>
+<span class="nc" id="L50">                            ? MotivoInhabilitacion.POST_CHECKOUT</span>
+<span class="nc" id="L51">                            : MotivoInhabilitacion.ADECUACION_PROGRAMADA</span>
+            );
+<span class="nc" id="L53">            return;</span>
+        }
+
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">        if (habitacion.getEstado() == EstadoHabitacion.INHABILITADO) {</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">            EstadoHabitacion restaurar = habitacion.getEstadoRetorno() != null</span>
+<span class="nc" id="L58">                    ? habitacion.getEstadoRetorno()</span>
+<span class="nc" id="L59">                    : EstadoHabitacion.LIBRE;</span>
+<span class="nc" id="L60">            habitacion.setEstado(restaurar);</span>
+<span class="nc" id="L61">            habitacion.setEstadoRetorno(null);</span>
+<span class="nc" id="L62">            habitacion.setMotivoInhabilitacion(null);</span>
+        }
+<span class="fc" id="L64">    }</span>
+
+    @Transactional
+    public void sincronizarTodas() {
+<span class="nc" id="L68">        List&lt;Habitacion&gt; habitaciones = habitacionRepository.findAll();</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">        for (Habitacion habitacion : habitaciones) {</span>
+<span class="nc" id="L70">            sincronizar(habitacion);</span>
+<span class="nc" id="L71">        }</span>
+<span class="nc" id="L72">        habitacionRepository.saveAll(habitaciones);</span>
+<span class="nc" id="L73">    }</span>
+
+    public boolean tieneLimpiezaPendiente(Long habitacionId) {
+<span class="fc" id="L76">        return incidenciaRepository.existsLimpiezaPostCheckoutActiva(</span>
+                habitacionId,
+                TipoIncidencia.LIMPIEZA,
+                ContextoLimpieza.POST_CHECKOUT,
+                ESTADOS_CERRADOS
+        );
+    }
+
+    public boolean tieneMantenimientoEnRango(Long habitacionId, LocalDate fechaEntrada, LocalDate fechaSalida) {
+<span class="pc bpc" id="L85" title="3 of 6 branches missed.">        if (fechaEntrada == null || fechaSalida == null || !fechaSalida.isAfter(fechaEntrada)) {</span>
+<span class="nc" id="L86">            return false;</span>
+        }
+<span class="fc" id="L88">        LocalDateTime inicio = fechaEntrada.atStartOfDay();</span>
+<span class="fc" id="L89">        LocalDateTime fin = fechaSalida.atStartOfDay();</span>
+<span class="fc" id="L90">        return incidenciaRepository.tieneMantenimientoActivoEnRango(</span>
+                habitacionId,
+                inicio,
+                fin,
+                TipoIncidencia.MANTENIMIENTO,
+                ESTADOS_CERRADOS
+        );
+    }
+
+    private boolean tieneMantenimientoHoy(Long habitacionId) {
+<span class="fc" id="L100">        LocalDate hoy = LocalDate.now();</span>
+<span class="fc" id="L101">        return incidenciaRepository.tieneMantenimientoActivoProgramadoPara(</span>
+                habitacionId,
+<span class="fc" id="L103">                hoy.atStartOfDay(),</span>
+<span class="fc" id="L104">                hoy.plusDays(1).atStartOfDay(),</span>
+                TipoIncidencia.MANTENIMIENTO,
+                ESTADOS_CERRADOS
+        );
+    }
+
+    private boolean reservaIncluyeHoy(Habitacion habitacion) {
+<span class="nc bnc" id="L111" title="All 4 branches missed.">        if (habitacion.getFechaEntrada() == null || habitacion.getFechaSalida() == null) {</span>
+<span class="nc" id="L112">            return false;</span>
+        }
+<span class="nc" id="L114">        LocalDate hoy = LocalDate.now();</span>
+<span class="nc bnc" id="L115" title="All 4 branches missed.">        return !hoy.isBefore(habitacion.getFechaEntrada()) &amp;&amp; hoy.isBefore(habitacion.getFechaSalida());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

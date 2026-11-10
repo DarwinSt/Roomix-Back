@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HuespedResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.huesped.dto</a> &gt; <span class="el_source">HuespedResponse.java</span></div><h1>HuespedResponse.java</h1><pre class="source lang-java linenums">package com.example.roomix.huesped.dto;
+
+import com.example.roomix.huesped.domain.Huesped;
+import com.example.roomix.huesped.domain.TipoDocumento;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+@Schema(name = &quot;HuespedResponse&quot;)
+@Builder
+<span class="fc" id="L13">public record HuespedResponse(</span>
+        Long id,
+        String nombre,
+        String apellidos,
+        String nombreCompleto,
+        TipoDocumento tipoDocumento,
+        String numeroDocumento,
+        String email,
+        String telefono,
+        String nacionalidad,
+        LocalDate fechaNacimiento,
+        String notas,
+        boolean activo,
+        @Schema(description = &quot;Autorización de tratamiento de datos (Ley 1581 de 2012)&quot;)
+        boolean autorizaTratamientoDatos,
+        LocalDateTime fechaHoraAutorizacion,
+        @Schema(description = &quot;Habitación con reserva o estadía activa&quot;, nullable = true)
+        String habitacionActualNumero,
+        LocalDateTime fechaHoraCreacion,
+        LocalDateTime fechaHoraUltimaActualizacion
+) {
+    public static HuespedResponse from(Huesped huesped, String habitacionActualNumero) {
+<span class="fc" id="L35">        return HuespedResponse.builder()</span>
+<span class="fc" id="L36">                .id(huesped.getId())</span>
+<span class="fc" id="L37">                .nombre(huesped.getNombre())</span>
+<span class="fc" id="L38">                .apellidos(huesped.getApellidos())</span>
+<span class="fc" id="L39">                .nombreCompleto(huesped.nombreCompleto())</span>
+<span class="fc" id="L40">                .tipoDocumento(huesped.getTipoDocumento())</span>
+<span class="fc" id="L41">                .numeroDocumento(huesped.getNumeroDocumento())</span>
+<span class="fc" id="L42">                .email(huesped.getEmail())</span>
+<span class="fc" id="L43">                .telefono(huesped.getTelefono())</span>
+<span class="fc" id="L44">                .nacionalidad(huesped.getNacionalidad())</span>
+<span class="fc" id="L45">                .fechaNacimiento(huesped.getFechaNacimiento())</span>
+<span class="fc" id="L46">                .notas(huesped.getNotas())</span>
+<span class="fc" id="L47">                .activo(huesped.isActivo())</span>
+<span class="fc" id="L48">                .autorizaTratamientoDatos(huesped.isAutorizaTratamientoDatos())</span>
+<span class="fc" id="L49">                .fechaHoraAutorizacion(huesped.getFechaHoraAutorizacion())</span>
+<span class="fc" id="L50">                .habitacionActualNumero(habitacionActualNumero)</span>
+<span class="fc" id="L51">                .fechaHoraCreacion(huesped.getFechaHoraCreacion())</span>
+<span class="fc" id="L52">                .fechaHoraUltimaActualizacion(huesped.getFechaHoraUltimaActualizacion())</span>
+<span class="fc" id="L53">                .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

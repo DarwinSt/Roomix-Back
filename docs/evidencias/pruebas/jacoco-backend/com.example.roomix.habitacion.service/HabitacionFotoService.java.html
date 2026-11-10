@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HabitacionFotoService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.habitacion.service</a> &gt; <span class="el_source">HabitacionFotoService.java</span></div><h1>HabitacionFotoService.java</h1><pre class="source lang-java linenums">package com.example.roomix.habitacion.service;
+
+import com.example.roomix.habitacion.domain.Habitacion;
+import com.example.roomix.habitacion.domain.HabitacionFoto;
+import com.example.roomix.habitacion.exception.HabitacionNotFoundException;
+import com.example.roomix.habitacion.repository.HabitacionFotoRepository;
+import com.example.roomix.habitacion.repository.HabitacionRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * Fotografías de habitaciones (máximo 6 por habitación, 2 MB cada una, JPG/PNG/WebP).
+ */
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class HabitacionFotoService {
+
+    static final int MAX_FOTOS = 6;
+    static final long MAX_BYTES = 2L * 1024 * 1024;
+<span class="fc" id="L34">    private static final Set&lt;String&gt; TIPOS = Set.of(&quot;image/jpeg&quot;, &quot;image/png&quot;, &quot;image/webp&quot;);</span>
+
+    private final HabitacionFotoRepository fotoRepository;
+    private final HabitacionRepository habitacionRepository;
+
+    /** Ids de fotos por habitación, en una sola consulta y sin cargar las imágenes. */
+    public Map&lt;Long, List&lt;Long&gt;&gt; idsPorHabitacion(Collection&lt;Long&gt; habitacionIds) {
+<span class="fc" id="L41">        Map&lt;Long, List&lt;Long&gt;&gt; mapa = new HashMap&lt;&gt;();</span>
+<span class="pc bpc" id="L42" title="1 of 2 branches missed.">        if (habitacionIds.isEmpty()) {</span>
+<span class="nc" id="L43">            return mapa;</span>
+        }
+<span class="pc bpc" id="L45" title="1 of 2 branches missed.">        for (Object[] fila : fotoRepository.idsPorHabitacion(habitacionIds)) {</span>
+<span class="nc" id="L46">            mapa.computeIfAbsent((Long) fila[0], k -&gt; new ArrayList&lt;&gt;()).add((Long) fila[1]);</span>
+<span class="nc" id="L47">        }</span>
+<span class="fc" id="L48">        return mapa;</span>
+    }
+
+    public HabitacionFoto obtener(Long habitacionId, Long fotoId) {
+<span class="nc" id="L52">        return fotoRepository.findByIdAndHabitacionId(fotoId, habitacionId)</span>
+<span class="nc" id="L53">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Foto no encontrada&quot;));</span>
+    }
+
+    @Transactional
+    public List&lt;Long&gt; subir(Long habitacionId, MultipartFile archivo) {
+<span class="nc" id="L58">        Habitacion habitacion = habitacionRepository.findById(habitacionId)</span>
+<span class="nc" id="L59">                .orElseThrow(() -&gt; new HabitacionNotFoundException(habitacionId));</span>
+<span class="nc bnc" id="L60" title="All 4 branches missed.">        if (archivo == null || archivo.isEmpty()) {</span>
+<span class="nc" id="L61">            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;Seleccione una imagen&quot;);</span>
+        }
+<span class="nc bnc" id="L63" title="All 4 branches missed.">        if (archivo.getContentType() == null || !TIPOS.contains(archivo.getContentType())) {</span>
+<span class="nc" id="L64">            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;Formato no permitido: use JPG, PNG o WebP&quot;);</span>
+        }
+<span class="nc bnc" id="L66" title="All 2 branches missed.">        if (archivo.getSize() &gt; MAX_BYTES) {</span>
+<span class="nc" id="L67">            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;La imagen supera 2 MB&quot;);</span>
+        }
+<span class="nc" id="L69">        long actuales = fotoRepository.countByHabitacionId(habitacionId);</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        if (actuales &gt;= MAX_FOTOS) {</span>
+<span class="nc" id="L71">            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,</span>
+                    &quot;La habitación ya tiene el máximo de &quot; + MAX_FOTOS + &quot; fotos&quot;);
+        }
+        try {
+<span class="nc" id="L75">            fotoRepository.save(HabitacionFoto.builder()</span>
+<span class="nc" id="L76">                    .habitacion(habitacion)</span>
+<span class="nc" id="L77">                    .contenido(archivo.getBytes())</span>
+<span class="nc" id="L78">                    .tipoContenido(archivo.getContentType())</span>
+<span class="nc" id="L79">                    .nombreArchivo(archivo.getOriginalFilename())</span>
+<span class="nc" id="L80">                    .tamanoBytes((int) archivo.getSize())</span>
+<span class="nc" id="L81">                    .orden((int) actuales + 1)</span>
+<span class="nc" id="L82">                    .fechaHoraCreacion(LocalDateTime.now())</span>
+<span class="nc" id="L83">                    .build());</span>
+<span class="nc" id="L84">        } catch (IOException e) {</span>
+<span class="nc" id="L85">            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;No se pudo leer la imagen&quot;);</span>
+<span class="nc" id="L86">        }</span>
+<span class="nc" id="L87">        return idsPorHabitacion(List.of(habitacionId)).getOrDefault(habitacionId, List.of());</span>
+    }
+
+    @Transactional
+    public List&lt;Long&gt; eliminar(Long habitacionId, Long fotoId) {
+<span class="nc" id="L92">        fotoRepository.delete(obtener(habitacionId, fotoId));</span>
+<span class="nc" id="L93">        return idsPorHabitacion(List.of(habitacionId)).getOrDefault(habitacionId, List.of());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

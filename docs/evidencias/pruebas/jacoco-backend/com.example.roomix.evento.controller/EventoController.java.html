@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EventoController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roomix</a> &gt; <a href="index.source.html" class="el_package">com.example.roomix.evento.controller</a> &gt; <span class="el_source">EventoController.java</span></div><h1>EventoController.java</h1><pre class="source lang-java linenums">package com.example.roomix.evento.controller;
+
+import com.example.roomix.evento.domain.EventoEnums.EstadoEvento;
+import com.example.roomix.evento.domain.EventoEnums.TipoAcceso;
+import com.example.roomix.evento.domain.EventoEnums.TipoEvento;
+import com.example.roomix.evento.domain.EventoEnums.TipoRecurso;
+import com.example.roomix.evento.dto.EventoDtos.CambiarEstadoRequest;
+import com.example.roomix.evento.dto.EventoDtos.EventoRequest;
+import com.example.roomix.evento.dto.EventoDtos.EventoResponse;
+import com.example.roomix.evento.dto.EventoDtos.ParticipanteRequest;
+import com.example.roomix.evento.dto.EventoDtos.ReporteEventos;
+import com.example.roomix.evento.dto.EventoDtos.SalonRequest;
+import com.example.roomix.evento.dto.EventoDtos.SalonResponse;
+import com.example.roomix.evento.service.EventoService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+@Tag(name = &quot;Eventos&quot;, description = &quot;Eventos en las instalaciones del hotel, salones, participantes y recursos&quot;)
+@RestController
+@RequiredArgsConstructor
+public class EventoController {
+
+    private final EventoService eventoService;
+
+    // ---------------------------------------------------------------- Salones
+
+    @Operation(summary = &quot;Listar salones&quot;)
+    @GetMapping(&quot;/api/salones&quot;)
+    public List&lt;SalonResponse&gt; salones() {
+<span class="nc" id="L50">        return eventoService.listarSalones();</span>
+    }
+
+    @Operation(summary = &quot;Crear salón&quot;)
+    @PostMapping(&quot;/api/salones&quot;)
+    @ResponseStatus(HttpStatus.CREATED)
+    public SalonResponse crearSalon(@Valid @RequestBody SalonRequest request) {
+<span class="nc" id="L57">        return eventoService.guardarSalon(null, request);</span>
+    }
+
+    @Operation(summary = &quot;Actualizar salón&quot;)
+    @PutMapping(&quot;/api/salones/{id}&quot;)
+    public SalonResponse actualizarSalon(@PathVariable Long id, @Valid @RequestBody SalonRequest request) {
+<span class="nc" id="L63">        return eventoService.guardarSalon(id, request);</span>
+    }
+
+    // ---------------------------------------------------------------- Eventos
+
+    @Operation(summary = &quot;Catálogos del módulo (tipos, accesos, recursos)&quot;)
+    @GetMapping(&quot;/api/eventos/catalogos&quot;)
+    public Map&lt;String, List&lt;Map&lt;String, String&gt;&gt;&gt; catalogos() {
+<span class="nc" id="L71">        Map&lt;String, List&lt;Map&lt;String, String&gt;&gt;&gt; mapa = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L72">        mapa.put(&quot;tipos&quot;, Arrays.stream(TipoEvento.values()).map(t -&gt; Map.of(&quot;codigo&quot;, t.name(), &quot;nombre&quot;, t.getNombre())).toList());</span>
+<span class="nc" id="L73">        mapa.put(&quot;accesos&quot;, Arrays.stream(TipoAcceso.values()).map(t -&gt; Map.of(&quot;codigo&quot;, t.name(), &quot;nombre&quot;, t.getNombre())).toList());</span>
+<span class="nc" id="L74">        mapa.put(&quot;recursos&quot;, Arrays.stream(TipoRecurso.values()).map(t -&gt; Map.of(&quot;codigo&quot;, t.name(), &quot;nombre&quot;, t.getNombre())).toList());</span>
+<span class="nc" id="L75">        return mapa;</span>
+    }
+
+    @Operation(summary = &quot;Listar eventos&quot;, description = &quot;Por defecto: desde hace 30 días hasta dentro de 90 días&quot;)
+    @GetMapping(&quot;/api/eventos&quot;)
+    public List&lt;EventoResponse&gt; listar(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            @RequestParam(required = false) EstadoEvento estado
+    ) {
+<span class="nc" id="L85">        return eventoService.listar(desde, hasta, estado);</span>
+    }
+
+    @Operation(summary = &quot;Reporte de eventos del periodo&quot;)
+    @GetMapping(&quot;/api/eventos/reporte&quot;)
+    public ReporteEventos reporte(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta
+    ) {
+<span class="nc" id="L94">        return eventoService.reporte(desde, hasta);</span>
+    }
+
+    @Operation(summary = &quot;Detalle del evento&quot;)
+    @GetMapping(&quot;/api/eventos/{id}&quot;)
+    public EventoResponse obtener(@PathVariable Long id) {
+<span class="nc" id="L100">        return eventoService.obtener(id);</span>
+    }
+
+    @Operation(summary = &quot;Crear evento&quot;, description = &quot;Valida capacidad del salón y que no haya otro evento en el mismo horario&quot;)
+    @PostMapping(&quot;/api/eventos&quot;)
+    @ResponseStatus(HttpStatus.CREATED)
+    public EventoResponse crear(@Valid @RequestBody EventoRequest request) {
+<span class="nc" id="L107">        return eventoService.crear(request);</span>
+    }
+
+    @Operation(summary = &quot;Actualizar evento&quot;)
+    @PutMapping(&quot;/api/eventos/{id}&quot;)
+    public EventoResponse actualizar(@PathVariable Long id, @Valid @RequestBody EventoRequest request) {
+<span class="nc" id="L113">        return eventoService.actualizar(id, request);</span>
+    }
+
+    @Operation(summary = &quot;Cambiar estado (programado → en curso → finalizado, o cancelado con motivo)&quot;)
+    @PatchMapping(&quot;/api/eventos/{id}/estado&quot;)
+    public EventoResponse cambiarEstado(@PathVariable Long id, @Valid @RequestBody CambiarEstadoRequest request) {
+<span class="nc" id="L119">        return eventoService.cambiarEstado(id, request);</span>
+    }
+
+    @Operation(summary = &quot;Inscribir participante&quot;)
+    @PostMapping(&quot;/api/eventos/{id}/participantes&quot;)
+    public EventoResponse agregarParticipante(@PathVariable Long id, @Valid @RequestBody ParticipanteRequest request) {
+<span class="nc" id="L125">        return eventoService.agregarParticipante(id, request);</span>
+    }
+
+    @Operation(summary = &quot;Marcar confirmación o asistencia de un participante&quot;)
+    @PatchMapping(&quot;/api/eventos/{id}/participantes/{participanteId}&quot;)
+    public EventoResponse actualizarParticipante(
+            @PathVariable Long id,
+            @PathVariable Long participanteId,
+            @RequestParam(required = false) Boolean confirmado,
+            @RequestParam(required = false) Boolean asistio
+    ) {
+<span class="nc" id="L136">        return eventoService.actualizarParticipante(id, participanteId, confirmado, asistio);</span>
+    }
+
+    @Operation(summary = &quot;Retirar participante&quot;)
+    @DeleteMapping(&quot;/api/eventos/{id}/participantes/{participanteId}&quot;)
+    public EventoResponse eliminarParticipante(@PathVariable Long id, @PathVariable Long participanteId) {
+<span class="nc" id="L142">        return eventoService.eliminarParticipante(id, participanteId);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

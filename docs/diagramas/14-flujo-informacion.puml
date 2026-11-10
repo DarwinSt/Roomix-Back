@@ -1,0 +1,41 @@
+@startuml flujo-informacion
+!include _estilo.iuml
+title Roomix 1.1 — Flujo de información entre módulos
+left to right direction
+rectangle "Huésped\n(datos + autorización\nLey 1581)" as HUE
+rectangle "Reserva\n(validación de cruces)" as RES
+rectangle "Habitación\n(estado)" as HAB
+rectangle "Servicios\n(cargos)" as SER
+rectangle "Factura\n(ítems, IVA)" as FAC
+rectangle "Pagos" as PAG
+rectangle "Abonos\n(pago al reservar)" as ABO
+rectangle "Promociones y\npolítica de reserva" as POL
+rectangle "Gastos por pagar\ny recurrentes" as GAS
+rectangle "Movimientos\nfinancieros" as MOV
+rectangle "Incidencias\n(limpieza y\nmantenimiento)" as INC
+rectangle "Inventario\n(compras, salidas)" as INV
+rectangle "Eventos\n(salones)" as EVE
+rectangle "Dashboard y\nreportes\n(ocupación, ADR,\nRevPAR)" as REP #DDEFE3
+rectangle "Auditoría\n(quién, qué, cuándo)" as AUD #FFF8E1
+HUE --> RES
+POL --> RES : descuento y\nabono mínimo
+RES --> ABO : pago obligatorio
+ABO --> MOV : ingreso al recibirlo
+ABO --> FAC : se aplican como pagos
+ABO --> MOV : devolución (egreso)\nal cancelar o anular
+GAS --> MOV : egreso al pagarse
+RES --> HAB : check-in → Ocupada
+SER --> FAC : cargo a la cuenta
+RES --> FAC : check-out
+RES --> INC : tarea de limpieza
+INC --> HAB : Disponible
+FAC --> PAG
+PAG --> MOV : ingreso
+INV --> MOV : egreso
+EVE --> FAC
+MOV --> REP
+HAB --> REP
+RES --> REP
+RES ..> AUD
+FAC ..> AUD
+@enduml
