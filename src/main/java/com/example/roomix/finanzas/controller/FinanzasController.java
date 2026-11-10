@@ -58,10 +58,18 @@ public class FinanzasController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
             @RequestParam(defaultValue = "false") boolean incluirAnulados,
             @RequestParam(required = false) String texto,
+            @RequestParam(required = false) Boolean pendiente,
             @RequestParam(defaultValue = "0") int pagina,
             @RequestParam(defaultValue = "50") int tamano
     ) {
-        return finanzasService.listar(tipo, categoria, desde, hasta, incluirAnulados, texto, pagina, tamano);
+        return finanzasService.listar(tipo, categoria, desde, hasta, incluirAnulados, texto, pendiente, pagina, tamano);
+    }
+
+    @Operation(summary = "Confirmar el pago de un egreso por pagar")
+    @PatchMapping("/movimientos/{id}/pagar")
+    public MovimientoResponse pagar(@PathVariable Long id,
+                                    @Valid @RequestBody(required = false) com.example.roomix.finanzas.dto.GastoDtos.PagarGastoRequest request) {
+        return finanzasService.pagar(id, request);
     }
 
     @Operation(summary = "Registrar ingreso o egreso manual")

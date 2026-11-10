@@ -89,6 +89,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/habitaciones/*/fotos/**").hasRole(ADMIN)
                         .requestMatchers("/api/habitaciones/**").hasAnyRole(ADMIN, RECEPCION)
 
+                        // Promociones y políticas de reserva: consulta para recepción y finanzas, cambios solo el administrador
+                        .requestMatchers(HttpMethod.GET, "/api/promociones/**", "/api/politicas-reserva")
+                        .hasAnyRole(ADMIN, RECEPCION, FINANZAS)
+                        .requestMatchers("/api/promociones/**", "/api/politicas-reserva").hasRole(ADMIN)
+
                         // Reservas, huéspedes y tarifas
                         .requestMatchers(HttpMethod.GET, "/api/reservas/**", "/api/huespedes/**")
                         .hasAnyRole(ADMIN, RECEPCION, FINANZAS)

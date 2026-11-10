@@ -148,7 +148,7 @@ La API queda en `http://localhost:8080`.
 ./mvnw test
 ```
 
-41 pruebas (JUnit 5 + Mockito + MockMvc, base H2 en memoria): reglas de contraseñas, autenticación y bloqueo, auditoría, eventos, servicios, finanzas, habitaciones y dos pruebas de integración (seguridad por rol y flujo hotelero completo reserva → check-in → servicio → check-out → factura → pago).
+49 pruebas (JUnit 5 + Mockito + MockMvc, base H2 en memoria): reglas de contraseñas, autenticación y bloqueo, auditoría, eventos, servicios, finanzas, habitaciones y pruebas de integración de seguridad por rol, del flujo hotelero completo (reserva con abono → check-in → servicio → check-out → factura con el abono aplicado → pago del saldo), de reservas anticipadas y devolución de pagos (H-01 y H-02) y de abonos, promociones, políticas y gastos recurrentes. Cobertura con JaCoCo: `./mvnw org.jacoco:jacoco-maven-plugin:0.8.12:prepare-agent test org.jacoco:jacoco-maven-plugin:0.8.12:report` (reporte en `target/site/jacoco`).
 
 ## Documentación Swagger / OpenAPI
 
@@ -225,7 +225,7 @@ Obligatorio al pasar a `INHABILITADO`:
 ```mermaid
 stateDiagram-v2
     [*] --> LIBRE
-    LIBRE --> RESERVADO: reserva confirmada
+    LIBRE --> RESERVADO: reserva confirmada (POST /api/reservas con su pago)
     LIBRE --> INHABILITADO: ADECUACION_PROGRAMADA
     RESERVADO --> OCUPADO: check-in
     RESERVADO --> LIBRE: cancelación
@@ -236,7 +236,31 @@ stateDiagram-v2
     INHABILITADO --> RESERVADO: servicios completados (adecuación, con reserva)
 ```
 
-Las transiciones fuera de este diagrama devuelven **422 Unprocessable Entity**.
+Las transiciones fuera de este diagrama devuelven **422 Unprocessable Entity**. `PATCH /api/habitaciones/{id}/estado` ya no crea reservas: pasar una habitación a `RESERVADO` responde **RES-016**; la reserva se crea con `POST /api/reservas` y su pago.
+
+## Endpoints — Reservas, pagos y promociones
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/reservas/cotizacion?habitacionId=&fechaEntrada=&fechaSalida=&promocionId=&canal=&huespedId=` | Subtotal, descuento, IVA (exento para extranjeros con pasaporte), total y abono mínimo |
+| POST | `/api/reservas` | Crea la reserva; `abonoInicial` `{valor, metodo, referencia}` es **obligatorio** (RES-015 si falta o es menor que el mínimo; FIN-012 si supera el total) |
+| GET | `/api/reservas/{id}/abonos` | Total, mínimo, abonado, saldo, penalidad, devuelto y lista de abonos |
+| POST | `/api/reservas/{id}/abonos` | Registra otro abono (hasta el saldo) |
+| PATCH | `/api/reservas/{id}/cancelar` | Cancela; retiene la penalidad de la política sobre lo abonado y devuelve el resto como egreso |
+| GET | `/api/promociones` · `/aplicables` | Promociones (Admin) y las que aplican a una reserva (Recepción) |
+| POST/PUT/PATCH | `/api/promociones`, `/{id}`, `/{id}/activa?valor=` | Crear, editar y activar/desactivar (solo ADMIN) |
+| GET/PUT | `/api/politicas-reserva` | Abono mínimo (% del total con IVA) y penalidad por cancelación (% de lo abonado); PUT solo ADMIN |
+
+Los abonos son ingresos en Finanzas al recibirse y se aplican como pagos de la factura del check-out sin contarse dos veces. Anular una factura pagada marca cada pago como devuelto, registra el egreso de devolución y deja el saldo en $0.
+
+## Endpoints — Gastos por pagar y recurrentes
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| POST | `/api/finanzas/movimientos` | Con `pendiente: true` y `fechaVencimiento`, el egreso queda por pagar y no cuenta en los totales |
+| PATCH | `/api/finanzas/movimientos/{id}/pagar` | Confirma el pago (una sola vez) |
+| GET | `/api/finanzas/movimientos?pendiente=true` | Lista los gastos por pagar; cada movimiento expone `abonoId` y `gastoRecurrenteId` |
+| GET/POST/PUT/PATCH | `/api/finanzas/gastos-recurrentes`, `/{id}`, `/{id}/activo` | Gastos fijos mensuales; generan el egreso por pagar del mes (al iniciar y cada día a las 00:15) y, al editarse, actualizan el pendiente del mes sin pagar |
 
 En `INHABILITADO` se crean **manualmente** incidencias (limpieza, mantenimiento, servicio al cuarto, otro) con `POST /api/incidencias`. La habitación se **habilita sola** cuando no quedan incidencias activas (al finalizar o cancelar la última):
 

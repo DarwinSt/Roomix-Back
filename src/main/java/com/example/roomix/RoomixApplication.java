@@ -3,11 +3,13 @@ package com.example.roomix;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.util.TimeZone;
 
 @SpringBootApplication
 @ConfigurationPropertiesScan
+@EnableScheduling
 public class RoomixApplication {
 
     /** Zona horaria del hotel; define qué es "hoy" para reservas, mantenimientos y check-in/out. */

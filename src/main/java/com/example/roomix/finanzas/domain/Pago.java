@@ -53,4 +53,15 @@ public class Pago {
 
     @Column(name = "registrado_por", nullable = false, length = 50)
     private String registradoPor;
+
+    /** El pago se devolvió al cliente al anular la factura (null o false: vigente). */
+    @Column(name = "devuelto")
+    private Boolean devuelto;
+
+    @Column(name = "fecha_hora_devolucion")
+    private LocalDateTime fechaHoraDevolucion;
+
+    public boolean isDevuelto() {
+        return Boolean.TRUE.equals(devuelto);
+    }
 }

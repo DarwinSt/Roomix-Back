@@ -65,11 +65,15 @@ public class ReporteService {
             LocalDate d0 = r.getFechaEntrada().isBefore(inicio) ? inicio : r.getFechaEntrada();
             LocalDate d1 = r.getFechaSalida().isAfter(finExclusivo) ? finExclusivo : r.getFechaSalida();
             String tipo = r.getHabitacion().getTipoHabitacion().name();
+            // Ingreso por noche: total de la reserva (con descuento) prorrateado entre sus noches
+            BigDecimal porNoche = r.getDescuento() != null && r.getDescuento().signum() > 0
+                    ? r.getTotalEstimado().divide(BigDecimal.valueOf(r.getCantidadNoches()), 2, RoundingMode.HALF_UP)
+                    : r.getTarifaNoche();
             for (LocalDate d = d0; d.isBefore(d1); d = d.plusDays(1)) {
                 noches.get(d)[0]++;
-                ingresos.merge(d, r.getTarifaNoche(), BigDecimal::add);
+                ingresos.merge(d, porNoche, BigDecimal::add);
                 nochesPorTipo.computeIfAbsent(tipo, k -> new long[]{0})[0]++;
-                ingresoPorTipo.merge(tipo, r.getTarifaNoche(), BigDecimal::add);
+                ingresoPorTipo.merge(tipo, porNoche, BigDecimal::add);
             }
         }
 

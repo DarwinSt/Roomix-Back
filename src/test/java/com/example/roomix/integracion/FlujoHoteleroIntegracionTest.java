@@ -53,7 +53,8 @@ class FlujoHoteleroIntegracionTest {
                  "autorizaTratamientoDatos":true}""").andExpect(status().isCreated()));
 
         long reservaId = id(enviar(post("/api/reservas"), recepcion, """
-                {"habitacionId":%d,"huespedId":%d,"fechaEntrada":"%s","fechaSalida":"%s","canal":"WHATSAPP"}"""
+                {"habitacionId":%d,"huespedId":%d,"fechaEntrada":"%s","fechaSalida":"%s","canal":"WHATSAPP",
+                 "abonoInicial":{"valor":100000,"metodo":"TRANSFERENCIA"}}"""
                 .formatted(habitacionId, huespedId, hoy, hoy.plusDays(2)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.totalEstimado").value(500000.0))
@@ -84,13 +85,15 @@ class FlujoHoteleroIntegracionTest {
                 .andExpect(jsonPath("$.factura.subtotal").value(590000.0))
                 .andExpect(jsonPath("$.factura.impuesto").value(112100.0))
                 .andExpect(jsonPath("$.factura.total").value(702100.0))
+                // El abono pagado al reservar ya figura como pago de la factura
+                .andExpect(jsonPath("$.factura.totalPagado").value(100000.0))
                 .andReturn().getResponse().getContentAsString();
         int facturaId = JsonPath.read(checkout, "$.factura.id");
         String numero = JsonPath.read(checkout, "$.factura.numero");
         assertThat(numero).startsWith("FV-");
 
         enviar(post("/api/facturas/" + facturaId + "/pagos"), recepcion, """
-                {"valor":702100,"metodo":"TARJETA_CREDITO","referencia":"123456"}""")
+                {"valor":602100,"metodo":"TARJETA_CREDITO","referencia":"123456"}""")
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.estado").value("PAGADA"));
 

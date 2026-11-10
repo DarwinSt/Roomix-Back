@@ -19,10 +19,13 @@ public interface MovimientoFinancieroRepository
 
     List<MovimientoFinanciero> findByFacturaIdAndAnuladoFalse(Long facturaId);
 
+    /** Egresos aún por pagar generados por un gasto recurrente. */
+    List<MovimientoFinanciero> findByGastoRecurrenteIdAndPendienteTrueAndAnuladoFalse(Long gastoRecurrenteId);
+
     /** Totales por categoría en el periodo (sin anulados). Filas: [categoria, suma]. */
     @Query("""
             SELECT m.categoria, SUM(m.valor) FROM MovimientoFinanciero m
-            WHERE m.anulado = false AND m.fecha >= :desde AND m.fecha <= :hasta
+            WHERE m.anulado = false AND (m.pendiente IS NULL OR m.pendiente = false) AND m.fecha >= :desde AND m.fecha <= :hasta
             GROUP BY m.categoria
             """)
     List<Object[]> totalesPorCategoria(@Param("desde") LocalDate desde, @Param("hasta") LocalDate hasta);
@@ -30,11 +33,20 @@ public interface MovimientoFinancieroRepository
     /** Totales diarios por tipo en el periodo. Filas: [fecha, tipo, suma]. */
     @Query("""
             SELECT m.fecha, m.tipo, SUM(m.valor) FROM MovimientoFinanciero m
-            WHERE m.anulado = false AND m.fecha >= :desde AND m.fecha <= :hasta
+            WHERE m.anulado = false AND (m.pendiente IS NULL OR m.pendiente = false) AND m.fecha >= :desde AND m.fecha <= :hasta
             GROUP BY m.fecha, m.tipo
             ORDER BY m.fecha
             """)
     List<Object[]> totalesDiarios(@Param("desde") LocalDate desde, @Param("hasta") LocalDate hasta);
+
+    /** Egresos por pagar (no anulados). Filas: [cantidad, suma, cantidad vencidos, suma vencidos]. */
+    @Query("""
+            SELECT COUNT(m), COALESCE(SUM(m.valor), 0),
+                   SUM(CASE WHEN m.fechaVencimiento < :hoy THEN 1 ELSE 0 END),
+                   COALESCE(SUM(CASE WHEN m.fechaVencimiento < :hoy THEN m.valor ELSE 0 END), 0)
+            FROM MovimientoFinanciero m WHERE m.anulado = false AND m.pendiente = true
+            """)
+    List<Object[]> resumenPorPagar(@Param("hoy") LocalDate hoy);
 
     static Specification<MovimientoFinanciero> conFiltros(
             TipoMovimiento tipo,
@@ -42,7 +54,8 @@ public interface MovimientoFinancieroRepository
             LocalDate desde,
             LocalDate hasta,
             boolean incluirAnulados,
-            String texto
+            String texto,
+            Boolean pendiente
     ) {
         return (root, query, cb) -> {
             var predicados = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
@@ -60,6 +73,11 @@ public interface MovimientoFinancieroRepository
             }
             if (!incluirAnulados) {
                 predicados.add(cb.isFalse(root.get("anulado")));
+            }
+            if (Boolean.TRUE.equals(pendiente)) {
+                predicados.add(cb.isTrue(root.get("pendiente")));
+            } else if (Boolean.FALSE.equals(pendiente)) {
+                predicados.add(cb.or(cb.isNull(root.get("pendiente")), cb.isFalse(root.get("pendiente"))));
             }
             if (texto != null && !texto.isBlank()) {
                 String patron = "%" + texto.trim().toLowerCase() + "%";

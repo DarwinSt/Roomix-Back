@@ -31,8 +31,15 @@ public final class FinanzasDtos {
             @Schema(description = "Por defecto, hoy") LocalDate fecha,
             MetodoPago metodoPago,
             @Size(max = 150) String tercero,
-            @Size(max = 60) String referencia
+            @Size(max = 60) String referencia,
+            @Schema(description = "Egreso por pagar: no cuenta en los totales hasta confirmar el pago") Boolean pendiente,
+            @Schema(description = "Vencimiento del egreso por pagar") LocalDate fechaVencimiento
     ) {
+        /** Compatibilidad: movimiento pagado. */
+        public MovimientoRequest(TipoMovimiento tipo, CategoriaFinanciera categoria, String concepto, BigDecimal valor,
+                                 LocalDate fecha, MetodoPago metodoPago, String tercero, String referencia) {
+            this(tipo, categoria, concepto, valor, fecha, metodoPago, tercero, referencia, null, null);
+        }
     }
 
     @Schema(name = "MovimientoFinancieroResponse")
@@ -52,14 +59,23 @@ public final class FinanzasDtos {
             String registradoPor,
             boolean anulado,
             String motivoAnulacion,
-            LocalDateTime fechaHoraCreacion
+            LocalDateTime fechaHoraCreacion,
+            boolean pendiente,
+            LocalDate fechaVencimiento,
+            boolean vencido,
+            Long gastoRecurrenteId,
+            @Schema(description = "Abono de reserva que originó el ingreso (si aplica)") Long abonoId
     ) {
         public static MovimientoResponse from(MovimientoFinanciero m) {
             return new MovimientoResponse(
                     m.getId(), m.getTipo(), m.getCategoria(), m.getCategoria().getNombre(), m.getConcepto(),
                     m.getValor(), m.getFecha(), m.getMetodoPago(), m.getTercero(), m.getReferencia(),
-                    m.getFacturaId(), m.getPagoId() != null, m.getRegistradoPor(), m.isAnulado(),
-                    m.getMotivoAnulacion(), m.getFechaHoraCreacion()
+                    m.getFacturaId(), m.getPagoId() != null || m.getAbonoId() != null || m.getGastoRecurrenteId() != null, m.getRegistradoPor(), m.isAnulado(),
+                    m.getMotivoAnulacion(), m.getFechaHoraCreacion(),
+                    m.isPendiente(), m.getFechaVencimiento(),
+                    m.isPendiente() && m.getFechaVencimiento() != null && m.getFechaVencimiento().isBefore(LocalDate.now()),
+                    m.getGastoRecurrenteId(),
+                    m.getAbonoId()
             );
         }
     }
@@ -108,7 +124,11 @@ public final class FinanzasDtos {
             List<TotalCategoria> ingresosPorCategoria,
             List<TotalCategoria> egresosPorCategoria,
             List<PuntoSerie> serie,
-            Comparativo periodoAnterior
+            Comparativo periodoAnterior,
+            @Schema(description = "Egresos pendientes de pago (todas las fechas)") BigDecimal porPagar,
+            long cantidadPorPagar,
+            @Schema(description = "Egresos pendientes con el vencimiento ya cumplido") BigDecimal porPagarVencido,
+            long cantidadVencidos
     ) {
     }
 }

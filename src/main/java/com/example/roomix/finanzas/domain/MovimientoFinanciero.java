@@ -79,6 +79,25 @@ public class MovimientoFinanciero {
     @Column(name = "pago_id")
     private Long pagoId;
 
+    /** Ingreso originado por un abono de reserva. */
+    @Column(name = "abono_id")
+    private Long abonoId;
+
+    /** Egreso registrado pero aún no pagado («por pagar»): no cuenta en los totales hasta pagarse. */
+    @Column(name = "pendiente")
+    private Boolean pendiente;
+
+    @Column(name = "fecha_vencimiento")
+    private LocalDate fechaVencimiento;
+
+    /** Plantilla de gasto recurrente que lo generó. */
+    @Column(name = "gasto_recurrente_id")
+    private Long gastoRecurrenteId;
+
+    public boolean isPendiente() {
+        return Boolean.TRUE.equals(pendiente);
+    }
+
     @Column(name = "registrado_por", nullable = false, length = 50)
     private String registradoPor;
 

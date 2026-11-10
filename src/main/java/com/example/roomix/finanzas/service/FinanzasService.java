@@ -57,12 +57,13 @@ public class FinanzasService {
             LocalDate hasta,
             boolean incluirAnulados,
             String texto,
+            Boolean pendiente,
             int pagina,
             int tamano
     ) {
         return PaginaResponse.de(
                 movimientoRepository.findAll(
-                        MovimientoFinancieroRepository.conFiltros(tipo, categoria, desde, hasta, incluirAnulados, texto),
+                        MovimientoFinancieroRepository.conFiltros(tipo, categoria, desde, hasta, incluirAnulados, texto, pendiente),
                         PageRequest.of(Math.max(pagina, 0), Math.min(Math.max(tamano, 1), 200),
                                 Sort.by(Sort.Direction.DESC, "fecha", "id"))
                 ),
@@ -82,12 +83,20 @@ public class FinanzasService {
             throw new FinanzasException(FinanzasErrorCode.CATEGORIA_NO_COINCIDE,
                     request.categoria().getNombre(), request.tipo().name().toLowerCase());
         }
+        boolean pendiente = Boolean.TRUE.equals(request.pendiente());
+        if (pendiente && request.tipo() != TipoMovimiento.EGRESO) {
+            throw new FinanzasException(FinanzasErrorCode.PENDIENTE_SOLO_EGRESOS);
+        }
+        LocalDate fecha = pendiente && request.fechaVencimiento() != null ? request.fechaVencimiento()
+                : request.fecha() != null ? request.fecha() : LocalDate.now();
         MovimientoFinanciero movimiento = MovimientoFinanciero.builder()
                 .tipo(request.tipo())
                 .categoria(request.categoria())
                 .concepto(request.concepto().trim())
                 .valor(request.valor().setScale(2, RoundingMode.HALF_UP))
-                .fecha(request.fecha() != null ? request.fecha() : LocalDate.now())
+                .fecha(fecha)
+                .pendiente(pendiente ? Boolean.TRUE : null)
+                .fechaVencimiento(pendiente ? fecha : null)
                 .metodoPago(request.metodoPago())
                 .tercero(textoOpcional(request.tercero()))
                 .referencia(textoOpcional(request.referencia()))
@@ -123,6 +132,28 @@ public class FinanzasService {
                 .build());
     }
 
+    /** Confirma el pago de un egreso pendiente: deja de estar «por pagar» y cuenta en la fecha del pago. */
+    @Transactional
+    public MovimientoResponse pagar(Long id, com.example.roomix.finanzas.dto.GastoDtos.PagarGastoRequest request) {
+        MovimientoFinanciero m = movimientoRepository.findById(id)
+                .orElseThrow(() -> new FinanzasException(FinanzasErrorCode.MOVIMIENTO_NO_ENCONTRADO, id));
+        if (!m.isPendiente() || m.isAnulado()) {
+            throw new FinanzasException(FinanzasErrorCode.MOVIMIENTO_NO_PENDIENTE);
+        }
+        m.setPendiente(false);
+        m.setFecha(request != null && request.fecha() != null ? request.fecha() : LocalDate.now());
+        if (request != null && request.metodoPago() != null) {
+            m.setMetodoPago(request.metodoPago());
+        }
+        if (request != null && request.valor() != null) {
+            m.setValor(request.valor().setScale(2, RoundingMode.HALF_UP));
+        }
+        if (request != null && request.referencia() != null && !request.referencia().isBlank()) {
+            m.setReferencia(request.referencia().trim());
+        }
+        return MovimientoResponse.from(movimientoRepository.save(m));
+    }
+
     @Transactional
     public MovimientoResponse anular(Long id, String motivo) {
         MovimientoFinanciero movimiento = movimientoRepository.findById(id)
@@ -130,7 +161,7 @@ public class FinanzasService {
         if (movimiento.isAnulado()) {
             throw new FinanzasException(FinanzasErrorCode.MOVIMIENTO_YA_ANULADO);
         }
-        if (movimiento.getPagoId() != null) {
+        if (movimiento.getPagoId() != null || movimiento.getAbonoId() != null) {
             throw new FinanzasException(FinanzasErrorCode.MOVIMIENTO_AUTOMATICO, movimiento.getReferencia());
         }
         movimiento.setAnulado(true);
@@ -171,6 +202,9 @@ public class FinanzasService {
         BigDecimal utilidadAnt = ingresosAnt.subtract(egresosAnt);
 
         String granularidad = dias > 62 ? "MES" : "DIA";
+        List<Object[]> filasPorPagar = movimientoRepository.resumenPorPagar(LocalDate.now());
+        Object[] porPagar = filasPorPagar.isEmpty() || filasPorPagar.getFirst()[0] == null
+                ? new Object[]{0L, BigDecimal.ZERO, 0L, BigDecimal.ZERO} : filasPorPagar.getFirst();
         return new ResumenFinanciero(
                 inicio,
                 fin,
@@ -184,7 +218,11 @@ public class FinanzasService {
                 desglose(totales, TipoMovimiento.EGRESO, egresos),
                 serie(inicio, fin, granularidad),
                 new Comparativo(antInicio, antFin, ingresosAnt, egresosAnt, utilidadAnt,
-                        variacion(ingresos, ingresosAnt), variacion(egresos, egresosAnt), variacion(utilidad, utilidadAnt))
+                        variacion(ingresos, ingresosAnt), variacion(egresos, egresosAnt), variacion(utilidad, utilidadAnt)),
+                porPagar[1] instanceof BigDecimal v1 ? v1 : BigDecimal.ZERO,
+                ((Number) porPagar[0]).longValue(),
+                porPagar[3] instanceof BigDecimal v3 ? v3 : BigDecimal.ZERO,
+                porPagar[2] == null ? 0 : ((Number) porPagar[2]).longValue()
         );
     }
 

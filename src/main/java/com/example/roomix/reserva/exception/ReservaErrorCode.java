@@ -15,7 +15,13 @@ public enum ReservaErrorCode {
     RESERVA_NO_CANCELABLE("RES-007", "Solo se cancelan reservas confirmadas (antes del check-in)", HttpStatus.UNPROCESSABLE_ENTITY),
     MOTIVO_CANCELACION_REQUERIDO("RES-008", "Indique el motivo de la cancelación", HttpStatus.BAD_REQUEST),
     CHECKIN_NO_PERMITIDO("RES-009", "No se puede hacer check-in de esta reserva", HttpStatus.UNPROCESSABLE_ENTITY),
-    CHECKOUT_NO_PERMITIDO("RES-010", "No se puede hacer check-out de esta reserva", HttpStatus.UNPROCESSABLE_ENTITY);
+    CHECKOUT_NO_PERMITIDO("RES-010", "No se puede hacer check-out de esta reserva", HttpStatus.UNPROCESSABLE_ENTITY),
+    HUESPED_CON_RESERVA_EN_FECHAS("RES-011", "El huésped ya tiene una reserva activa en esas fechas", HttpStatus.UNPROCESSABLE_ENTITY),
+    PROMOCION_NO_ENCONTRADA("RES-012", "Promoción no encontrada", HttpStatus.NOT_FOUND),
+    PROMOCION_NO_APLICA("RES-013", "La promoción no aplica a esta reserva", HttpStatus.UNPROCESSABLE_ENTITY),
+    PROMOCION_INVALIDA("RES-014", "Los datos de la promoción no son válidos", HttpStatus.BAD_REQUEST),
+    ABONO_INSUFICIENTE("RES-015", "El abono no alcanza el mínimo exigido para reservar", HttpStatus.UNPROCESSABLE_ENTITY),
+    RESERVA_REQUIERE_PAGO("RES-016", "Las reservas se registran desde el formulario de reserva, con su pago", HttpStatus.UNPROCESSABLE_ENTITY);
 
     private final String codigo;
     private final String mensaje;

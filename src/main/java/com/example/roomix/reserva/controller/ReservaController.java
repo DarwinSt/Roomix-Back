@@ -44,6 +44,7 @@ public class ReservaController {
     private final ReservaService reservaService;
     private final ReservaOperacionService operacionService;
     private final FacturacionService facturacionService;
+    private final com.example.roomix.finanzas.service.AbonoService abonoService;
 
     @Operation(summary = "Listar reservas con filtros opcionales")
     @GetMapping
@@ -86,7 +87,7 @@ public class ReservaController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ReservaResponse crear(@Valid @RequestBody CrearReservaRequest request) {
-        return reservaService.crear(request);
+        return operacionService.crear(request);
     }
 
     @Operation(summary = "Modificar reserva",
@@ -118,6 +119,33 @@ public class ReservaController {
     @GetMapping("/{id}/cuenta")
     public CuentaResponse cuenta(@PathVariable Long id) {
         return facturacionService.cuentaReserva(id);
+    }
+
+    @Operation(summary = "Cotizar una reserva: subtotal, descuento de la promoción, IVA y abono mínimo exigido")
+    @GetMapping("/cotizacion")
+    public com.example.roomix.finanzas.dto.AbonoDtos.Cotizacion cotizacion(
+            @RequestParam Long habitacionId,
+            @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate fechaEntrada,
+            @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate fechaSalida,
+            @RequestParam(required = false) Long promocionId,
+            @RequestParam(required = false) CanalReserva canal,
+            @RequestParam(required = false) Long huespedId
+    ) {
+        return abonoService.cotizar(habitacionId, fechaEntrada, fechaSalida, promocionId, canal, huespedId);
+    }
+
+    @Operation(summary = "Abonos de la reserva: total, mínimo exigido, abonado, saldo y lista de abonos")
+    @GetMapping("/{id}/abonos")
+    public com.example.roomix.finanzas.dto.AbonoDtos.ResumenAbonos abonos(@PathVariable Long id) {
+        return abonoService.resumen(id);
+    }
+
+    @Operation(summary = "Registrar un abono a la reserva")
+    @PostMapping("/{id}/abonos")
+    @org.springframework.web.bind.annotation.ResponseStatus(org.springframework.http.HttpStatus.CREATED)
+    public com.example.roomix.finanzas.dto.AbonoDtos.AbonoResponse registrarAbono(
+            @PathVariable Long id, @Valid @RequestBody com.example.roomix.finanzas.dto.AbonoDtos.AbonoRequest request) {
+        return abonoService.registrar(id, request);
     }
 
     @Operation(summary = "Canales de reserva")

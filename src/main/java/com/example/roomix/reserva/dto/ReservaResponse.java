@@ -35,7 +35,13 @@ public record ReservaResponse(
         LocalDateTime fechaHoraCancelacion,
         String registradaPor,
         LocalDateTime fechaHoraCreacion,
-        LocalDateTime fechaHoraUltimaActualizacion
+        LocalDateTime fechaHoraUltimaActualizacion,
+        @Schema(description = "Noches × tarifa, antes del descuento") BigDecimal subtotal,
+        BigDecimal descuento,
+        Long promocionId,
+        String promocionNombre,
+        @Schema(description = "Parte del abono retenida como penalidad al cancelar") BigDecimal valorPenalidad,
+        @Schema(description = "Parte del abono devuelta al huésped al cancelar") BigDecimal valorDevuelto
 ) {
     public static ReservaResponse from(Reserva reserva) {
         return ReservaResponse.builder()
@@ -58,6 +64,12 @@ public record ReservaResponse(
                 .motivoCancelacion(reserva.getMotivoCancelacion())
                 .fechaHoraCancelacion(reserva.getFechaHoraCancelacion())
                 .registradaPor(reserva.getRegistradaPor())
+                .subtotal(reserva.getTarifaNoche().multiply(BigDecimal.valueOf(reserva.getCantidadNoches())))
+                .descuento(reserva.getDescuento() != null ? reserva.getDescuento() : BigDecimal.ZERO)
+                .promocionId(reserva.getPromocion() != null ? reserva.getPromocion().getId() : null)
+                .promocionNombre(reserva.getPromocion() != null ? reserva.getPromocion().getNombre() : null)
+                .valorPenalidad(reserva.getValorPenalidad())
+                .valorDevuelto(reserva.getValorDevuelto())
                 .fechaHoraCreacion(reserva.getFechaHoraCreacion())
                 .fechaHoraUltimaActualizacion(reserva.getFechaHoraUltimaActualizacion())
                 .build();

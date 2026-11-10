@@ -34,6 +34,27 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long>, JpaSpec
             Collection<EstadoReserva> estados
     );
 
+    /** Reserva más próxima de la habitación en un estado (la confirmada que llega primero o la estadía en curso). */
+    Optional<Reserva> findFirstByHabitacionIdAndEstadoReservaOrderByFechaEntradaAsc(Long habitacionId, EstadoReserva estado);
+
+    /** El huésped ya tiene una reserva activa (en cualquier habitación) que se cruza con las fechas. */
+    @Query("""
+            SELECT CASE WHEN COUNT(r) > 0 THEN TRUE ELSE FALSE END
+            FROM Reserva r
+            WHERE r.huesped.id = :huespedId
+              AND (:reservaId IS NULL OR r.id <> :reservaId)
+              AND r.estadoReserva IN :estadosActivos
+              AND r.fechaEntrada < :fechaSalida
+              AND r.fechaSalida > :fechaEntrada
+            """)
+    boolean existeSolapamientoHuesped(
+            @Param("huespedId") Long huespedId,
+            @Param("reservaId") Long reservaId,
+            @Param("fechaEntrada") LocalDate fechaEntrada,
+            @Param("fechaSalida") LocalDate fechaSalida,
+            @Param("estadosActivos") Collection<EstadoReserva> estadosActivos
+    );
+
     List<Reserva> findByHuespedIdOrderByFechaEntradaDesc(Long huespedId);
 
     List<Reserva> findByHabitacionIdOrderByFechaEntradaDesc(Long habitacionId);

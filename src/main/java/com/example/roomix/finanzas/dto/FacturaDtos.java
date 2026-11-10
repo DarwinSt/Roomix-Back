@@ -72,10 +72,11 @@ public final class FacturaDtos {
 
     @Schema(name = "PagoResponse")
     public record PagoResponse(Long id, BigDecimal valor, MetodoPago metodo, String metodoNombre, String referencia,
-                               LocalDateTime fechaHora, String registradoPor) {
+                               LocalDateTime fechaHora, String registradoPor, boolean devuelto,
+                               LocalDateTime fechaHoraDevolucion) {
         static PagoResponse from(Pago p) {
             return new PagoResponse(p.getId(), p.getValor(), p.getMetodo(), p.getMetodo().getNombre(), p.getReferencia(),
-                    p.getFechaHora(), p.getRegistradoPor());
+                    p.getFechaHora(), p.getRegistradoPor(), p.isDevuelto(), p.getFechaHoraDevolucion());
         }
     }
 
@@ -118,7 +119,7 @@ public final class FacturaDtos {
                     f.getHuesped() != null ? f.getHuesped().getId() : null,
                     f.getClienteNombre(), f.getClienteDocumento(), f.getClienteEmail(),
                     f.getFechaEmision(), f.getSubtotal(), f.getPorcentajeImpuesto(), f.getImpuesto(), f.getTotal(),
-                    f.getTotalPagado(), f.saldo(), f.getEstado(), f.getObservaciones(), f.getMotivoAnulacion(),
+                    f.getTotalPagado(), f.getEstado() == EstadoFactura.ANULADA ? BigDecimal.ZERO : f.saldo(), f.getEstado(), f.getObservaciones(), f.getMotivoAnulacion(),
                     f.getEmitidaPor(),
                     f.getItems().stream().map(ItemResponse::from).toList(),
                     f.getPagos().stream().map(PagoResponse::from).toList()

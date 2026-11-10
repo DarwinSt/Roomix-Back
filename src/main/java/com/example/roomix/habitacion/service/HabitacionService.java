@@ -172,6 +172,7 @@ public class HabitacionService {
             habitacion.setEstado(EstadoHabitacion.INHABILITADO);
             habitacion.setMotivoInhabilitacion(MotivoInhabilitacion.POST_CHECKOUT);
             habitacion.setEstadoRetorno(EstadoHabitacion.LIBRE);
+            reservaService.sincronizarReservaVigente(habitacion);
             Habitacion guardada = habitacionRepository.save(habitacion);
             incidenciaService.crearLimpiezaPostCheckout(guardada);
             return responder(guardada);
@@ -202,6 +203,9 @@ public class HabitacionService {
         }
 
         habitacion.setEstado(request.estado());
+        if (request.estado() == EstadoHabitacion.LIBRE) {
+            reservaService.sincronizarReservaVigente(habitacion);
+        }
         Habitacion guardada = habitacionRepository.save(habitacion);
         inhabilitacionService.sincronizar(guardada);
         return responder(habitacionRepository.save(guardada));
@@ -335,12 +339,11 @@ public class HabitacionService {
             throw new ReservaInvalidaException("La fecha de salida debe ser posterior a la de entrada");
         }
 
-        int noches = (int) ChronoUnit.DAYS.between(entrada, salida);
-        if (noches < 1) {
-            throw new ReservaInvalidaException("La reserva debe incluir al menos 1 noche");
-        }
-
-        reservaService.registrarEnHabitacion(habitacion, entrada, salida, huespedId);
+        // Una reserva siempre se registra con su pago (completo o abono) desde POST /api/reservas;
+        // el cambio de estado de la habitación no crea reservas para no saltarse ese requisito.
+        throw new com.example.roomix.reserva.exception.ReservaException(
+                com.example.roomix.reserva.exception.ReservaErrorCode.RESERVA_REQUIERE_PAGO,
+                "Para reservar la habitación " + habitacion.getNumero() + " use «Reservar»: allí se registra el pago completo o el abono");
     }
 
     private HabitacionResponse responder(Habitacion habitacion) {

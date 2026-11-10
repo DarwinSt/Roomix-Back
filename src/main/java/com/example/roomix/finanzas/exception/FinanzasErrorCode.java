@@ -16,7 +16,12 @@ public enum FinanzasErrorCode implements ModuloErrorCode {
     FACTURA_SIN_ITEMS(HttpStatus.UNPROCESSABLE_ENTITY, "FIN-008", "No hay conceptos para facturar"),
     RESERVA_NO_FACTURABLE(HttpStatus.UNPROCESSABLE_ENTITY, "FIN-009", "Solo se facturan reservas en curso o finalizadas (estado actual: %s)"),
     FACTURA_PAGADA(HttpStatus.UNPROCESSABLE_ENTITY, "FIN-010", "La factura %s ya está pagada en su totalidad"),
-    PAGO_NO_ENCONTRADO(HttpStatus.NOT_FOUND, "FIN-011", "No se encontró el pago con id %s");
+    PAGO_NO_ENCONTRADO(HttpStatus.NOT_FOUND, "FIN-011", "No se encontró el pago con id %s"),
+    ABONO_EXCEDE_TOTAL(HttpStatus.UNPROCESSABLE_ENTITY, "FIN-012", "El abono (%s) supera el saldo pendiente de la reserva (%s)"),
+    RESERVA_NO_ABONABLE(HttpStatus.UNPROCESSABLE_ENTITY, "FIN-013", "Solo se registran abonos en reservas confirmadas o en curso (estado actual: %s)"),
+    MOVIMIENTO_NO_PENDIENTE(HttpStatus.UNPROCESSABLE_ENTITY, "FIN-014", "El movimiento no está pendiente de pago"),
+    GASTO_RECURRENTE_NO_ENCONTRADO(HttpStatus.NOT_FOUND, "FIN-015", "No se encontró el gasto recurrente con id %s"),
+    PENDIENTE_SOLO_EGRESOS(HttpStatus.BAD_REQUEST, "FIN-016", "Solo los egresos pueden quedar pendientes de pago");
 
     private final HttpStatus httpStatus;
     private final String code;

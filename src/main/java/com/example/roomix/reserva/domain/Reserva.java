@@ -79,6 +79,21 @@ public class Reserva {
     @Builder.Default
     private CanalReserva canal = CanalReserva.PRESENCIAL;
 
+    /** Promoción aplicada (una por reserva); el total estimado ya descuenta su valor. */
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "promocion_id")
+    private Promocion promocion;
+
+    @Column(precision = 12, scale = 2)
+    private BigDecimal descuento;
+
+    /** Al cancelar con abonos: parte retenida como penalidad y parte devuelta al huésped. */
+    @Column(name = "valor_penalidad", precision = 12, scale = 2)
+    private BigDecimal valorPenalidad;
+
+    @Column(name = "valor_devuelto", precision = 12, scale = 2)
+    private BigDecimal valorDevuelto;
+
     @Column(length = 500)
     private String observaciones;
 

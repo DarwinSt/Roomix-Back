@@ -32,6 +32,15 @@ public class ReservaOperacionService {
     private final ReservaService reservaService;
     private final HabitacionService habitacionService;
     private final FacturacionService facturacionService;
+    private final com.example.roomix.finanzas.service.AbonoService abonoService;
+
+    /** Crea la reserva y exige/registra el abono inicial en la misma transacción (si falla, no queda nada). */
+    @org.springframework.transaction.annotation.Transactional
+    public ReservaResponse crear(com.example.roomix.reserva.dto.CrearReservaRequest request) {
+        ReservaResponse reserva = reservaService.crear(request);
+        abonoService.registrarAbonoInicial(reserva.id(), request.abonoInicial());
+        return reservaService.obtenerPorId(reserva.id());
+    }
 
     public HabitacionResponse checkIn(Long reservaId) {
         Reserva reserva = reservaService.buscarReserva(reservaId);
@@ -44,6 +53,14 @@ public class ReservaOperacionService {
                     "La llegada está prevista para el " + reserva.getFechaEntrada() + ". Modifique la reserva si el huésped llegó antes");
         }
         Habitacion habitacion = reserva.getHabitacion();
+        boolean esReservaVigente = habitacion.getHuesped() != null
+                && habitacion.getHuesped().getId().equals(reserva.getHuesped().getId())
+                && reserva.getFechaEntrada().equals(habitacion.getFechaEntrada());
+        if (habitacion.getEstado() == EstadoHabitacion.RESERVADO && !esReservaVigente) {
+            throw new ReservaException(ReservaErrorCode.CHECKIN_NO_PERMITIDO,
+                    "La habitación " + habitacion.getNumero() + " tiene antes la reserva con llegada el "
+                            + habitacion.getFechaEntrada() + "; regístrela o cancélela primero");
+        }
         if (habitacion.getEstado() != EstadoHabitacion.RESERVADO) {
             throw new ReservaException(ReservaErrorCode.CHECKIN_NO_PERMITIDO,
                     "La habitación " + habitacion.getNumero() + " está " + habitacion.getEstado().name().toLowerCase()

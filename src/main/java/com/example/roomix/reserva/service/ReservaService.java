@@ -17,7 +17,9 @@ import com.example.roomix.huesped.domain.Huesped;
 import com.example.roomix.huesped.exception.HuespedErrorCode;
 import com.example.roomix.huesped.exception.HuespedException;
 import com.example.roomix.huesped.service.HuespedService;
+import com.example.roomix.reserva.domain.Promocion;
 import com.example.roomix.reserva.domain.Reserva;
+import com.example.roomix.reserva.domain.ReservaCanceladaEvent;
 import com.example.roomix.reserva.dto.CrearReservaRequest;
 import com.example.roomix.reserva.dto.HabitacionDisponibilidadCheckResponse;
 import com.example.roomix.reserva.dto.HabitacionDisponibleResponse;
@@ -27,6 +29,7 @@ import com.example.roomix.reserva.exception.ReservaException;
 import com.example.roomix.reserva.repository.ReservaRepository;
 import com.example.roomix.reserva.repository.ReservaSpecifications;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +55,8 @@ public class ReservaService {
     private final HabitacionInhabilitacionService inhabilitacionService;
     private final HuespedService huespedService;
     private final TarifaService tarifaService;
+    private final PromocionService promocionService;
+    private final ApplicationEventPublisher eventos;
 
     public List<ReservaResponse> listar(
             EstadoReserva estado,
@@ -144,43 +149,49 @@ public class ReservaService {
 
         inhabilitacionService.sincronizar(habitacion);
 
-        if (habitacion.getEstado() != EstadoHabitacion.LIBRE) {
-            throw new ReservaException(ReservaErrorCode.HABITACION_NO_LIBRE);
-        }
-
+        // La disponibilidad se decide por fechas (sin cruces), no por el estado actual de la habitación:
+        // así se aceptan reservas anticipadas de habitaciones hoy ocupadas o reservadas.
         Huesped huesped = huespedService.buscarActivo(request.huespedId());
-        huespedService.validarDisponibleParaAsignar(huesped, habitacion.getId());
+        validarHuespedSinCruce(huesped.getId(), null, request.fechaEntrada(), request.fechaSalida());
 
         Reserva reserva = registrarReserva(habitacion, huesped, request.fechaEntrada(), request.fechaSalida());
         reserva.setCanal(request.canal() != null ? request.canal() : CanalReserva.PRESENCIAL);
         reserva.setObservaciones(StringUtils.hasText(request.observaciones()) ? request.observaciones().trim() : null);
+        if (request.promocionId() != null) {
+            aplicarPromocion(reserva, promocionService.validarAplicable(request.promocionId(), habitacion,
+                    reserva.getCantidadNoches(), reserva.getCanal(), reserva.getFechaEntrada()));
+        }
         reservaRepository.save(reserva);
-        aplicarSnapshotEnHabitacion(habitacion, reserva, huesped);
-        habitacion.setEstado(EstadoHabitacion.RESERVADO);
+        sincronizarReservaVigente(habitacion);
         habitacionRepository.save(habitacion);
         return ReservaResponse.from(reserva);
     }
 
+    /**
+     * La habitación refleja su reserva vigente: la estadía en curso o, si no la hay, la confirmada que llega primero.
+     * Si existe una próxima reserva, la habitación libre pasa a Reservada y la inhabilitada (limpieza o adecuación)
+     * vuelve a Reservada al terminar.
+     */
     @Transactional
-    public Reserva registrarEnHabitacion(
-            Habitacion habitacion,
-            LocalDate fechaEntrada,
-            LocalDate fechaSalida,
-            Long huespedId
-    ) {
-        if (huespedId == null) {
-            throw new HuespedException(HuespedErrorCode.HUESPED_REQUERIDO);
+    public void sincronizarReservaVigente(Habitacion habitacion) {
+        if (habitacion.getEstado() == EstadoHabitacion.OCUPADO) {
+            return;
         }
-        Huesped huesped = huespedService.buscarActivo(huespedId);
-        huespedService.validarDisponibleParaAsignar(huesped, habitacion.getId());
-        Reserva reserva = registrarReserva(habitacion, huesped, fechaEntrada, fechaSalida);
-        aplicarSnapshotEnHabitacion(habitacion, reserva, huesped);
-        return reserva;
+        reservaRepository.findFirstByHabitacionIdAndEstadoReservaOrderByFechaEntradaAsc(habitacion.getId(), EstadoReserva.CONFIRMADA)
+                .ifPresent(proxima -> {
+                    aplicarSnapshotEnHabitacion(habitacion, proxima, proxima.getHuesped());
+                    if (habitacion.getEstado() == EstadoHabitacion.LIBRE) {
+                        habitacion.setEstado(EstadoHabitacion.RESERVADO);
+                    } else if (habitacion.getEstado() == EstadoHabitacion.INHABILITADO
+                            && habitacion.getEstadoRetorno() != EstadoHabitacion.OCUPADO) {
+                        habitacion.setEstadoRetorno(EstadoHabitacion.RESERVADO);
+                    }
+                });
     }
 
     @Transactional
     public void marcarEnCurso(Habitacion habitacion) {
-        reservaRepository.findFirstByHabitacionIdAndEstadoReservaIn(habitacion.getId(), ESTADOS_ACTIVOS)
+        reservaRepository.findFirstByHabitacionIdAndEstadoReservaOrderByFechaEntradaAsc(habitacion.getId(), EstadoReserva.CONFIRMADA)
                 .ifPresent(reserva -> {
                     reserva.setEstadoReserva(EstadoReserva.EN_CURSO);
                     reserva.setHoraRealCheckIn(LocalDateTime.now());
@@ -190,7 +201,7 @@ public class ReservaService {
 
     @Transactional
     public void finalizar(Habitacion habitacion, LocalDateTime horaCheckOut) {
-        reservaRepository.findFirstByHabitacionIdAndEstadoReservaIn(habitacion.getId(), ESTADOS_ACTIVOS)
+        reservaRepository.findFirstByHabitacionIdAndEstadoReservaOrderByFechaEntradaAsc(habitacion.getId(), EstadoReserva.EN_CURSO)
                 .ifPresent(reserva -> {
                     reserva.setEstadoReserva(EstadoReserva.FINALIZADA);
                     reserva.setHoraRealCheckOut(horaCheckOut);
@@ -200,7 +211,7 @@ public class ReservaService {
 
     @Transactional
     public void cancelar(Habitacion habitacion) {
-        reservaRepository.findFirstByHabitacionIdAndEstadoReservaIn(habitacion.getId(), ESTADOS_ACTIVOS)
+        reservaRepository.findFirstByHabitacionIdAndEstadoReservaOrderByFechaEntradaAsc(habitacion.getId(), EstadoReserva.CONFIRMADA)
                 .ifPresent(reserva -> {
                     reserva.setEstadoReserva(EstadoReserva.CANCELADA);
                     reserva.setFechaHoraCancelacion(LocalDateTime.now());
@@ -208,6 +219,7 @@ public class ReservaService {
                         reserva.setMotivoCancelacion("Cancelada desde el módulo de habitaciones");
                     }
                     reservaRepository.save(reserva);
+                    eventos.publishEvent(new ReservaCanceladaEvent(reserva.getId()));
                 });
     }
 
@@ -254,9 +266,8 @@ public class ReservaService {
         if (estado == EstadoReserva.CONFIRMADA) {
             if (request.huespedId() != null && !request.huespedId().equals(reserva.getHuesped().getId())) {
                 Huesped nuevo = huespedService.buscarActivo(request.huespedId());
-                huespedService.validarDisponibleParaAsignar(nuevo, habitacion.getId());
+                validarHuespedSinCruce(nuevo.getId(), reserva.getId(), entrada, salida);
                 reserva.setHuesped(nuevo);
-                habitacion.setHuesped(nuevo);
             }
             if (request.canal() != null) {
                 reserva.setCanal(request.canal());
@@ -266,13 +277,26 @@ public class ReservaService {
         reserva.setFechaSalida(salida);
         reserva.setCantidadNoches(noches);
         reserva.setTotalEstimado(reserva.getTarifaNoche().multiply(BigDecimal.valueOf(noches)));
+        Promocion promocion = reserva.getPromocion();
+        if (promocion != null) {
+            if (promocion.aplica(noches, habitacion.getTipoHabitacion(), reserva.getCanal(), reserva.getFechaEntrada())) {
+                aplicarPromocion(reserva, promocion);
+            } else {
+                reserva.setPromocion(null);
+                reserva.setDescuento(null);
+            }
+        }
         reserva.setObservaciones(StringUtils.hasText(request.observaciones()) ? request.observaciones().trim() : null);
 
-        habitacion.setFechaEntrada(reserva.getFechaEntrada());
-        habitacion.setFechaSalida(salida);
-        habitacion.setCantidadNoches(noches);
+        Reserva guardada = reservaRepository.save(reserva);
+        if (estado == EstadoReserva.EN_CURSO) {
+            habitacion.setFechaSalida(salida);
+            habitacion.setCantidadNoches(noches);
+        } else {
+            sincronizarReservaVigente(habitacion);
+        }
         habitacionRepository.save(habitacion);
-        return ReservaResponse.from(reservaRepository.save(reserva));
+        return ReservaResponse.from(guardada);
     }
 
     /** Cancela una reserva confirmada (antes del check-in) registrando el motivo, y libera la habitación. */
@@ -290,6 +314,7 @@ public class ReservaService {
         reserva.setMotivoCancelacion(motivo.trim());
         reserva.setFechaHoraCancelacion(LocalDateTime.now());
         reservaRepository.save(reserva);
+        eventos.publishEvent(new ReservaCanceladaEvent(reserva.getId()));
 
         Habitacion habitacion = reserva.getHabitacion();
         boolean esReservaActual = habitacion.getHuesped() != null
@@ -308,6 +333,7 @@ public class ReservaService {
             } else if (habitacion.getEstadoRetorno() == EstadoHabitacion.RESERVADO) {
                 habitacion.setEstadoRetorno(EstadoHabitacion.LIBRE);
             }
+            sincronizarReservaVigente(habitacion);
             inhabilitacionService.sincronizar(habitacion);
             habitacionRepository.save(habitacion);
         }
@@ -327,10 +353,7 @@ public class ReservaService {
     public boolean estaDisponibleParaReserva(Habitacion habitacion, LocalDate entrada, LocalDate salida) {
         inhabilitacionService.sincronizar(habitacion);
 
-        if (habitacion.getEstado() != EstadoHabitacion.LIBRE) {
-            return false;
-        }
-        if (inhabilitacionService.tieneLimpiezaPendiente(habitacion.getId())) {
+        if (!entrada.isAfter(LocalDate.now()) && inhabilitacionService.tieneLimpiezaPendiente(habitacion.getId())) {
             return false;
         }
         if (inhabilitacionService.tieneMantenimientoEnRango(habitacion.getId(), entrada, salida)) {
@@ -369,8 +392,24 @@ public class ReservaService {
         return reservaRepository.save(reserva);
     }
 
+    /** Total = noches × tarifa − descuento de la promoción (que nunca supera el subtotal). */
+    private void aplicarPromocion(Reserva reserva, Promocion promocion) {
+        BigDecimal subtotal = reserva.getTarifaNoche().multiply(BigDecimal.valueOf(reserva.getCantidadNoches()));
+        BigDecimal descuento = promocion.descuentoSobre(subtotal);
+        reserva.setPromocion(promocion);
+        reserva.setDescuento(descuento);
+        reserva.setTotalEstimado(subtotal.subtract(descuento));
+    }
+
+    private void validarHuespedSinCruce(Long huespedId, Long reservaId, LocalDate entrada, LocalDate salida) {
+        if (reservaRepository.existeSolapamientoHuesped(huespedId, reservaId, entrada, salida, ESTADOS_ACTIVOS)) {
+            throw new ReservaException(ReservaErrorCode.HUESPED_CON_RESERVA_EN_FECHAS);
+        }
+    }
+
     private void validarDisponibilidadOperativa(Habitacion habitacion, LocalDate entrada, LocalDate salida) {
-        if (inhabilitacionService.tieneLimpiezaPendiente(habitacion.getId())) {
+        // La limpieza posterior a un check-out solo impide las llegadas de hoy (o atrasadas)
+        if (!entrada.isAfter(LocalDate.now()) && inhabilitacionService.tieneLimpiezaPendiente(habitacion.getId())) {
             throw new HabitacionNoDisponibleException(
                     "La habitación tiene limpieza pendiente tras el último check-out"
             );

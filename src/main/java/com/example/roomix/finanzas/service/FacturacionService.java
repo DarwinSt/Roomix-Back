@@ -1,5 +1,6 @@
 package com.example.roomix.finanzas.service;
 
+import com.example.roomix.finanzas.domain.CategoriaFinanciera;
 import com.example.roomix.auth.service.UsuarioActual;
 import com.example.roomix.common.dto.PaginaResponse;
 import com.example.roomix.config.HotelProperties;
@@ -63,6 +64,7 @@ public class FacturacionService {
     private final ServicioService servicioService;
     private final EventoService eventoService;
     private final FinanzasService finanzasService;
+    private final AbonoService abonoService;
     private final HotelProperties hotel;
 
     // ------------------------------------------------------------------ Consultas
@@ -105,7 +107,8 @@ public class FacturacionService {
         BigDecimal impuesto = calcularImpuesto(subtotal, porcentaje);
 
         List<Factura> facturas = facturasVigentesDeReserva(reserva.getId());
-        BigDecimal pagado = facturas.stream().map(Factura::getTotalPagado).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal pagado = facturas.stream().map(Factura::getTotalPagado).reduce(BigDecimal.ZERO, BigDecimal::add)
+                .add(abonoService.abonadoSinAplicar(reserva.getId()));
         BigDecimal total = subtotal.add(impuesto);
         return new CuentaResponse(
                 reserva.getId(),
@@ -171,7 +174,9 @@ public class FacturacionService {
         String observacion = porcentaje.signum() == 0
                 ? "Exento de IVA: servicio turístico prestado a no residente (art. 481 lit. d, E.T.)"
                 : null;
-        return FacturaResponse.from(guardar(factura, items, porcentaje, observacion));
+        Factura guardada = guardar(factura, items, porcentaje, observacion);
+        abonoService.aplicarAFactura(guardada);
+        return FacturaResponse.from(facturaRepository.save(guardada));
     }
 
     @Transactional
@@ -261,9 +266,24 @@ public class FacturacionService {
         if (factura.getEstado() == EstadoFactura.ANULADA) {
             throw new FinanzasException(FinanzasErrorCode.FACTURA_ANULADA, factura.getNumero());
         }
-        String detalle = "Anulación de " + factura.getNumero() + ": " + motivo.trim();
+        // Reversa: cada pago recibido se devuelve al cliente. El ingreso original se conserva (el dinero sí entró)
+        // y se registra un egreso de devolución por el mismo valor y medio de pago, de modo que la caja cuadre.
+        LocalDateTime ahora = LocalDateTime.now();
         for (Pago pago : factura.getPagos()) {
-            finanzasService.anularPorPago(pago.getId(), detalle);
+            if (pago.isDevuelto()) {
+                continue;
+            }
+            finanzasService.registrarAutomatico(
+                    CategoriaFinanciera.OTROS_EGRESOS,
+                    "Devolución del pago de la factura " + factura.getNumero() + " anulada: " + motivo.trim(),
+                    pago.getValor(),
+                    pago.getMetodo(),
+                    factura.getClienteNombre(),
+                    pago.getReferencia(),
+                    factura.getId(),
+                    pago.getId());
+            pago.setDevuelto(true);
+            pago.setFechaHoraDevolucion(ahora);
         }
         factura.setEstado(EstadoFactura.ANULADA);
         factura.setMotivoAnulacion(motivo.trim());
@@ -352,6 +372,10 @@ public class FacturacionService {
         String descripcion = "Alojamiento habitación " + r.getHabitacion().getNumero()
                 + " — " + r.getCantidadNoches() + " noche(s) del " + r.getFechaEntrada().format(DIA)
                 + " al " + r.getFechaSalida().format(DIA);
+        if (r.getDescuento() != null && r.getDescuento().signum() > 0 && r.getPromocion() != null) {
+            descripcion += " — Promoción «" + r.getPromocion().getNombre() + "»: −$"
+                    + String.format(java.util.Locale.forLanguageTag("es-CO"), "%,.0f", r.getDescuento());
+        }
         return new LineaCuenta(descripcion, BigDecimal.valueOf(r.getCantidadNoches()), r.getTarifaNoche(),
                 r.getTotalEstimado(), OrigenItem.ALOJAMIENTO, r.getId(), facturado);
     }
@@ -376,13 +400,7 @@ public class FacturacionService {
 
     /** Turista extranjero no residente (pasaporte y nacionalidad distinta a Colombia). */
     boolean exentoIva(Huesped huesped) {
-        if (!hotel.exentoIvaExtranjeros() || huesped == null) {
-            return false;
-        }
-        String nacionalidad = huesped.getNacionalidad() == null ? "" : huesped.getNacionalidad().trim();
-        return huesped.getTipoDocumento() == TipoDocumento.PASAPORTE
-                && !nacionalidad.isEmpty()
-                && !nacionalidad.equalsIgnoreCase("Colombia");
+        return ReglaIva.exento(hotel, huesped);
     }
 
     private static BigDecimal calcularImpuesto(BigDecimal subtotal, BigDecimal porcentaje) {
