@@ -17,6 +17,9 @@ public interface MovimientoFinancieroRepository
 
     List<MovimientoFinanciero> findByPagoIdAndAnuladoFalse(Long pagoId);
 
+    /** Movimientos de un turno de caja (incluye anulados para el detalle). */
+    List<MovimientoFinanciero> findByTurnoCajaIdOrderByFechaHoraCreacionAsc(Long turnoCajaId);
+
     List<MovimientoFinanciero> findByFacturaIdAndAnuladoFalse(Long facturaId);
 
     /** Egresos aún por pagar generados por un gasto recurrente. */

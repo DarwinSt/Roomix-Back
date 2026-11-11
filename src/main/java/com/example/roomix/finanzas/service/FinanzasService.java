@@ -1,6 +1,7 @@
 package com.example.roomix.finanzas.service;
 
 import com.example.roomix.auth.service.UsuarioActual;
+import com.example.roomix.caja.service.CajaTurnoResolver;
 import com.example.roomix.common.dto.PaginaResponse;
 import com.example.roomix.finanzas.domain.CategoriaFinanciera;
 import com.example.roomix.finanzas.domain.EstadoFactura;
@@ -49,6 +50,7 @@ public class FinanzasService {
 
     private final MovimientoFinancieroRepository movimientoRepository;
     private final FacturaRepository facturaRepository;
+    private final CajaTurnoResolver cajaTurnoResolver;
 
     public PaginaResponse<MovimientoResponse> listar(
             TipoMovimiento tipo,
@@ -89,6 +91,8 @@ public class FinanzasService {
         }
         LocalDate fecha = pendiente && request.fechaVencimiento() != null ? request.fechaVencimiento()
                 : request.fecha() != null ? request.fecha() : LocalDate.now();
+        // Un gasto por pagar no mueve dinero: entra a la caja cuando se paga
+        Long turnoCaja = pendiente ? null : cajaTurnoResolver.turnoParaMovimiento();
         MovimientoFinanciero movimiento = MovimientoFinanciero.builder()
                 .tipo(request.tipo())
                 .categoria(request.categoria())
@@ -100,6 +104,7 @@ public class FinanzasService {
                 .metodoPago(request.metodoPago())
                 .tercero(textoOpcional(request.tercero()))
                 .referencia(textoOpcional(request.referencia()))
+                .turnoCajaId(turnoCaja)
                 .registradoPor(UsuarioActual.username())
                 .build();
         return MovimientoResponse.from(movimientoRepository.save(movimiento));
@@ -117,6 +122,7 @@ public class FinanzasService {
             Long facturaId,
             Long pagoId
     ) {
+        Long turnoCaja = cajaTurnoResolver.turnoParaMovimiento();
         return movimientoRepository.save(MovimientoFinanciero.builder()
                 .tipo(categoria.getTipo())
                 .categoria(categoria)
@@ -128,6 +134,7 @@ public class FinanzasService {
                 .referencia(referencia)
                 .facturaId(facturaId)
                 .pagoId(pagoId)
+                .turnoCajaId(turnoCaja)
                 .registradoPor(UsuarioActual.username())
                 .build());
     }
@@ -141,6 +148,7 @@ public class FinanzasService {
             throw new FinanzasException(FinanzasErrorCode.MOVIMIENTO_NO_PENDIENTE);
         }
         m.setPendiente(false);
+        m.setTurnoCajaId(cajaTurnoResolver.turnoParaMovimiento());
         m.setFecha(request != null && request.fecha() != null ? request.fecha() : LocalDate.now());
         if (request != null && request.metodoPago() != null) {
             m.setMetodoPago(request.metodoPago());
@@ -164,6 +172,7 @@ public class FinanzasService {
         if (movimiento.getPagoId() != null || movimiento.getAbonoId() != null) {
             throw new FinanzasException(FinanzasErrorCode.MOVIMIENTO_AUTOMATICO, movimiento.getReferencia());
         }
+        cajaTurnoResolver.validarAnulable(movimiento.getTurnoCajaId());
         movimiento.setAnulado(true);
         movimiento.setMotivoAnulacion(motivo.trim());
         return MovimientoResponse.from(movimientoRepository.save(movimiento));

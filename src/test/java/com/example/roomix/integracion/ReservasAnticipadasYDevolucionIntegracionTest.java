@@ -37,6 +37,7 @@ class ReservasAnticipadasYDevolucionIntegracionTest {
     void habitacionOcupadaAceptaReservaFuturaSinCruceYLaActivaAlSalir() throws Exception {
         String admin = token("admin");
         String recepcion = token("recepcion");
+        CajaDePrueba.abrirPara(mvc, recepcion, "recepcion", token("admin"));
         LocalDate hoy = LocalDate.now();
 
         long habitacionId = id(enviar(post("/api/habitaciones"), admin, """
@@ -83,6 +84,7 @@ class ReservasAnticipadasYDevolucionIntegracionTest {
     void anularFacturaPagadaDevuelveLosPagos() throws Exception {
         String admin = token("admin");
         String recepcion = token("recepcion");
+        CajaDePrueba.abrirPara(mvc, recepcion, "recepcion", token("admin"));
         String finanzas = token("finanzas");
         LocalDate hoy = LocalDate.now();
 

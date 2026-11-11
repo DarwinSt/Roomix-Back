@@ -125,6 +125,9 @@ public class SecurityConfig {
 
                         // Finanzas, facturación y reportes
                         .requestMatchers("/api/facturas/**").hasAnyRole(ADMIN, FINANZAS, RECEPCION)
+                        // Caja de recepción: consultan administración, finanzas y recepción; operan recepción y administración
+                        .requestMatchers(HttpMethod.GET, "/api/caja/**").hasAnyRole(ADMIN, FINANZAS, RECEPCION)
+                        .requestMatchers("/api/caja/**").hasAnyRole(ADMIN, RECEPCION)
                         .requestMatchers("/api/finanzas/**", "/api/reportes/**").hasAnyRole(ADMIN, FINANZAS)
 
                         // Dashboard, perfil propio y cualquier otra ruta: usuario autenticado

@@ -37,6 +37,7 @@ class FlujoHoteleroIntegracionTest {
     void estadiaCompletaConFacturacionYTrazabilidad() throws Exception {
         String admin = token("admin");
         String recepcion = token("recepcion");
+        CajaDePrueba.abrirPara(mvc, recepcion, "recepcion", token("admin"));
         String eventos = token("eventos");
         String finanzas = token("finanzas");
         LocalDate hoy = LocalDate.now();

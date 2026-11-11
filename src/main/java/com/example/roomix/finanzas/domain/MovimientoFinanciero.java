@@ -98,6 +98,10 @@ public class MovimientoFinanciero {
         return Boolean.TRUE.equals(pendiente);
     }
 
+    /** Turno de caja en el que se recibió o entregó el dinero (null: fuera de la caja de recepción). */
+    @Column(name = "turno_caja_id")
+    private Long turnoCajaId;
+
     @Column(name = "registrado_por", nullable = false, length = 50)
     private String registradoPor;
 

@@ -47,6 +47,7 @@ class AbonosPromocionesGastosIntegracionTest {
     void reservaConPromocionYAbonoMinimoSeFacturaConSusAbonos() throws Exception {
         String admin = token("admin");
         String recepcion = token("recepcion");
+        CajaDePrueba.abrirPara(mvc, recepcion, "recepcion", token("admin"));
         String finanzas = token("finanzas");
         LocalDate llegada = LocalDate.now();
 
@@ -135,6 +136,7 @@ class AbonosPromocionesGastosIntegracionTest {
     void cancelarConAbonoRetieneLaPenalidadYDevuelveElResto() throws Exception {
         String admin = token("admin");
         String recepcion = token("recepcion");
+        CajaDePrueba.abrirPara(mvc, recepcion, "recepcion", token("admin"));
         String finanzas = token("finanzas");
         enviar(put("/api/politicas-reserva"), admin, """
                 {"abonoMinimoPct":50,"penalidadCancelacionPct":20}""").andExpect(status().isOk());
