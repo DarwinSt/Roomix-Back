@@ -160,7 +160,7 @@ public class SecurityConfig {
                     .orElseThrow(() -> new DisabledException("Usuario inexistente o desactivado"));
             return new JwtAuthenticationToken(
                     jwt,
-                    List.of(new SimpleGrantedAuthority(usuario.getRol().autoridad())),
+                    usuario.roles().stream().map(r -> new SimpleGrantedAuthority(r.autoridad())).toList(),
                     usuario.getUsername()
             );
         };

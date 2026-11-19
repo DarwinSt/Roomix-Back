@@ -29,13 +29,19 @@ public final class UsuarioActual {
                 .orElse(null);
     }
 
+    /** Roles del usuario (principal y adicionales), sin el prefijo ROLE_. */
+    public static java.util.List<String> roles() {
+        return autenticacion()
+                .map(a -> a.getAuthorities().stream().map(GrantedAuthority::getAuthority)
+                        .map(r -> r.replaceFirst("^ROLE_", "")).toList())
+                .orElse(java.util.List.of());
+    }
+
+    /** true si el usuario tiene alguno de los roles indicados. */
     public static boolean tieneRol(String... roles) {
-        String actual = rol();
-        if (actual == null) {
-            return false;
-        }
+        java.util.List<String> actuales = roles();
         for (String r : roles) {
-            if (r.equals(actual)) {
+            if (actuales.contains(r)) {
                 return true;
             }
         }

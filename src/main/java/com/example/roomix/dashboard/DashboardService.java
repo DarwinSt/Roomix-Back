@@ -66,6 +66,7 @@ public class DashboardService {
     private final FinanzasService finanzasService;
     private final FacturaRepository facturaRepository;
     private final EventoService eventoService;
+    private final com.example.roomix.config.Licencia licencia;
 
     public DashboardResponse obtener() {
         String rol = UsuarioActual.rol();
@@ -75,9 +76,9 @@ public class DashboardService {
         boolean veHabitaciones = es(rol, Rol.ADMIN, Rol.RECEPCION, Rol.HOUSEKEEPING);
         boolean veRecepcion = es(rol, Rol.ADMIN, Rol.RECEPCION);
         boolean veOperacion = es(rol, Rol.ADMIN, Rol.RECEPCION, Rol.HOUSEKEEPING);
-        boolean veInventario = es(rol, Rol.ADMIN, Rol.ALMACEN, Rol.HOUSEKEEPING);
+        boolean veInventario = es(rol, Rol.ADMIN, Rol.ALMACEN, Rol.HOUSEKEEPING) && licencia.habilitado(com.example.roomix.config.Modulo.INVENTARIO);
         boolean veFinanzas = es(rol, Rol.ADMIN, Rol.FINANZAS);
-        boolean veEventos = es(rol, Rol.ADMIN, Rol.EVENTOS, Rol.RECEPCION);
+        boolean veEventos = es(rol, Rol.ADMIN, Rol.EVENTOS, Rol.RECEPCION) && licencia.habilitado(com.example.roomix.config.Modulo.EVENTOS);
 
         Habitaciones habitaciones = veHabitaciones ? habitaciones(alertas) : null;
 
@@ -206,9 +207,13 @@ public class DashboardService {
         return (int) stream.count();
     }
 
+    /** El usuario tiene alguno de los roles (se combinan el principal y los adicionales). */
     private static boolean es(String rol, Rol... roles) {
         if (rol == null) {
             return false;
+        }
+        if (UsuarioActual.tieneRol(java.util.Arrays.stream(roles).map(Enum::name).toArray(String[]::new))) {
+            return true;
         }
         for (Rol r : roles) {
             if (r.name().equals(rol)) {

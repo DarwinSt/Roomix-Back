@@ -214,7 +214,7 @@ public class CajaService {
     public PaginaResponse<TurnoResponse> historial(LocalDate desde, LocalDate hasta, String cajero, int pagina, int tamano) {
         LocalDate fin = hasta != null ? hasta : LocalDate.now();
         LocalDate inicio = desde != null ? desde : fin.minusDays(30);
-        String filtro = UsuarioActual.tieneRol("RECEPCION") ? UsuarioActual.username() : texto(cajero);
+        String filtro = soloRecepcion() ? UsuarioActual.username() : texto(cajero);
         return PaginaResponse.de(turnos.buscar(filtro, inicio.atStartOfDay(), fin.plusDays(1).atStartOfDay(),
                 PageRequest.of(Math.max(pagina, 0), Math.min(Math.max(tamano, 1), 100))), this::respuesta);
     }
@@ -316,9 +316,14 @@ public class CajaService {
     }
 
     private void validarConsulta(TurnoCaja turno) {
-        if (UsuarioActual.tieneRol("RECEPCION") && !turno.getCajero().equalsIgnoreCase(UsuarioActual.username())) {
+        if (soloRecepcion() && !turno.getCajero().equalsIgnoreCase(UsuarioActual.username())) {
             throw new CajaException(CajaErrorCode.SOLO_CAJERO, turno.getCajeroNombre());
         }
+    }
+
+    /** Recepción sin roles de administración o finanzas: solo ve sus propios turnos. */
+    private static boolean soloRecepcion() {
+        return UsuarioActual.tieneRol("RECEPCION") && !UsuarioActual.tieneRol("ADMIN", "FINANZAS");
     }
 
     private TurnoCaja buscar(Long id) {

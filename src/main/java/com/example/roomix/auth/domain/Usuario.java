@@ -51,9 +51,33 @@ public class Usuario {
     @Column(name = "password_hash", nullable = false, length = 100)
     private String passwordHash;
 
+    /** Rol principal (se muestra en la auditoría). */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Rol rol;
+
+    /** Roles adicionales: el usuario accede a los módulos de todos sus roles (por ejemplo, administración y recepción). */
+    @jakarta.persistence.ElementCollection(fetch = jakarta.persistence.FetchType.EAGER)
+    @jakarta.persistence.CollectionTable(name = "usuario_roles_adicionales",
+            joinColumns = @jakarta.persistence.JoinColumn(name = "usuario_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "rol", length = 20)
+    @Builder.Default
+    private java.util.Set<Rol> rolesAdicionales = new java.util.LinkedHashSet<>();
+
+    /** Rol principal seguido de los adicionales, sin repetidos. */
+    public java.util.List<Rol> roles() {
+        java.util.LinkedHashSet<Rol> todos = new java.util.LinkedHashSet<>();
+        todos.add(rol);
+        if (rolesAdicionales != null) {
+            java.util.Arrays.stream(Rol.values()).filter(rolesAdicionales::contains).forEach(todos::add);
+        }
+        return java.util.List.copyOf(todos);
+    }
+
+    public boolean tieneRol(Rol r) {
+        return rol == r || (rolesAdicionales != null && rolesAdicionales.contains(r));
+    }
 
     @Column(nullable = false)
     @Builder.Default

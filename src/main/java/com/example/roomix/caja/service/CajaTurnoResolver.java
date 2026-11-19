@@ -36,7 +36,7 @@ public class CajaTurnoResolver {
         if (abierto.isPresent() && abierto.get().getCajero().equalsIgnoreCase(usuario)) {
             return abierto.get().getId();
         }
-        if (UsuarioActual.tieneRol("RECEPCION")) {
+        if (UsuarioActual.tieneRol("RECEPCION") && !UsuarioActual.tieneRol("ADMIN")) {
             if (abierto.isPresent()) {
                 throw new CajaException(CajaErrorCode.CAJA_DE_OTRO, abierto.get().getCajeroNombre());
             }

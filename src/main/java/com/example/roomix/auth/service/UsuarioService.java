@@ -55,6 +55,7 @@ public class UsuarioService {
                 .nombreCompleto(request.nombreCompleto().trim())
                 .email(email)
                 .rol(request.rol())
+                .rolesAdicionales(adicionales(request))
                 .activo(request.activo() == null || request.activo())
                 .passwordHash(passwordEncoder.encode(request.password()))
                 // La contraseña la definió el administrador: el usuario debe cambiarla al ingresar
@@ -76,12 +77,14 @@ public class UsuarioService {
         }
 
         boolean seraActivo = request.activo() == null ? usuario.isActivo() : request.activo();
-        validarNoQuitaUltimoAdmin(usuario, request.rol(), seraActivo);
+        validarNoQuitaUltimoAdmin(usuario, request.rol() == Rol.ADMIN || adicionales(request).contains(Rol.ADMIN), seraActivo);
 
         usuario.setUsername(username);
         usuario.setNombreCompleto(request.nombreCompleto().trim());
         usuario.setEmail(email);
         usuario.setRol(request.rol());
+        usuario.getRolesAdicionales().clear();
+        usuario.getRolesAdicionales().addAll(adicionales(request));
         usuario.setActivo(seraActivo);
         if (StringUtils.hasText(request.password())) {
             PasswordPolicy.validar(request.password());
@@ -94,7 +97,7 @@ public class UsuarioService {
     @Transactional
     public UsuarioResponse cambiarActivo(Long id, boolean activo) {
         Usuario usuario = buscar(id);
-        validarNoQuitaUltimoAdmin(usuario, usuario.getRol(), activo);
+        validarNoQuitaUltimoAdmin(usuario, usuario.tieneRol(Rol.ADMIN), activo);
         usuario.setActivo(activo);
         if (activo) {
             usuario.setIntentosFallidos(0);
@@ -116,10 +119,19 @@ public class UsuarioService {
         return new PasswordTemporalResponse(temporal);
     }
 
-    private void validarNoQuitaUltimoAdmin(Usuario usuario, Rol nuevoRol, boolean seraActivo) {
-        boolean esAdminActivo = usuario.getRol() == Rol.ADMIN && usuario.isActivo();
-        boolean dejaDeSerlo = nuevoRol != Rol.ADMIN || !seraActivo;
-        if (esAdminActivo && dejaDeSerlo && usuarioRepository.countByRolAndActivoTrue(Rol.ADMIN) <= 1) {
+    /** Roles adicionales sin repetir el principal. */
+    private static java.util.Set<Rol> adicionales(UsuarioRequest request) {
+        java.util.Set<Rol> set = new java.util.LinkedHashSet<>();
+        if (request.rolesAdicionales() != null) {
+            request.rolesAdicionales().stream().filter(java.util.Objects::nonNull).filter(r -> r != request.rol()).forEach(set::add);
+        }
+        return set;
+    }
+
+    private void validarNoQuitaUltimoAdmin(Usuario usuario, boolean seguiraSiendoAdmin, boolean seraActivo) {
+        boolean esAdminActivo = usuario.tieneRol(Rol.ADMIN) && usuario.isActivo();
+        boolean dejaDeSerlo = !seguiraSiendoAdmin || !seraActivo;
+        if (esAdminActivo && dejaDeSerlo && usuarioRepository.contarActivosConRol(Rol.ADMIN) <= 1) {
             throw new AuthException(AuthErrorCode.ULTIMO_ADMIN);
         }
     }

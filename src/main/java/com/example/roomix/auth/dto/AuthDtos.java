@@ -42,8 +42,9 @@ public final class AuthDtos {
             String username,
             String nombreCompleto,
             String email,
-            Rol rol,
+            @Schema(description = "Rol principal") Rol rol,
             String rolNombre,
+            @Schema(description = "Todos los roles del usuario (principal y adicionales)") java.util.List<Rol> roles,
             boolean activo,
             boolean debeCambiarPassword,
             LocalDateTime ultimoAcceso,
@@ -57,6 +58,7 @@ public final class AuthDtos {
                     u.getEmail(),
                     u.getRol(),
                     u.getRol().getNombre(),
+                    u.roles(),
                     u.isActivo(),
                     u.isDebeCambiarPassword(),
                     u.getUltimoAcceso(),
@@ -104,7 +106,11 @@ public final class AuthDtos {
             String email,
 
             @NotNull(message = "El rol es obligatorio")
+            @Schema(description = "Rol principal")
             Rol rol,
+
+            @Schema(description = "Roles adicionales (opcional): el usuario accede también a sus módulos")
+            java.util.List<Rol> rolesAdicionales,
 
             @Schema(description = "Obligatoria al crear; opcional al editar (se conserva si va vacía)")
             String password,
