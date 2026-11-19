@@ -47,9 +47,10 @@ public class PromocionController {
             @RequestParam Long habitacionId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaEntrada,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaSalida,
-            @RequestParam(required = false) CanalReserva canal
+            @RequestParam(required = false) CanalReserva canal,
+            @RequestParam(required = false) Integer cantidadPersonas
     ) {
-        return promocionService.aplicables(habitacionId, fechaEntrada, fechaSalida, canal);
+        return promocionService.aplicables(habitacionId, fechaEntrada, fechaSalida, canal, cantidadPersonas);
     }
 
     @Operation(summary = "Crear promoción (administrador)")

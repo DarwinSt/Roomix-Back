@@ -129,9 +129,10 @@ public class ReservaController {
             @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate fechaSalida,
             @RequestParam(required = false) Long promocionId,
             @RequestParam(required = false) CanalReserva canal,
-            @RequestParam(required = false) Long huespedId
+            @RequestParam(required = false) Long huespedId,
+            @RequestParam(required = false) Integer cantidadPersonas
     ) {
-        return abonoService.cotizar(habitacionId, fechaEntrada, fechaSalida, promocionId, canal, huespedId);
+        return abonoService.cotizar(habitacionId, fechaEntrada, fechaSalida, promocionId, canal, huespedId, cantidadPersonas);
     }
 
     @Operation(summary = "Abonos de la reserva: total, mínimo exigido, abonado, saldo y lista de abonos")

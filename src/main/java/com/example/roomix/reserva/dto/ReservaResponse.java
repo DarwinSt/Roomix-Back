@@ -41,7 +41,11 @@ public record ReservaResponse(
         Long promocionId,
         String promocionNombre,
         @Schema(description = "Parte del abono retenida como penalidad al cancelar") BigDecimal valorPenalidad,
-        @Schema(description = "Parte del abono devuelta al huésped al cancelar") BigDecimal valorDevuelto
+        @Schema(description = "Parte del abono devuelta al huésped al cancelar") BigDecimal valorDevuelto,
+        @Schema(description = "Personas de la estadía") Integer cantidadPersonas,
+        @Schema(description = "La tarifa es por persona y noche") boolean cobroPorPersona,
+        @Schema(description = "Capacidad sugerida de la habitación") Integer capacidadSugerida,
+        @Schema(description = "Las personas superan la capacidad sugerida (solo advertencia)") boolean superaCapacidad
 ) {
     public static ReservaResponse from(Reserva reserva) {
         return ReservaResponse.builder()
@@ -64,7 +68,12 @@ public record ReservaResponse(
                 .motivoCancelacion(reserva.getMotivoCancelacion())
                 .fechaHoraCancelacion(reserva.getFechaHoraCancelacion())
                 .registradaPor(reserva.getRegistradaPor())
-                .subtotal(reserva.getTarifaNoche().multiply(BigDecimal.valueOf(reserva.getCantidadNoches())))
+                .subtotal(reserva.subtotal())
+                .cantidadPersonas(reserva.personas())
+                .cobroPorPersona(reserva.porPersona())
+                .capacidadSugerida(reserva.getHabitacion().getCapacidad())
+                .superaCapacidad(reserva.getHabitacion().getCapacidad() != null
+                        && reserva.personas() > reserva.getHabitacion().getCapacidad())
                 .descuento(reserva.getDescuento() != null ? reserva.getDescuento() : BigDecimal.ZERO)
                 .promocionId(reserva.getPromocion() != null ? reserva.getPromocion().getId() : null)
                 .promocionNombre(reserva.getPromocion() != null ? reserva.getPromocion().getNombre() : null)

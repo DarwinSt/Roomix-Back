@@ -42,6 +42,14 @@ public class PoliticaReserva {
     @Column(name = "penalidad_cancelacion_pct", nullable = false, precision = 5, scale = 2)
     private BigDecimal penalidadCancelacionPct = BigDecimal.ZERO;
 
+    /** Si es false, la reserva se puede crear sin pago; el abono mínimo solo aplica cuando se exige el pago. */
+    @Column(name = "pago_obligatorio")
+    private Boolean pagoObligatorio;
+
+    public boolean exigePago() {
+        return !Boolean.FALSE.equals(pagoObligatorio);
+    }
+
     @Column(name = "actualizada_por", length = 50)
     private String actualizadaPor;
 

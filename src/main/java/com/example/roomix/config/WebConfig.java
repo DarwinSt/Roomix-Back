@@ -14,9 +14,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
 
     private final AuditoriaInterceptor auditoriaInterceptor;
+    private final LicenciaInterceptor licenciaInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(licenciaInterceptor).addPathPatterns("/api/**");
         registry.addInterceptor(auditoriaInterceptor).addPathPatterns("/api/**");
     }
 }

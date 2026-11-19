@@ -34,6 +34,9 @@ public class PoliticaReservaService {
         PoliticaReserva politica = vigente();
         politica.setAbonoMinimoPct(request.abonoMinimoPct().setScale(2, RoundingMode.HALF_UP));
         politica.setPenalidadCancelacionPct(request.penalidadCancelacionPct().setScale(2, RoundingMode.HALF_UP));
+        if (request.pagoObligatorio() != null) {
+            politica.setPagoObligatorio(request.pagoObligatorio());
+        }
         politica.setActualizadaPor(UsuarioActual.username());
         return PoliticaReservaResponse.from(repository.saveAndFlush(politica));
     }

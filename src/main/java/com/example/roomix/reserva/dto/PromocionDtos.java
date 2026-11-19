@@ -99,16 +99,20 @@ public final class PromocionDtos {
             @NotNull @DecimalMin("0") @DecimalMax(value = "100", message = "El porcentaje no puede superar 100")
             @Schema(description = "Porcentaje del total que se debe abonar para crear la reserva (0 = sin mínimo)") BigDecimal abonoMinimoPct,
             @NotNull @DecimalMin("0") @DecimalMax(value = "100", message = "El porcentaje no puede superar 100")
-            @Schema(description = "Porcentaje de lo abonado que se retiene al cancelar") BigDecimal penalidadCancelacionPct
+            @Schema(description = "Porcentaje de lo abonado que se retiene al cancelar") BigDecimal penalidadCancelacionPct,
+            @Schema(description = "Exigir un pago al crear la reserva (por defecto sí)") Boolean pagoObligatorio
     ) {
+        public PoliticaReservaRequest(BigDecimal abonoMinimoPct, BigDecimal penalidadCancelacionPct) {
+            this(abonoMinimoPct, penalidadCancelacionPct, null);
+        }
     }
 
     @Schema(name = "PoliticaReservaResponse")
     public record PoliticaReservaResponse(BigDecimal abonoMinimoPct, BigDecimal penalidadCancelacionPct, String actualizadaPor,
-                                          LocalDateTime fechaHoraUltimaActualizacion) {
+                                          LocalDateTime fechaHoraUltimaActualizacion, boolean pagoObligatorio) {
         public static PoliticaReservaResponse from(PoliticaReserva p) {
             return new PoliticaReservaResponse(p.getAbonoMinimoPct(), p.getPenalidadCancelacionPct(), p.getActualizadaPor(),
-                    p.getFechaHoraUltimaActualizacion());
+                    p.getFechaHoraUltimaActualizacion(), p.exigePago());
         }
     }
 }

@@ -3,7 +3,7 @@ package com.example.roomix.finanzas.service;
 import com.example.roomix.finanzas.domain.CategoriaFinanciera;
 import com.example.roomix.auth.service.UsuarioActual;
 import com.example.roomix.common.dto.PaginaResponse;
-import com.example.roomix.config.HotelProperties;
+import com.example.roomix.config.ConfiguracionHotelService;
 import com.example.roomix.evento.domain.Evento;
 import com.example.roomix.evento.domain.EventoEnums.EstadoEvento;
 import com.example.roomix.evento.domain.EventoRecurso;
@@ -65,7 +65,7 @@ public class FacturacionService {
     private final EventoService eventoService;
     private final FinanzasService finanzasService;
     private final AbonoService abonoService;
-    private final HotelProperties hotel;
+    private final ConfiguracionHotelService configuracion;
 
     // ------------------------------------------------------------------ Consultas
 
@@ -102,7 +102,7 @@ public class FacturacionService {
         }
 
         boolean exento = exentoIva(reserva.getHuesped());
-        BigDecimal porcentaje = exento ? BigDecimal.ZERO : hotel.ivaPorcentaje();
+        BigDecimal porcentaje = exento ? BigDecimal.ZERO : configuracion.hotel().ivaPorcentaje();
         BigDecimal subtotal = lineas.stream().map(LineaCuenta::total).reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal impuesto = calcularImpuesto(subtotal, porcentaje);
 
@@ -170,7 +170,7 @@ public class FacturacionService {
                 .clienteEmail(huesped.getEmail())
                 .emitidaPor(UsuarioActual.username())
                 .build();
-        BigDecimal porcentaje = exentoIva(huesped) ? BigDecimal.ZERO : hotel.ivaPorcentaje();
+        BigDecimal porcentaje = exentoIva(huesped) ? BigDecimal.ZERO : configuracion.hotel().ivaPorcentaje();
         String observacion = porcentaje.signum() == 0
                 ? "Exento de IVA: servicio turístico prestado a no residente (art. 481 lit. d, E.T.)"
                 : null;
@@ -222,7 +222,7 @@ public class FacturacionService {
                 .clienteEmail(evento.getOrganizadorEmail())
                 .emitidaPor(UsuarioActual.username())
                 .build();
-        return FacturaResponse.from(guardar(factura, items, hotel.ivaPorcentaje(), null));
+        return FacturaResponse.from(guardar(factura, items, configuracion.hotel().ivaPorcentaje(), null));
     }
 
     // ------------------------------------------------------------------ Pagos y anulación
@@ -342,7 +342,7 @@ public class FacturacionService {
         }
         Factura guardada = facturaRepository.saveAndFlush(factura);
         if (nueva) {
-            guardada.setNumero("%s-%06d".formatted(hotel.prefijoFactura(), guardada.getId()));
+            guardada.setNumero("%s-%06d".formatted(configuracion.hotel().prefijoFactura(), guardada.getId()));
             guardada = facturaRepository.save(guardada);
         }
         return guardada;
@@ -370,13 +370,13 @@ public class FacturacionService {
 
     private LineaCuenta lineaAlojamiento(Reserva r, boolean facturado) {
         String descripcion = "Alojamiento habitación " + r.getHabitacion().getNumero()
-                + " — " + r.getCantidadNoches() + " noche(s) del " + r.getFechaEntrada().format(DIA)
-                + " al " + r.getFechaSalida().format(DIA);
+                + " — " + r.getCantidadNoches() + " noche(s)" + (r.porPersona() ? " × " + r.personas() + " persona(s)" : "")
+                + " del " + r.getFechaEntrada().format(DIA) + " al " + r.getFechaSalida().format(DIA);
         if (r.getDescuento() != null && r.getDescuento().signum() > 0 && r.getPromocion() != null) {
             descripcion += " — Promoción «" + r.getPromocion().getNombre() + "»: −$"
                     + String.format(java.util.Locale.forLanguageTag("es-CO"), "%,.0f", r.getDescuento());
         }
-        return new LineaCuenta(descripcion, BigDecimal.valueOf(r.getCantidadNoches()), r.getTarifaNoche(),
+        return new LineaCuenta(descripcion, BigDecimal.valueOf(r.unidadesCobro()), r.getTarifaNoche(),
                 r.getTotalEstimado(), OrigenItem.ALOJAMIENTO, r.getId(), facturado);
     }
 
@@ -400,7 +400,7 @@ public class FacturacionService {
 
     /** Turista extranjero no residente (pasaporte y nacionalidad distinta a Colombia). */
     boolean exentoIva(Huesped huesped) {
-        return ReglaIva.exento(hotel, huesped);
+        return ReglaIva.exento(configuracion.hotel(), huesped);
     }
 
     private static BigDecimal calcularImpuesto(BigDecimal subtotal, BigDecimal porcentaje) {

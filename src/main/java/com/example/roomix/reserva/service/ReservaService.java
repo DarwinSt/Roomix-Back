@@ -51,6 +51,7 @@ public class ReservaService {
     );
 
     private final ReservaRepository reservaRepository;
+    private final com.example.roomix.config.ConfiguracionHotelService configuracionHotel;
     private final HabitacionRepository habitacionRepository;
     private final HabitacionInhabilitacionService inhabilitacionService;
     private final HuespedService huespedService;
@@ -154,7 +155,8 @@ public class ReservaService {
         Huesped huesped = huespedService.buscarActivo(request.huespedId());
         validarHuespedSinCruce(huesped.getId(), null, request.fechaEntrada(), request.fechaSalida());
 
-        Reserva reserva = registrarReserva(habitacion, huesped, request.fechaEntrada(), request.fechaSalida());
+        Reserva reserva = registrarReserva(habitacion, huesped, request.fechaEntrada(), request.fechaSalida(),
+                request.cantidadPersonas());
         reserva.setCanal(request.canal() != null ? request.canal() : CanalReserva.PRESENCIAL);
         reserva.setObservaciones(StringUtils.hasText(request.observaciones()) ? request.observaciones().trim() : null);
         if (request.promocionId() != null) {
@@ -276,7 +278,10 @@ public class ReservaService {
         }
         reserva.setFechaSalida(salida);
         reserva.setCantidadNoches(noches);
-        reserva.setTotalEstimado(reserva.getTarifaNoche().multiply(BigDecimal.valueOf(noches)));
+        if (request.cantidadPersonas() != null) {
+            reserva.setCantidadPersonas(request.cantidadPersonas());
+        }
+        reserva.setTotalEstimado(reserva.subtotal());
         Promocion promocion = reserva.getPromocion();
         if (promocion != null) {
             if (promocion.aplica(noches, habitacion.getTipoHabitacion(), reserva.getCanal(), reserva.getFechaEntrada())) {
@@ -368,14 +373,17 @@ public class ReservaService {
             Habitacion habitacion,
             Huesped huesped,
             LocalDate fechaEntrada,
-            LocalDate fechaSalida
+            LocalDate fechaSalida,
+            Integer personas
     ) {
         int noches = validarFechas(fechaEntrada, fechaSalida);
         validarDisponibilidadOperativa(habitacion, fechaEntrada, fechaSalida);
         validarSinSolapamiento(habitacion.getId(), fechaEntrada, fechaSalida);
 
         BigDecimal tarifaNoche = resolverTarifaNoche(habitacion);
-        BigDecimal total = tarifaNoche.multiply(BigDecimal.valueOf(noches));
+        boolean porPersona = configuracionHotel.cobroPorPersona();
+        int cantidadPersonas = personas == null || personas < 1 ? 1 : personas;
+        BigDecimal total = tarifaNoche.multiply(BigDecimal.valueOf((long) noches * (porPersona ? cantidadPersonas : 1)));
 
         Reserva reserva = Reserva.builder()
                 .habitacion(habitacion)
@@ -385,6 +393,8 @@ public class ReservaService {
                 .cantidadNoches(noches)
                 .estadoReserva(EstadoReserva.CONFIRMADA)
                 .tarifaNoche(tarifaNoche)
+                .cantidadPersonas(cantidadPersonas)
+                .cobroPorPersona(porPersona)
                 .totalEstimado(total)
                 .registradaPor(UsuarioActual.username())
                 .build();
@@ -394,7 +404,7 @@ public class ReservaService {
 
     /** Total = noches × tarifa − descuento de la promoción (que nunca supera el subtotal). */
     private void aplicarPromocion(Reserva reserva, Promocion promocion) {
-        BigDecimal subtotal = reserva.getTarifaNoche().multiply(BigDecimal.valueOf(reserva.getCantidadNoches()));
+        BigDecimal subtotal = reserva.subtotal();
         BigDecimal descuento = promocion.descuentoSobre(subtotal);
         reserva.setPromocion(promocion);
         reserva.setDescuento(descuento);

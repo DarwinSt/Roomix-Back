@@ -1,7 +1,7 @@
 package com.example.roomix.finanzas.service;
 
 import com.example.roomix.auth.service.UsuarioActual;
-import com.example.roomix.config.HotelProperties;
+import com.example.roomix.config.ConfiguracionHotelService;
 import com.example.roomix.finanzas.domain.AbonoReserva;
 import com.example.roomix.finanzas.domain.CategoriaFinanciera;
 import com.example.roomix.finanzas.domain.EstadoFactura;
@@ -51,7 +51,7 @@ public class AbonoService {
     private final MovimientoFinancieroRepository movimientoRepository;
     private final FinanzasService finanzasService;
     private final PoliticaReservaService politicaService;
-    private final HotelProperties hotel;
+    private final ConfiguracionHotelService configuracion;
     private final com.example.roomix.habitacion.repository.HabitacionRepository habitacionRepository;
     private final com.example.roomix.huesped.repository.HuespedRepository huespedRepository;
     private final com.example.roomix.reserva.service.PromocionService promocionService;
@@ -62,6 +62,13 @@ public class AbonoService {
                                                                          java.time.LocalDate salida, Long promocionId,
                                                                          com.example.roomix.reserva.domain.CanalReserva canal,
                                                                          Long huespedId) {
+        return cotizar(habitacionId, entrada, salida, promocionId, canal, huespedId, null);
+    }
+
+    public com.example.roomix.finanzas.dto.AbonoDtos.Cotizacion cotizar(Long habitacionId, java.time.LocalDate entrada,
+                                                                         java.time.LocalDate salida, Long promocionId,
+                                                                         com.example.roomix.reserva.domain.CanalReserva canal,
+                                                                         Long huespedId, Integer personas) {
         var habitacion = habitacionRepository.findById(habitacionId)
                 .orElseThrow(() -> new com.example.roomix.habitacion.exception.HabitacionNotFoundException(habitacionId));
         if (entrada == null || salida == null || !salida.isAfter(entrada)) {
@@ -70,7 +77,9 @@ public class AbonoService {
         int noches = (int) java.time.temporal.ChronoUnit.DAYS.between(entrada, salida);
         BigDecimal tarifa = habitacion.getPrecioNoche() != null ? habitacion.getPrecioNoche()
                 : tarifaService.obtenerPrecioNoche(habitacion.getTipoHabitacion());
-        BigDecimal subtotal = tarifa.multiply(BigDecimal.valueOf(noches));
+        boolean porPersona = configuracion.cobroPorPersona();
+        int cantidadPersonas = personas == null || personas < 1 ? 1 : personas;
+        BigDecimal subtotal = tarifa.multiply(BigDecimal.valueOf((long) noches * (porPersona ? cantidadPersonas : 1)));
         BigDecimal descuento = BigDecimal.ZERO;
         String promocion = null;
         if (promocionId != null) {
@@ -80,18 +89,23 @@ public class AbonoService {
         }
         BigDecimal total = subtotal.subtract(descuento);
         var huesped = huespedId != null ? huespedRepository.findById(huespedId).orElse(null) : null;
-        BigDecimal porcentaje = ReglaIva.porcentaje(hotel, huesped);
+        BigDecimal porcentaje = ReglaIva.porcentaje(configuracion.hotel(), huesped);
         BigDecimal impuesto = ReglaIva.impuesto(total, porcentaje);
         BigDecimal conImpuesto = total.add(impuesto);
         var politica = politicaService.vigente();
         BigDecimal minimo = conImpuesto.multiply(politica.getAbonoMinimoPct()).divide(BigDecimal.valueOf(100), 0, RoundingMode.UP);
+        if (!politica.exigePago()) {
+            minimo = BigDecimal.ZERO;
+        }
+        Integer capacidad = habitacion.getCapacidad();
         return new com.example.roomix.finanzas.dto.AbonoDtos.Cotizacion(noches, tarifa, subtotal, descuento, promocion, total,
-                porcentaje, impuesto, conImpuesto, politica.getAbonoMinimoPct(), minimo, politica.getPenalidadCancelacionPct());
+                porcentaje, impuesto, conImpuesto, politica.getAbonoMinimoPct(), minimo, politica.getPenalidadCancelacionPct(),
+                cantidadPersonas, porPersona, capacidad, capacidad != null && cantidadPersonas > capacidad, politica.exigePago());
     }
 
     /** Total que pagará el huésped por el alojamiento: total estimado (ya con descuento) más IVA si aplica. */
     public BigDecimal totalReserva(Reserva r) {
-        BigDecimal porcentaje = ReglaIva.porcentaje(hotel, r.getHuesped());
+        BigDecimal porcentaje = ReglaIva.porcentaje(configuracion.hotel(), r.getHuesped());
         return r.getTotalEstimado().add(ReglaIva.impuesto(r.getTotalEstimado(), porcentaje));
     }
 
@@ -106,7 +120,7 @@ public class AbonoService {
         List<AbonoReserva> abonos = abonoRepository.findByReservaIdOrderByFechaHoraAsc(reservaId);
         BigDecimal total = totalReserva(r);
         BigDecimal abonado = abonos.stream().filter(a -> !a.isDevuelto()).map(AbonoReserva::getValor).reduce(BigDecimal.ZERO, BigDecimal::add);
-        return new ResumenAbonos(r.getId(), total, ReglaIva.porcentaje(hotel, r.getHuesped()),
+        return new ResumenAbonos(r.getId(), total, ReglaIva.porcentaje(configuracion.hotel(), r.getHuesped()),
                 politicaService.vigente().getAbonoMinimoPct(), abonoMinimo(r), abonado,
                 r.getEstadoReserva() == EstadoReserva.CANCELADA ? BigDecimal.ZERO : total.subtract(abonado).max(BigDecimal.ZERO),
                 r.getValorPenalidad(), r.getValorDevuelto(), abonos.stream().map(AbonoResponse::from).toList());
@@ -118,6 +132,13 @@ public class AbonoService {
         Reserva r = buscarReserva(reservaId);
         BigDecimal minimo = abonoMinimo(r);
         BigDecimal valor = abono != null && abono.valor() != null ? abono.valor() : BigDecimal.ZERO;
+        if (!politicaService.vigente().exigePago()) {
+            // El hotel permite reservar sin pago: si se recibió algún valor se registra como abono, sin mínimo
+            if (valor.signum() > 0) {
+                registrar(reservaId, abono);
+            }
+            return;
+        }
         // Toda reserva exige un pago al crearla: completo o un abono parcial (al menos el mínimo de la política)
         if (valor.signum() <= 0) {
             throw new ReservaException(ReservaErrorCode.ABONO_INSUFICIENTE,

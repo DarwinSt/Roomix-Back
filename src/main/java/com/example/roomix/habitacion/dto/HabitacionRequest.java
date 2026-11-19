@@ -70,8 +70,12 @@ public record HabitacionRequest(
         Integer piso,
         @Schema(description = "Capacidad máxima de huéspedes (si se omite, se asigna según el tipo)", example = "2")
         @Min(value = 1, message = "La capacidad mínima es 1")
-        @Max(value = 20, message = "Capacidad no válida")
+        @Max(value = 100, message = "Capacidad no válida")
         Integer capacidad,
+        @Schema(description = "Número de camas (opcional)", example = "2")
+        @Min(value = 0, message = "Las camas no pueden ser negativas")
+        @Max(value = 100, message = "Número de camas no válido")
+        Integer camas,
         @Schema(
                 description = "Estado operativo inicial. Por defecto `LIBRE` si se omite al crear.",
                 example = "LIBRE"

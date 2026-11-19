@@ -50,7 +50,12 @@ public final class AbonoDtos {
             BigDecimal totalConImpuesto,
             BigDecimal abonoMinimoPct,
             BigDecimal abonoMinimo,
-            BigDecimal penalidadCancelacionPct
+            BigDecimal penalidadCancelacionPct,
+            int cantidadPersonas,
+            boolean cobroPorPersona,
+            Integer capacidadSugerida,
+            boolean superaCapacidad,
+            boolean pagoObligatorio
     ) {
     }
 

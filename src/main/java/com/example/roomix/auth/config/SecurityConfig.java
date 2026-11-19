@@ -77,6 +77,10 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/api-docs/**").permitAll()
                         // Las fotos se cargan con <img>, que no envía el token
                         .requestMatchers(HttpMethod.GET, "/api/habitaciones/*/fotos/*").permitAll()
+                        // Marca del hotel y módulos de la licencia para la pantalla de ingreso
+                        .requestMatchers(HttpMethod.GET, "/api/configuracion/publica", "/api/configuracion/logo").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/configuracion/**").authenticated()
+                        .requestMatchers("/api/configuracion/**").hasRole(ADMIN)
 
                         // Administración del sistema
                         .requestMatchers("/api/usuarios/**", "/api/auditoria/**").hasRole(ADMIN)

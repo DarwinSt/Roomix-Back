@@ -83,6 +83,7 @@ public class HabitacionService {
                 .precioNoche(request.precioNoche())
                 .piso(resolverPiso(request.piso(), request.numero()))
                 .capacidad(resolverCapacidad(request.capacidad(), request.tipoHabitacion()))
+                .camas(request.camas())
                 .estado(estado)
                 .build();
 
@@ -110,6 +111,7 @@ public class HabitacionService {
         habitacion.setPrecioNoche(request.precioNoche());
         habitacion.setPiso(resolverPiso(request.piso(), request.numero()));
         habitacion.setCapacidad(resolverCapacidad(request.capacidad(), request.tipoHabitacion()));
+        habitacion.setCamas(request.camas());
 
         if (request.estado() != null) {
             inhabilitacionService.sincronizar(habitacion);

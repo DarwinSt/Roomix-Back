@@ -6,6 +6,8 @@ import com.example.roomix.caja.domain.TurnoCaja;
 import com.example.roomix.caja.exception.CajaErrorCode;
 import com.example.roomix.caja.exception.CajaException;
 import com.example.roomix.caja.repository.TurnoCajaRepository;
+import com.example.roomix.config.Licencia;
+import com.example.roomix.config.Modulo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -22,11 +24,12 @@ import java.util.Optional;
 public class CajaTurnoResolver {
 
     private final TurnoCajaRepository turnos;
+    private final Licencia licencia;
 
     /** Id del turno abierto del usuario actual, null si no aplica; lanza error si es recepción sin turno. */
     public Long turnoParaMovimiento() {
         String usuario = UsuarioActual.username();
-        if (UsuarioActual.SISTEMA.equals(usuario)) {
+        if (!licencia.habilitado(Modulo.CAJA) || UsuarioActual.SISTEMA.equals(usuario)) {
             return null;
         }
         Optional<TurnoCaja> abierto = turnos.findFirstByEstado(EstadoTurno.ABIERTO);

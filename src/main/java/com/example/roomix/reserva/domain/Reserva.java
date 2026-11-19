@@ -64,6 +64,32 @@ public class Reserva {
     @Column(name = "tarifa_noche", nullable = false, precision = 10, scale = 2)
     private BigDecimal tarifaNoche;
 
+    /** Número de personas de la estadía (null en reservas anteriores: 1). */
+    @Column(name = "cantidad_personas")
+    private Integer cantidadPersonas;
+
+    /** Modo de cobro vigente al crear la reserva: si es true, la tarifa es por persona y noche. */
+    @Column(name = "cobro_por_persona")
+    private Boolean cobroPorPersona;
+
+    public int personas() {
+        return cantidadPersonas == null || cantidadPersonas < 1 ? 1 : cantidadPersonas;
+    }
+
+    public boolean porPersona() {
+        return Boolean.TRUE.equals(cobroPorPersona);
+    }
+
+    /** Unidades cobradas: noches, o noches × personas cuando se cobra por persona. */
+    public int unidadesCobro() {
+        return cantidadNoches * (porPersona() ? personas() : 1);
+    }
+
+    /** Tarifa × unidades, antes del descuento. */
+    public BigDecimal subtotal() {
+        return tarifaNoche.multiply(BigDecimal.valueOf(unidadesCobro()));
+    }
+
     @Column(name = "total_estimado", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalEstimado;
 

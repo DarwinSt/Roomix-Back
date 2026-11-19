@@ -68,9 +68,13 @@ public class Habitacion {
     @Column
     private Integer piso;
 
-    /** Número máximo de huéspedes. */
+    /** Capacidad sugerida de huéspedes (orientativa: no limita las reservas). */
     @Column
     private Integer capacidad;
+
+    /** Número de camas de la habitación. */
+    @Column
+    private Integer camas;
 
     /** Tarifa por noche específica de esta habitación. */
     @Column(name = "precio_noche", precision = 10, scale = 2)

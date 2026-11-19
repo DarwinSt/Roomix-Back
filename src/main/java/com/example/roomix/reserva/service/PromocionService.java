@@ -30,6 +30,7 @@ import java.util.List;
 public class PromocionService {
 
     private final PromocionRepository repository;
+    private final com.example.roomix.config.ConfiguracionHotelService configuracionHotel;
     private final HabitacionRepository habitacionRepository;
     private final TarifaService tarifaService;
 
@@ -61,10 +62,16 @@ public class PromocionService {
 
     /** Promociones activas que cumplen las condiciones de la reserva, con el descuento calculado. */
     public List<PromocionAplicableResponse> aplicables(Long habitacionId, LocalDate entrada, LocalDate salida, CanalReserva canal) {
+        return aplicables(habitacionId, entrada, salida, canal, null);
+    }
+
+    public List<PromocionAplicableResponse> aplicables(Long habitacionId, LocalDate entrada, LocalDate salida, CanalReserva canal,
+                                                       Integer personas) {
         Habitacion habitacion = habitacionRepository.findById(habitacionId)
                 .orElseThrow(() -> new HabitacionNotFoundException(habitacionId));
         int noches = noches(entrada, salida);
-        BigDecimal subtotal = tarifa(habitacion).multiply(BigDecimal.valueOf(noches));
+        int factor = configuracionHotel.cobroPorPersona() && personas != null && personas > 1 ? personas : 1;
+        BigDecimal subtotal = tarifa(habitacion).multiply(BigDecimal.valueOf((long) noches * factor));
         CanalReserva c = canal != null ? canal : CanalReserva.PRESENCIAL;
         return repository.findByActivaTrueOrderByNombreAsc().stream()
                 .filter(p -> p.aplica(noches, habitacion.getTipoHabitacion(), c, entrada))
