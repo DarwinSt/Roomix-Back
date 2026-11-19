@@ -86,10 +86,12 @@ public class IncidenciaController {
         return incidenciaService.actualizarTarea(id, tareaId, request);
     }
 
-    @Operation(summary = "Finalizar servicio; habilita habitación si no quedan activas")
+    @Operation(summary = "Finalizar servicio; descuenta del inventario los materiales gastados y habilita la habitación si no quedan activas")
     @PatchMapping("/{id}/finalizar")
-    public IncidenciaResponse finalizar(@PathVariable Long id) {
-        return incidenciaService.finalizar(id);
+    public IncidenciaResponse finalizar(@PathVariable Long id,
+                                        @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody(required = false)
+                                        com.example.roomix.incidencia.dto.FinalizarIncidenciaRequest request) {
+        return incidenciaService.finalizar(id, request);
     }
 
     @Operation(summary = "Cancelar incidencia")

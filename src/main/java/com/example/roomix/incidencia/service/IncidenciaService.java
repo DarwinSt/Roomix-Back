@@ -88,6 +88,8 @@ public class IncidenciaService {
     private final HabitacionRepository habitacionRepository;
     private final HabitacionInhabilitacionService inhabilitacionService;
     private final PersonalService personalService;
+    private final com.example.roomix.inventario.service.InventarioService inventarioService;
+    private final com.example.roomix.config.Licencia licencia;
 
     public List<IncidenciaResponse> listar(
             EstadoIncidencia estado,
@@ -264,6 +266,11 @@ public class IncidenciaService {
 
     @Transactional
     public IncidenciaResponse finalizar(Long id) {
+        return finalizar(id, null);
+    }
+
+    @Transactional
+    public IncidenciaResponse finalizar(Long id, com.example.roomix.incidencia.dto.FinalizarIncidenciaRequest request) {
         Incidencia incidencia = buscarEntidad(id);
         if (incidencia.getEstado() != EstadoIncidencia.EN_PROGRESO) {
             throw new IncidenciaException(IncidenciaErrorCode.ESTADO_INVALIDO, incidencia.getEstado());
@@ -274,6 +281,21 @@ public class IncidenciaService {
             throw new IncidenciaException(IncidenciaErrorCode.TAREAS_INCOMPLETAS);
         }
 
+        if (request != null && request.materiales() != null && !request.materiales().isEmpty()
+                && licencia.habilitado(com.example.roomix.config.Modulo.INVENTARIO)) {
+            String lugar = incidencia.getHabitacion() != null ? "habitación " + incidencia.getHabitacion().getNumero()
+                    : (incidencia.getUbicacion() != null ? incidencia.getUbicacion().trim() : "zona común");
+            String motivo = (incidencia.getTipo() == TipoIncidencia.MANTENIMIENTO ? "Mantenimiento" : "Limpieza")
+                    + " de " + lugar + " (#" + incidencia.getId() + ")";
+            java.util.Map<Long, Integer> porArticulo = new java.util.LinkedHashMap<>();
+            request.materiales().forEach(m -> porArticulo.merge(m.articuloId(), m.cantidad(), Integer::sum));
+            porArticulo.forEach((articuloId, cantidad) -> {
+                var articulo = inventarioService.ajustarStock(articuloId, new com.example.roomix.inventario.dto.AjustarStockRequest(
+                        com.example.roomix.inventario.domain.TipoMovimientoStock.SALIDA, cantidad, motivo, null, false, null));
+                incidencia.getMaterialesUsados().add(new com.example.roomix.incidencia.domain.MaterialUsado(articuloId,
+                        articulo.nombre(), cantidad, articulo.unidadMedida() != null ? articulo.unidadMedida().name() : null));
+            });
+        }
         incidencia.setEstado(EstadoIncidencia.FINALIZADA);
         incidencia.setFechaHoraFinalizacion(LocalDateTime.now());
         incidenciaRepository.save(incidencia);

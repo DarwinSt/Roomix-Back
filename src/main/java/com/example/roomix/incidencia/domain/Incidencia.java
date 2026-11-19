@@ -96,4 +96,11 @@ public class Incidencia {
     /** Fecha y hora programada para mantenimiento (solo tipo MANTENIMIENTO). */
     @Column(name = "fecha_hora_programada")
     private LocalDateTime fechaHoraProgramada;
+
+    /** Materiales del inventario gastados, registrados al finalizar. */
+    @jakarta.persistence.ElementCollection
+    @jakarta.persistence.CollectionTable(name = "incidencia_materiales", joinColumns = @jakarta.persistence.JoinColumn(name = "incidencia_id"))
+    @jakarta.persistence.OrderColumn(name = "orden")
+    @Builder.Default
+    private List<MaterialUsado> materialesUsados = new ArrayList<>();
 }

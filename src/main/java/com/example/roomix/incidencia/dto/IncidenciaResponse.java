@@ -33,8 +33,12 @@ public record IncidenciaResponse(
         LocalDateTime fechaHoraCreacion,
         LocalDateTime fechaHoraUltimaActualizacion,
         LocalDateTime fechaHoraFinalizacion,
-        LocalDateTime fechaHoraProgramada
+        LocalDateTime fechaHoraProgramada,
+        @Schema(description = "Materiales del inventario gastados") List<MaterialUsadoResponse> materialesUsados
 ) {
+    public record MaterialUsadoResponse(Long articuloId, String articuloNombre, Integer cantidad, String unidad) {
+    }
+
     public static IncidenciaResponse from(Incidencia incidencia) {
         String habitacionNumero = incidencia.getHabitacion() != null
                 ? incidencia.getHabitacion().getNumero()
@@ -70,6 +74,9 @@ public record IncidenciaResponse(
                 .fechaHoraUltimaActualizacion(incidencia.getFechaHoraUltimaActualizacion())
                 .fechaHoraFinalizacion(incidencia.getFechaHoraFinalizacion())
                 .fechaHoraProgramada(incidencia.getFechaHoraProgramada())
+                .materialesUsados(incidencia.getMaterialesUsados() == null ? List.of() : incidencia.getMaterialesUsados().stream()
+                        .map(m -> new MaterialUsadoResponse(m.getArticuloId(), m.getArticuloNombre(), m.getCantidad(), m.getUnidad()))
+                        .toList())
                 .build();
     }
 
