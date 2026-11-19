@@ -35,6 +35,12 @@ public class ConfiguracionHotelService {
     private final Licencia licencia;
     private final com.example.roomix.auth.service.CorreoService correo;
 
+    /**
+     * Copia en memoria del registro: se consulta en cada cotización, reserva y factura, y solo cambia por este servicio,
+     * así que se lee una vez y se reemplaza al guardar (una sola instancia del backend por hotel).
+     */
+    private volatile ConfiguracionHotel cache;
+
     /** Al primer arranque copia las variables HOTEL_* para que una instalación existente conserve sus datos. */
     @EventListener(ApplicationReadyEvent.class)
     @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -43,11 +49,23 @@ public class ConfiguracionHotelService {
         if (!repository.existsById(ConfiguracionHotel.ID)) {
             repository.save(desdeVariables());
         }
+        cache = null;
     }
 
     @Transactional(readOnly = true)
     public ConfiguracionHotel entidad() {
-        return repository.findById(ConfiguracionHotel.ID).orElseGet(this::desdeVariables);
+        ConfiguracionHotel c = cache;
+        if (c == null) {
+            c = repository.findById(ConfiguracionHotel.ID).orElseGet(this::desdeVariables);
+            cache = c;
+        }
+        return c;
+    }
+
+    private ConfiguracionResponse guardar(ConfiguracionHotel c) {
+        ConfiguracionHotel guardada = repository.saveAndFlush(c);
+        cache = guardada;
+        return respuesta(guardada);
     }
 
     /** Datos del hotel para facturas y cálculos, con el IVA en 0 % si el hotel no lo cobra. */
@@ -109,7 +127,7 @@ public class ConfiguracionHotelService {
         c.setMesesRetencionHuespedes(r.mesesRetencionHuespedes() == null ? 0 : r.mesesRetencionHuespedes());
         c.setCorreoConfirmacionReserva(Boolean.TRUE.equals(r.correoConfirmacionReserva()));
         c.setActualizadaPor(UsuarioActual.username());
-        return respuesta(repository.saveAndFlush(c));
+        return guardar(c);
     }
 
     @Transactional
@@ -126,7 +144,7 @@ public class ConfiguracionHotelService {
         }
         c.setLogoTipo(archivo.getContentType().toLowerCase());
         c.setActualizadaPor(UsuarioActual.username());
-        return respuesta(repository.saveAndFlush(c));
+        return guardar(c);
     }
 
     @Transactional
@@ -135,7 +153,7 @@ public class ConfiguracionHotelService {
         c.setLogo(null);
         c.setLogoTipo(null);
         c.setActualizadaPor(UsuarioActual.username());
-        return respuesta(repository.saveAndFlush(c));
+        return guardar(c);
     }
 
     /** Logo del hotel: [tipo, contenido]. */
