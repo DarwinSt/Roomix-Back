@@ -29,6 +29,7 @@ import java.time.Duration;
 public class ConfiguracionController {
 
     private final ConfiguracionHotelService service;
+    private final com.example.roomix.huesped.service.RetencionHuespedesService retencion;
 
     @Operation(summary = "Datos del hotel para comprobantes y facturas")
     @GetMapping("/hotel")
@@ -52,6 +53,12 @@ public class ConfiguracionController {
     @PutMapping
     public ConfiguracionResponse actualizar(@Valid @RequestBody ConfiguracionRequest request) {
         return service.actualizar(request);
+    }
+
+    @Operation(summary = "Aplicar ahora la retención de datos de huéspedes (normalmente corre cada noche)")
+    @PostMapping("/retencion/ejecutar")
+    public java.util.Map<String, Integer> ejecutarRetencion() {
+        return java.util.Map.of("anonimizados", retencion.anonimizarInactivos());
     }
 
     @Operation(summary = "Logo del hotel (sin autenticación, para la pantalla de ingreso)")

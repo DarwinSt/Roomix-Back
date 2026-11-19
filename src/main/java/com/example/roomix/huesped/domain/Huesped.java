@@ -81,6 +81,13 @@ public class Huesped {
     @Column(name = "fecha_hora_autorizacion")
     private LocalDateTime fechaHoraAutorizacion;
 
+    /** Datos personales eliminados por la política de retención (se conservan reservas y facturas). */
+    @Column(name = "anonimizado")
+    private Boolean anonimizado;
+
+    @Column(name = "fecha_hora_anonimizacion")
+    private LocalDateTime fechaHoraAnonimizacion;
+
     @CreationTimestamp
     @Column(name = "fecha_hora_creacion", nullable = false)
     private LocalDateTime fechaHoraCreacion;

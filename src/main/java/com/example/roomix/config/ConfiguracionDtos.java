@@ -46,6 +46,7 @@ public final class ConfiguracionDtos {
             ModoCobro modoCobro,
             int mesesRetencionHuespedes,
             boolean correoConfirmacionReserva,
+            @Schema(description = "El servidor tiene configurado el envío de correos (Brevo o SMTP)") boolean correoDisponible,
             boolean tieneLogo,
             long logoVersion,
             String clienteLicencia,

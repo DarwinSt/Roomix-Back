@@ -30,6 +30,7 @@ import java.time.LocalDate;
 public class ReservaOperacionService {
 
     private final ReservaService reservaService;
+    private final org.springframework.context.ApplicationEventPublisher eventos;
     private final HabitacionService habitacionService;
     private final FacturacionService facturacionService;
     private final com.example.roomix.finanzas.service.AbonoService abonoService;
@@ -39,6 +40,7 @@ public class ReservaOperacionService {
     public ReservaResponse crear(com.example.roomix.reserva.dto.CrearReservaRequest request) {
         ReservaResponse reserva = reservaService.crear(request);
         abonoService.registrarAbonoInicial(reserva.id(), request.abonoInicial());
+        eventos.publishEvent(new com.example.roomix.reserva.domain.ReservaConfirmadaEvent(reserva.id()));
         return reservaService.obtenerPorId(reserva.id());
     }
 

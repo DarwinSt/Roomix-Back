@@ -33,6 +33,7 @@ public class ConfiguracionHotelService {
     private final ConfiguracionHotelRepository repository;
     private final HotelProperties inicial;
     private final Licencia licencia;
+    private final com.example.roomix.auth.service.CorreoService correo;
 
     /** Al primer arranque copia las variables HOTEL_* para que una instalación existente conserve sus datos. */
     @EventListener(ApplicationReadyEvent.class)
@@ -153,7 +154,7 @@ public class ConfiguracionHotelService {
                 c.getPrefijoFactura(), c.cobraIva(), c.getIvaPorcentaje() != null ? c.getIvaPorcentaje() : inicial.ivaPorcentaje(),
                 !Boolean.FALSE.equals(c.getExentoIvaExtranjeros()), modo(c),
                 c.getMesesRetencionHuespedes() == null ? 0 : c.getMesesRetencionHuespedes(),
-                Boolean.TRUE.equals(c.getCorreoConfirmacionReserva()), c.tieneLogo(), version(c), licencia.cliente(),
+                Boolean.TRUE.equals(c.getCorreoConfirmacionReserva()), correo.habilitado(), c.tieneLogo(), version(c), licencia.cliente(),
                 Arrays.stream(Modulo.values()).map(m -> new ModuloInfo(m, m.getNombre(), licencia.habilitado(m))).toList());
     }
 
