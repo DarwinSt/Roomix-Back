@@ -44,7 +44,8 @@ public final class AuthDtos {
             String email,
             @Schema(description = "Rol principal") Rol rol,
             String rolNombre,
-            @Schema(description = "Todos los roles del usuario (principal y adicionales)") java.util.List<Rol> roles,
+            @Schema(description = "Permisos con los que trabaja el usuario") java.util.List<com.example.roomix.auth.domain.Permiso> permisos,
+            @Schema(description = "Los permisos se ajustaron a mano (si no, son los de su rol)") boolean permisosPersonalizados,
             boolean activo,
             boolean debeCambiarPassword,
             LocalDateTime ultimoAcceso,
@@ -58,7 +59,8 @@ public final class AuthDtos {
                     u.getEmail(),
                     u.getRol(),
                     u.getRol().getNombre(),
-                    u.roles(),
+                    java.util.List.copyOf(u.permisosEfectivos()),
+                    Boolean.TRUE.equals(u.getPermisosPersonalizados()),
                     u.isActivo(),
                     u.isDebeCambiarPassword(),
                     u.getUltimoAcceso(),
@@ -106,17 +108,26 @@ public final class AuthDtos {
             String email,
 
             @NotNull(message = "El rol es obligatorio")
-            @Schema(description = "Rol principal")
+            @Schema(description = "Rol: plantilla de permisos")
             Rol rol,
 
-            @Schema(description = "Roles adicionales (opcional): el usuario accede también a sus módulos")
-            java.util.List<Rol> rolesAdicionales,
+            @Schema(description = "Permisos marcados; si se omite (null) el usuario tiene los permisos por defecto de su rol")
+            java.util.List<com.example.roomix.auth.domain.Permiso> permisos,
 
             @Schema(description = "Obligatoria al crear; opcional al editar (se conserva si va vacía)")
             String password,
 
             Boolean activo
     ) {
+    }
+
+    public record PermisoInfo(com.example.roomix.auth.domain.Permiso codigo, String grupo, String nivel, String descripcion,
+                              @Schema(description = "false si el módulo no está en la licencia del hotel") boolean disponible) {
+    }
+
+    @Schema(name = "CatalogoPermisos")
+    public record CatalogoPermisos(java.util.List<PermisoInfo> permisos,
+                                   java.util.Map<Rol, java.util.List<com.example.roomix.auth.domain.Permiso>> porRol) {
     }
 
     @Schema(name = "PasswordTemporalResponse")

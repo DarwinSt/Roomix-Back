@@ -24,24 +24,34 @@ public final class UsuarioActual {
     /** Rol sin prefijo (ADMIN, RECEPCION, ...) o null si no hay sesión. */
     public static String rol() {
         return autenticacion()
-                .flatMap(a -> a.getAuthorities().stream().map(GrantedAuthority::getAuthority).findFirst())
+                .flatMap(a -> a.getAuthorities().stream().map(GrantedAuthority::getAuthority).filter(x -> x.startsWith("ROLE_")).findFirst())
                 .map(r -> r.replaceFirst("^ROLE_", ""))
                 .orElse(null);
     }
 
-    /** Roles del usuario (principal y adicionales), sin el prefijo ROLE_. */
-    public static java.util.List<String> roles() {
+    private static java.util.List<String> autoridades(String prefijo) {
         return autenticacion()
                 .map(a -> a.getAuthorities().stream().map(GrantedAuthority::getAuthority)
-                        .map(r -> r.replaceFirst("^ROLE_", "")).toList())
+                        .filter(x -> x.startsWith(prefijo)).map(x -> x.substring(prefijo.length())).toList())
                 .orElse(java.util.List.of());
     }
 
-    /** true si el usuario tiene alguno de los roles indicados. */
+    /** true si el rol del usuario es alguno de los indicados. */
     public static boolean tieneRol(String... roles) {
-        java.util.List<String> actuales = roles();
+        java.util.List<String> actuales = autoridades("ROLE_");
         for (String r : roles) {
             if (actuales.contains(r)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** true si el usuario tiene alguno de los permisos indicados (nombres de {@code Permiso}). */
+    public static boolean tienePermiso(String... permisos) {
+        java.util.List<String> actuales = autoridades("PERM_");
+        for (String p : permisos) {
+            if (actuales.contains(p)) {
                 return true;
             }
         }

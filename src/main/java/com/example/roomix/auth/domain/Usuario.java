@@ -56,27 +56,32 @@ public class Usuario {
     @Column(nullable = false, length = 20)
     private Rol rol;
 
-    /** Roles adicionales: el usuario accede a los módulos de todos sus roles (por ejemplo, administración y recepción). */
+    /** Permisos marcados para este usuario (solo cuentan si permisosPersonalizados es true). */
     @jakarta.persistence.ElementCollection(fetch = jakarta.persistence.FetchType.EAGER)
-    @jakarta.persistence.CollectionTable(name = "usuario_roles_adicionales",
-            joinColumns = @jakarta.persistence.JoinColumn(name = "usuario_id"))
+    @jakarta.persistence.CollectionTable(name = "usuario_permisos", joinColumns = @jakarta.persistence.JoinColumn(name = "usuario_id"))
     @Enumerated(EnumType.STRING)
-    @Column(name = "rol", length = 20)
+    @Column(name = "permiso", length = 40)
     @Builder.Default
-    private java.util.Set<Rol> rolesAdicionales = new java.util.LinkedHashSet<>();
+    private java.util.Set<Permiso> permisos = new java.util.LinkedHashSet<>();
 
-    /** Rol principal seguido de los adicionales, sin repetidos. */
-    public java.util.List<Rol> roles() {
-        java.util.LinkedHashSet<Rol> todos = new java.util.LinkedHashSet<>();
-        todos.add(rol);
-        if (rolesAdicionales != null) {
-            java.util.Arrays.stream(Rol.values()).filter(rolesAdicionales::contains).forEach(todos::add);
+    /** false o null: el usuario tiene los permisos por defecto de su rol. */
+    @Column(name = "permisos_personalizados")
+    private Boolean permisosPersonalizados;
+
+    /** Permisos con los que trabaja el usuario: los marcados o, si no se personalizaron, los de su rol. */
+    public java.util.Set<Permiso> permisosEfectivos() {
+        if (Boolean.TRUE.equals(permisosPersonalizados)) {
+            java.util.EnumSet<Permiso> set = java.util.EnumSet.noneOf(Permiso.class);
+            if (permisos != null) {
+                set.addAll(permisos);
+            }
+            return set;
         }
-        return java.util.List.copyOf(todos);
+        return Permiso.porDefecto(rol);
     }
 
-    public boolean tieneRol(Rol r) {
-        return rol == r || (rolesAdicionales != null && rolesAdicionales.contains(r));
+    public boolean tienePermiso(Permiso p) {
+        return permisosEfectivos().contains(p);
     }
 
     @Column(nullable = false)

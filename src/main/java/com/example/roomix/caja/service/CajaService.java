@@ -323,7 +323,7 @@ public class CajaService {
 
     /** Recepción sin roles de administración o finanzas: solo ve sus propios turnos. */
     private static boolean soloRecepcion() {
-        return UsuarioActual.tieneRol("RECEPCION") && !UsuarioActual.tieneRol("ADMIN", "FINANZAS");
+        return !UsuarioActual.tieneRol("ADMIN") && !UsuarioActual.tienePermiso("FINANZAS");
     }
 
     private TurnoCaja buscar(Long id) {

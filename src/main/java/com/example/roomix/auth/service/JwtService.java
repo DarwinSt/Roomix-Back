@@ -36,7 +36,7 @@ public class JwtService {
                 .claim("uid", usuario.getId())
                 .claim("nombre", usuario.getNombreCompleto())
                 .claim("rol", usuario.getRol().name())
-                .claim("roles", usuario.roles().stream().map(Enum::name).toList())
+                .claim("permisos", usuario.permisosEfectivos().stream().map(Enum::name).toList())
                 .build();
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
         String token = jwtEncoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();

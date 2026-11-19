@@ -23,12 +23,5 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     long countByRolAndActivoTrue(Rol rol);
 
-    /** Usuarios activos con el rol como principal o adicional. */
-    @org.springframework.data.jpa.repository.Query("""
-            SELECT COUNT(DISTINCT u) FROM Usuario u LEFT JOIN u.rolesAdicionales r
-            WHERE u.activo = true AND (u.rol = :rol OR r = :rol)
-            """)
-    long contarActivosConRol(@org.springframework.data.repository.query.Param("rol") Rol rol);
-
     List<Usuario> findAllByOrderByNombreCompletoAsc();
 }

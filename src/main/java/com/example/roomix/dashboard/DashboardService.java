@@ -73,12 +73,12 @@ public class DashboardService {
         LocalDate hoy = LocalDate.now();
         List<Alerta> alertas = new ArrayList<>();
 
-        boolean veHabitaciones = es(rol, Rol.ADMIN, Rol.RECEPCION, Rol.HOUSEKEEPING);
-        boolean veRecepcion = es(rol, Rol.ADMIN, Rol.RECEPCION);
-        boolean veOperacion = es(rol, Rol.ADMIN, Rol.RECEPCION, Rol.HOUSEKEEPING);
-        boolean veInventario = es(rol, Rol.ADMIN, Rol.ALMACEN, Rol.HOUSEKEEPING) && licencia.habilitado(com.example.roomix.config.Modulo.INVENTARIO);
-        boolean veFinanzas = es(rol, Rol.ADMIN, Rol.FINANZAS);
-        boolean veEventos = es(rol, Rol.ADMIN, Rol.EVENTOS, Rol.RECEPCION) && licencia.habilitado(com.example.roomix.config.Modulo.EVENTOS);
+        boolean veHabitaciones = UsuarioActual.tienePermiso("HABITACIONES_VER") && UsuarioActual.tienePermiso("LIMPIEZA", "RESERVAS_GESTIONAR");
+        boolean veRecepcion = UsuarioActual.tienePermiso("RESERVAS_GESTIONAR");
+        boolean veOperacion = UsuarioActual.tienePermiso("LIMPIEZA");
+        boolean veInventario = UsuarioActual.tienePermiso("INVENTARIO_VER") && licencia.habilitado(com.example.roomix.config.Modulo.INVENTARIO);
+        boolean veFinanzas = UsuarioActual.tienePermiso("FINANZAS");
+        boolean veEventos = UsuarioActual.tienePermiso("EVENTOS_VER") && licencia.habilitado(com.example.roomix.config.Modulo.EVENTOS);
 
         Habitaciones habitaciones = veHabitaciones ? habitaciones(alertas) : null;
 
@@ -212,9 +212,7 @@ public class DashboardService {
         if (rol == null) {
             return false;
         }
-        if (UsuarioActual.tieneRol(java.util.Arrays.stream(roles).map(Enum::name).toArray(String[]::new))) {
-            return true;
-        }
+
         for (Rol r : roles) {
             if (r.name().equals(rol)) {
                 return true;

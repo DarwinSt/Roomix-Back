@@ -1,5 +1,6 @@
 package com.example.roomix.auth.config;
 
+import com.example.roomix.auth.domain.Permiso;
 import com.example.roomix.auth.domain.Rol;
 import com.example.roomix.auth.domain.Usuario;
 import com.example.roomix.auth.repository.UsuarioRepository;
@@ -60,6 +61,10 @@ public class SecurityConfig {
     private static final String EVENTOS = Rol.EVENTOS.name();
     private static final String ALMACEN = Rol.ALMACEN.name();
 
+    private static String p(Permiso permiso) {
+        return permiso.autoridad();
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
@@ -80,59 +85,45 @@ public class SecurityConfig {
                         // Marca del hotel y módulos de la licencia para la pantalla de ingreso
                         .requestMatchers(HttpMethod.GET, "/api/configuracion/publica", "/api/configuracion/logo").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/configuracion/**").authenticated()
-                        .requestMatchers("/api/configuracion/**").hasRole(ADMIN)
+                        .requestMatchers("/api/configuracion/**").hasAuthority(p(Permiso.CONFIGURACION))
 
-                        // Administración del sistema
-                        .requestMatchers("/api/usuarios/**", "/api/auditoria/**").hasRole(ADMIN)
+                        // Acceso por permisos (cada rol trae los suyos por defecto y el administrador los ajusta por usuario)
+                        .requestMatchers("/api/usuarios/**", "/api/auditoria/**").hasAuthority(p(Permiso.USUARIOS))
 
-                        // Habitaciones
-                        .requestMatchers(HttpMethod.GET, "/api/habitaciones/**")
-                        .hasAnyRole(ADMIN, RECEPCION, HOUSEKEEPING, EVENTOS)
-                        .requestMatchers(HttpMethod.POST, "/api/habitaciones").hasRole(ADMIN)
-                        .requestMatchers(HttpMethod.DELETE, "/api/habitaciones/**").hasRole(ADMIN)
-                        .requestMatchers("/api/habitaciones/*/fotos/**").hasRole(ADMIN)
-                        .requestMatchers("/api/habitaciones/**").hasAnyRole(ADMIN, RECEPCION)
+                        .requestMatchers(HttpMethod.GET, "/api/habitaciones/**").hasAuthority(p(Permiso.HABITACIONES_VER))
+                        .requestMatchers(HttpMethod.POST, "/api/habitaciones").hasAuthority(p(Permiso.HABITACIONES_ADMINISTRAR))
+                        .requestMatchers(HttpMethod.DELETE, "/api/habitaciones/**").hasAuthority(p(Permiso.HABITACIONES_ADMINISTRAR))
+                        .requestMatchers("/api/habitaciones/*/fotos/**").hasAuthority(p(Permiso.HABITACIONES_ADMINISTRAR))
+                        .requestMatchers("/api/habitaciones/**").hasAuthority(p(Permiso.HABITACIONES_OPERAR))
 
-                        // Promociones y políticas de reserva: consulta para recepción y finanzas, cambios solo el administrador
                         .requestMatchers(HttpMethod.GET, "/api/promociones/**", "/api/politicas-reserva")
-                        .hasAnyRole(ADMIN, RECEPCION, FINANZAS)
-                        .requestMatchers("/api/promociones/**", "/api/politicas-reserva").hasRole(ADMIN)
+                        .hasAuthority(p(Permiso.PROMOCIONES_VER))
+                        .requestMatchers("/api/promociones/**", "/api/politicas-reserva").hasAuthority(p(Permiso.PROMOCIONES_GESTIONAR))
 
-                        // Reservas, huéspedes y tarifas
-                        .requestMatchers(HttpMethod.GET, "/api/reservas/**", "/api/huespedes/**")
-                        .hasAnyRole(ADMIN, RECEPCION, FINANZAS)
-                        .requestMatchers("/api/reservas/**", "/api/huespedes/**").hasAnyRole(ADMIN, RECEPCION)
+                        .requestMatchers(HttpMethod.GET, "/api/reservas/**", "/api/huespedes/**").hasAuthority(p(Permiso.RESERVAS_VER))
+                        .requestMatchers("/api/reservas/**", "/api/huespedes/**").hasAuthority(p(Permiso.RESERVAS_GESTIONAR))
                         .requestMatchers(HttpMethod.GET, "/api/tarifas/**").authenticated()
-                        .requestMatchers("/api/tarifas/**").hasAnyRole(ADMIN, FINANZAS)
+                        .requestMatchers("/api/tarifas/**").hasAuthority(p(Permiso.TARIFAS_GESTIONAR))
 
-                        // Incidencias (limpieza, mantenimiento) y personal
-                        .requestMatchers("/api/incidencias/**").hasAnyRole(ADMIN, RECEPCION, HOUSEKEEPING)
-                        .requestMatchers(HttpMethod.GET, "/api/personal/**")
-                        .hasAnyRole(ADMIN, RECEPCION, HOUSEKEEPING, EVENTOS)
-                        .requestMatchers("/api/personal/**").hasRole(ADMIN)
+                        .requestMatchers("/api/incidencias/**").hasAuthority(p(Permiso.LIMPIEZA))
+                        .requestMatchers(HttpMethod.GET, "/api/personal/**").hasAuthority(p(Permiso.PERSONAL_VER))
+                        .requestMatchers("/api/personal/**").hasAuthority(p(Permiso.PERSONAL_GESTIONAR))
 
-                        // Inventario
-                        .requestMatchers(HttpMethod.GET, "/api/inventario/**")
-                        .hasAnyRole(ADMIN, ALMACEN, HOUSEKEEPING, FINANZAS)
-                        .requestMatchers("/api/inventario/**").hasAnyRole(ADMIN, ALMACEN)
+                        .requestMatchers(HttpMethod.GET, "/api/inventario/**").hasAuthority(p(Permiso.INVENTARIO_VER))
+                        .requestMatchers("/api/inventario/**").hasAuthority(p(Permiso.INVENTARIO_GESTIONAR))
 
-                        // Servicios
-                        .requestMatchers(HttpMethod.GET, "/api/servicios/**")
-                        .hasAnyRole(ADMIN, RECEPCION, HOUSEKEEPING, EVENTOS, FINANZAS)
-                        .requestMatchers("/api/servicios/catalogo/**").hasAnyRole(ADMIN, EVENTOS)
-                        .requestMatchers("/api/servicios/**").hasAnyRole(ADMIN, RECEPCION, HOUSEKEEPING, EVENTOS)
+                        .requestMatchers(HttpMethod.GET, "/api/servicios/**").hasAuthority(p(Permiso.SERVICIOS_VER))
+                        .requestMatchers("/api/servicios/catalogo/**").hasAuthority(p(Permiso.SERVICIOS_CATALOGO))
+                        .requestMatchers("/api/servicios/**").hasAuthority(p(Permiso.SERVICIOS_SOLICITUDES))
 
-                        // Eventos y salones
-                        .requestMatchers(HttpMethod.GET, "/api/eventos/**", "/api/salones/**")
-                        .hasAnyRole(ADMIN, EVENTOS, RECEPCION, FINANZAS)
-                        .requestMatchers("/api/eventos/**", "/api/salones/**").hasAnyRole(ADMIN, EVENTOS)
+                        .requestMatchers(HttpMethod.GET, "/api/eventos/**", "/api/salones/**").hasAuthority(p(Permiso.EVENTOS_VER))
+                        .requestMatchers("/api/eventos/**", "/api/salones/**").hasAuthority(p(Permiso.EVENTOS_GESTIONAR))
 
-                        // Finanzas, facturación y reportes
-                        .requestMatchers("/api/facturas/**").hasAnyRole(ADMIN, FINANZAS, RECEPCION)
-                        // Caja de recepción: consultan administración, finanzas y recepción; operan recepción y administración
-                        .requestMatchers(HttpMethod.GET, "/api/caja/**").hasAnyRole(ADMIN, FINANZAS, RECEPCION)
-                        .requestMatchers("/api/caja/**").hasAnyRole(ADMIN, RECEPCION)
-                        .requestMatchers("/api/finanzas/**", "/api/reportes/**").hasAnyRole(ADMIN, FINANZAS)
+                        .requestMatchers("/api/facturas/**").hasAuthority(p(Permiso.FACTURAS))
+                        .requestMatchers(HttpMethod.GET, "/api/caja/**").hasAuthority(p(Permiso.CAJA_VER))
+                        .requestMatchers("/api/caja/**").hasAuthority(p(Permiso.CAJA_OPERAR))
+                        .requestMatchers("/api/finanzas/**").hasAuthority(p(Permiso.FINANZAS))
+                        .requestMatchers("/api/reportes/**").hasAuthority(p(Permiso.REPORTES))
 
                         // Dashboard, perfil propio y cualquier otra ruta: usuario autenticado
                         .anyRequest().authenticated()
@@ -160,7 +151,9 @@ public class SecurityConfig {
                     .orElseThrow(() -> new DisabledException("Usuario inexistente o desactivado"));
             return new JwtAuthenticationToken(
                     jwt,
-                    usuario.roles().stream().map(r -> new SimpleGrantedAuthority(r.autoridad())).toList(),
+                    java.util.stream.Stream.concat(
+                            java.util.stream.Stream.of(new SimpleGrantedAuthority(usuario.getRol().autoridad())),
+                            usuario.permisosEfectivos().stream().map(p -> new SimpleGrantedAuthority(p.autoridad()))).toList(),
                     usuario.getUsername()
             );
         };

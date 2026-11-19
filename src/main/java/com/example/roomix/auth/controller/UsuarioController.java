@@ -45,6 +45,12 @@ public class UsuarioController {
         return Arrays.stream(Rol.values()).map(RolResponse::from).toList();
     }
 
+    @Operation(summary = "Permisos por módulo (casillas) y los que marca cada rol por defecto")
+    @GetMapping("/permisos")
+    public com.example.roomix.auth.dto.AuthDtos.CatalogoPermisos permisos() {
+        return usuarioService.catalogoPermisos();
+    }
+
     @Operation(summary = "Obtener usuario")
     @GetMapping("/{id}")
     public UsuarioResponse obtener(@PathVariable Long id) {
