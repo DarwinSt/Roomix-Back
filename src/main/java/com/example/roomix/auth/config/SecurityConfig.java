@@ -23,7 +23,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.authorization.AuthorityAuthorizationManager;
+import org.springframework.security.authorization.AuthorizationManager;
+import org.springframework.security.authorization.AuthorizationManagers;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
@@ -65,6 +69,15 @@ public class SecurityConfig {
         return permiso.autoridad();
     }
 
+    /** El usuario debe tener todos los permisos indicados. */
+    @SuppressWarnings("unchecked")
+    private static AuthorizationManager<RequestAuthorizationContext> todos(Permiso... permisos) {
+        AuthorizationManager<RequestAuthorizationContext>[] requeridos = java.util.Arrays.stream(permisos)
+                .map(x -> AuthorityAuthorizationManager.<RequestAuthorizationContext>hasAuthority(x.autoridad()))
+                .toArray(AuthorizationManager[]::new);
+        return AuthorizationManagers.allOf(requeridos);
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
@@ -89,6 +102,12 @@ public class SecurityConfig {
 
                         // Acceso por permisos (cada rol trae los suyos por defecto y el administrador los ajusta por usuario)
                         .requestMatchers("/api/usuarios/**", "/api/auditoria/**").hasAuthority(p(Permiso.USUARIOS))
+
+                        // Separación de responsabilidades: quien cobra no anula; anular exige además el permiso de anulaciones
+                        .requestMatchers(HttpMethod.PATCH, "/api/facturas/*/anular").access(todos(Permiso.FACTURAS, Permiso.ANULACIONES))
+                        .requestMatchers(HttpMethod.PATCH, "/api/ventas/*/anular").access(todos(Permiso.VENTAS, Permiso.ANULACIONES))
+                        .requestMatchers(HttpMethod.PATCH, "/api/finanzas/movimientos/*/anular")
+                        .access(todos(Permiso.FINANZAS, Permiso.ANULACIONES))
 
                         .requestMatchers(HttpMethod.GET, "/api/habitaciones/**").hasAuthority(p(Permiso.HABITACIONES_VER))
                         .requestMatchers(HttpMethod.POST, "/api/habitaciones").hasAuthority(p(Permiso.HABITACIONES_ADMINISTRAR))

@@ -1,5 +1,6 @@
 package com.example.roomix.auditoria.controller;
 
+import com.example.roomix.auditoria.service.AnulacionesService;
 import com.example.roomix.auditoria.service.AuditoriaService;
 import com.example.roomix.auditoria.service.AuditoriaService.RegistroAuditoriaResponse;
 import com.example.roomix.common.dto.PaginaResponse;
@@ -22,6 +23,7 @@ import java.util.List;
 public class AuditoriaController {
 
     private final AuditoriaService auditoriaService;
+    private final AnulacionesService anulacionesService;
 
     @Operation(summary = "Consultar el registro de auditoría (por defecto, últimos 30 días)")
     @GetMapping
@@ -35,6 +37,15 @@ public class AuditoriaController {
             @RequestParam(defaultValue = "50") int tamano
     ) {
         return auditoriaService.buscar(usuario, modulo, accion, desde, hasta, pagina, tamano);
+    }
+
+    @Operation(summary = "Anulaciones de facturas, ventas y movimientos de dinero en el periodo (por defecto, últimos 30 días)")
+    @GetMapping("/anulaciones")
+    public List<AnulacionesService.Anulacion> anulaciones(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta
+    ) {
+        return anulacionesService.listar(desde, hasta);
     }
 
     @Operation(summary = "Módulos con registros de auditoría (para filtros)")

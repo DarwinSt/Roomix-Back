@@ -100,6 +100,12 @@ public class Factura {
     @Column(name = "motivo_anulacion", length = 200)
     private String motivoAnulacion;
 
+    @Column(name = "anulada_por", length = 80)
+    private String anuladaPor;
+
+    @Column(name = "fecha_hora_anulacion")
+    private LocalDateTime fechaHoraAnulacion;
+
     @Column(name = "emitida_por", nullable = false, length = 50)
     private String emitidaPor;
 

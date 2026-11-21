@@ -175,6 +175,8 @@ public class FinanzasService {
         cajaTurnoResolver.validarAnulable(movimiento.getTurnoCajaId());
         movimiento.setAnulado(true);
         movimiento.setMotivoAnulacion(motivo.trim());
+        movimiento.setAnuladoPor(UsuarioActual.username());
+        movimiento.setFechaHoraAnulacion(java.time.LocalDateTime.now());
         return MovimientoResponse.from(movimientoRepository.save(movimiento));
     }
 
@@ -184,6 +186,8 @@ public class FinanzasService {
         for (MovimientoFinanciero m : movimientoRepository.findByPagoIdAndAnuladoFalse(pagoId)) {
             m.setAnulado(true);
             m.setMotivoAnulacion(motivo);
+            m.setAnuladoPor(UsuarioActual.username());
+            m.setFechaHoraAnulacion(java.time.LocalDateTime.now());
             movimientoRepository.save(m);
         }
     }

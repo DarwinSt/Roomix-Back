@@ -112,6 +112,12 @@ public class MovimientoFinanciero {
     @Column(name = "motivo_anulacion", length = 200)
     private String motivoAnulacion;
 
+    @Column(name = "anulado_por", length = 80)
+    private String anuladoPor;
+
+    @Column(name = "fecha_hora_anulacion")
+    private java.time.LocalDateTime fechaHoraAnulacion;
+
     @CreationTimestamp
     @Column(name = "fecha_hora_creacion", nullable = false, updatable = false)
     private LocalDateTime fechaHoraCreacion;

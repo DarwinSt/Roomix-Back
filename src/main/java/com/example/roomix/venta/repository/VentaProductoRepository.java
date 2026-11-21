@@ -16,6 +16,8 @@ public interface VentaProductoRepository extends JpaRepository<VentaProducto, Lo
 
     List<VentaProducto> findByFechaHoraBetweenOrderByFechaHoraDesc(LocalDateTime desde, LocalDateTime hasta);
 
+    List<VentaProducto> findByEstadoAndFechaHoraAnulacionBetween(EstadoVenta estado, LocalDateTime desde, LocalDateTime hasta);
+
     /** Productos cargados a la cuenta de una estadía (para el estado de cuenta y la factura). */
     @Query("""
             select i from VentaProductoItem i join i.venta v

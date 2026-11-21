@@ -21,6 +21,9 @@ public interface FacturaRepository extends JpaRepository<Factura, Long>, JpaSpec
 
     List<Factura> findByHuespedIdOrderByFechaEmisionDesc(Long huespedId);
 
+    List<Factura> findByEstadoAndFechaHoraAnulacionBetween(EstadoFactura estado, java.time.LocalDateTime desde,
+                                                          java.time.LocalDateTime hasta);
+
     @Query("SELECT COALESCE(SUM(f.total - f.totalPagado), 0) FROM Factura f WHERE f.estado IN :estados")
     BigDecimal saldoPendiente(@Param("estados") List<EstadoFactura> estados);
 

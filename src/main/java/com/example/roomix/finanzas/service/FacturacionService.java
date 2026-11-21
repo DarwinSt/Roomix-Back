@@ -297,6 +297,8 @@ public class FacturacionService {
         }
         factura.setEstado(EstadoFactura.ANULADA);
         factura.setMotivoAnulacion(motivo.trim());
+        factura.setAnuladaPor(com.example.roomix.auth.service.UsuarioActual.username());
+        factura.setFechaHoraAnulacion(ahora);
         return FacturaResponse.from(facturaRepository.save(factura));
     }
 

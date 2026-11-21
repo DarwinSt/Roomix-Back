@@ -33,6 +33,7 @@ public enum Permiso {
     CAJA_VER("Caja", "Ver", "Consultar turnos de caja", Modulo.CAJA),
     CAJA_OPERAR("Caja", "Operar", "Abrir y cerrar turnos, ingresos, egresos, retiros y aportes", Modulo.CAJA),
     FINANZAS("Finanzas", "Acceso", "Ingresos, egresos, gastos y estado de resultados", null),
+    ANULACIONES("Anulaciones", "Anular", "Anular facturas, ventas y movimientos de dinero; queda el motivo, quién y cuándo", null),
     REPORTES("Reportes", "Acceso", "Reportes de ocupación, ADR y RevPAR", Modulo.REPORTES),
     USUARIOS("Usuarios y auditoría", "Acceso", "Crear usuarios, asignar permisos y consultar la auditoría", null),
     CONFIGURACION("Configuración del hotel", "Acceso", "Nombre, logo, impuestos y opciones del hotel", null);
@@ -78,8 +79,9 @@ public enum Permiso {
                     LIMPIEZA, PERSONAL_VER, SERVICIOS_VER, SERVICIOS_SOLICITUDES, EVENTOS_VER, VENTAS, FACTURAS, CAJA_VER, CAJA_OPERAR);
             case HOUSEKEEPING -> EnumSet.of(HABITACIONES_VER, LIMPIEZA, PERSONAL_VER, INVENTARIO_VER, SERVICIOS_VER,
                     SERVICIOS_SOLICITUDES);
+            // Finanzas revisa y anula; no opera la caja, así que no anula lo que cobra
             case FINANZAS -> EnumSet.of(RESERVAS_VER, PROMOCIONES_VER, TARIFAS_GESTIONAR, INVENTARIO_VER, SERVICIOS_VER, EVENTOS_VER,
-                    FACTURAS, CAJA_VER, FINANZAS, REPORTES);
+                    FACTURAS, CAJA_VER, FINANZAS, ANULACIONES, REPORTES);
             case EVENTOS -> EnumSet.of(HABITACIONES_VER, PERSONAL_VER, SERVICIOS_VER, SERVICIOS_SOLICITUDES, SERVICIOS_CATALOGO,
                     EVENTOS_VER, EVENTOS_GESTIONAR);
             case ALMACEN -> EnumSet.of(INVENTARIO_VER, INVENTARIO_GESTIONAR);

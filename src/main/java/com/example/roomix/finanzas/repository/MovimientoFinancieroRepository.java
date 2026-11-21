@@ -17,6 +17,8 @@ public interface MovimientoFinancieroRepository
 
     List<MovimientoFinanciero> findByPagoIdAndAnuladoFalse(Long pagoId);
 
+    List<MovimientoFinanciero> findByAnuladoTrueAndFechaHoraAnulacionBetween(java.time.LocalDateTime desde, java.time.LocalDateTime hasta);
+
     /** Movimientos de un turno de caja (incluye anulados para el detalle). */
     List<MovimientoFinanciero> findByTurnoCajaIdOrderByFechaHoraCreacionAsc(Long turnoCajaId);
 
