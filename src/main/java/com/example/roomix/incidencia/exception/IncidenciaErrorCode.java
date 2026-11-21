@@ -19,7 +19,8 @@ public enum IncidenciaErrorCode {
     PERSONAL_OCUPADO(HttpStatus.CONFLICT, "INC-013", "El personal '%s' ya tiene una incidencia activa en curso"),
     HABITACION_REQUERIDA(HttpStatus.UNPROCESSABLE_ENTITY, "INC-014", "Debe indicar la habitación para incidencias de alcance HABITACION"),
     UBICACION_REQUERIDA(HttpStatus.UNPROCESSABLE_ENTITY, "INC-015", "Debe indicar la ubicación (zona común) de la incidencia"),
-    ALCANCE_TIPO_INVALIDO(HttpStatus.UNPROCESSABLE_ENTITY, "INC-016", "El tipo %s no aplica para incidencias en %s");
+    ALCANCE_TIPO_INVALIDO(HttpStatus.UNPROCESSABLE_ENTITY, "INC-016", "El tipo %s no aplica para incidencias en %s"),
+    CHECKLIST_TAREA_REPETIDA(HttpStatus.BAD_REQUEST, "INC-017", "La tarea «%s» está repetida en el checklist");
 
     private final HttpStatus httpStatus;
     private final String code;

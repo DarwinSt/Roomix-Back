@@ -98,7 +98,8 @@ public class ConfiguracionHotelService {
     public ConfiguracionPublica publica() {
         ConfiguracionHotel c = entidad();
         return new ConfiguracionPublica(c.getNombre(), c.tieneLogo(), version(c),
-                licencia.habilitados().stream().sorted().toList(), modo(c), c.cobraIva());
+                licencia.habilitados().stream().sorted().toList(), modo(c), c.cobraIva(),
+                c.getColorPrimario(), c.getColorAcento(), c.getEslogan());
     }
 
     @Transactional(readOnly = true)
@@ -156,6 +157,17 @@ public class ConfiguracionHotelService {
         return guardar(c);
     }
 
+    /** Colores de la interfaz y frase de bienvenida; en blanco vuelve a los de Roomix. */
+    @Transactional
+    public ConfiguracionResponse actualizarApariencia(ConfiguracionDtos.AparienciaRequest r) {
+        ConfiguracionHotel c = repository.findById(ConfiguracionHotel.ID).orElseGet(this::desdeVariables);
+        c.setColorPrimario(StringUtils.hasText(r.colorPrimario()) ? r.colorPrimario().toLowerCase() : null);
+        c.setColorAcento(StringUtils.hasText(r.colorAcento()) ? r.colorAcento().toLowerCase() : null);
+        c.setEslogan(texto(r.eslogan()));
+        c.setActualizadaPor(UsuarioActual.username());
+        return guardar(c);
+    }
+
     /** Logo del hotel: [tipo, contenido]. */
     @Transactional(readOnly = true)
     public Object[] logo() {
@@ -173,7 +185,8 @@ public class ConfiguracionHotelService {
                 !Boolean.FALSE.equals(c.getExentoIvaExtranjeros()), modo(c),
                 c.getMesesRetencionHuespedes() == null ? 0 : c.getMesesRetencionHuespedes(),
                 Boolean.TRUE.equals(c.getCorreoConfirmacionReserva()), correo.habilitado(), c.tieneLogo(), version(c), licencia.cliente(),
-                Arrays.stream(Modulo.values()).map(m -> new ModuloInfo(m, m.getNombre(), licencia.habilitado(m))).toList());
+                Arrays.stream(Modulo.values()).map(m -> new ModuloInfo(m, m.getNombre(), licencia.habilitado(m))).toList(),
+                c.getColorPrimario(), c.getColorAcento(), c.getEslogan());
     }
 
     private ConfiguracionHotel desdeVariables() {

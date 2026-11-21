@@ -4,6 +4,7 @@ package com.example.roomix.finanzas.domain;
 public enum OrigenItem {
     ALOJAMIENTO(CategoriaFinanciera.ALOJAMIENTO),
     SERVICIO(CategoriaFinanciera.SERVICIOS),
+    PRODUCTO(CategoriaFinanciera.VENTA_PRODUCTOS),
     EVENTO(CategoriaFinanciera.EVENTOS),
     OTRO(CategoriaFinanciera.OTROS_INGRESOS);
 

@@ -10,7 +10,7 @@ public enum Modulo {
     CAJA("Caja por turnos", List.of("/api/caja")),
     SERVICIOS("Servicios al huésped", List.of("/api/servicios")),
     EVENTOS("Eventos y salones", List.of("/api/eventos", "/api/salones")),
-    INVENTARIO("Inventario", List.of("/api/inventario")),
+    INVENTARIO("Inventario", List.of("/api/inventario", "/api/ventas")),
     REPORTES("Reportes y analítica", List.of("/api/reportes"));
 
     private final String nombre;

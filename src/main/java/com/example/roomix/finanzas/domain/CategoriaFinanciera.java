@@ -7,6 +7,7 @@ public enum CategoriaFinanciera {
     // Ingresos
     ALOJAMIENTO(TipoMovimiento.INGRESO, "Alojamiento"),
     SERVICIOS(TipoMovimiento.INGRESO, "Servicios adicionales"),
+    VENTA_PRODUCTOS(TipoMovimiento.INGRESO, "Venta de productos"),
     EVENTOS(TipoMovimiento.INGRESO, "Eventos"),
     OTROS_INGRESOS(TipoMovimiento.INGRESO, "Otros ingresos"),
     // Egresos

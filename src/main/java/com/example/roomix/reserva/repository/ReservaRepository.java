@@ -59,6 +59,9 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long>, JpaSpec
 
     List<Reserva> findByHabitacionIdOrderByFechaEntradaDesc(Long habitacionId);
 
+    /** Estadías en un estado (p. ej. huéspedes alojados), por número de habitación. */
+    List<Reserva> findByEstadoReservaOrderByHabitacionNumeroAsc(com.example.roomix.habitacion.domain.EstadoReserva estado);
+
     /** Igual que existeSolapamiento pero ignorando la propia reserva (al editar fechas). */
     @Query("""
             SELECT CASE WHEN COUNT(r) > 0 THEN TRUE ELSE FALSE END

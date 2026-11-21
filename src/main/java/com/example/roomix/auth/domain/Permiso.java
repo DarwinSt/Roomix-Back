@@ -28,6 +28,7 @@ public enum Permiso {
     SERVICIOS_CATALOGO("Servicios", "Catálogo", "Gestionar el catálogo de servicios", Modulo.SERVICIOS),
     EVENTOS_VER("Eventos", "Ver", "Consultar eventos y salones", Modulo.EVENTOS),
     EVENTOS_GESTIONAR("Eventos", "Gestionar", "Crear eventos, salones y participantes", Modulo.EVENTOS),
+    VENTAS("Venta de productos", "Vender", "Vender productos del inventario (minibar, tienda) de contado o cargados a la habitación", Modulo.INVENTARIO),
     FACTURAS("Facturas", "Acceso", "Consultar facturas y registrar pagos", null),
     CAJA_VER("Caja", "Ver", "Consultar turnos de caja", Modulo.CAJA),
     CAJA_OPERAR("Caja", "Operar", "Abrir y cerrar turnos, ingresos, egresos, retiros y aportes", Modulo.CAJA),
@@ -74,7 +75,7 @@ public enum Permiso {
         return switch (rol) {
             case ADMIN -> EnumSet.allOf(Permiso.class);
             case RECEPCION -> EnumSet.of(HABITACIONES_VER, HABITACIONES_OPERAR, RESERVAS_VER, RESERVAS_GESTIONAR, PROMOCIONES_VER,
-                    LIMPIEZA, PERSONAL_VER, SERVICIOS_VER, SERVICIOS_SOLICITUDES, EVENTOS_VER, FACTURAS, CAJA_VER, CAJA_OPERAR);
+                    LIMPIEZA, PERSONAL_VER, SERVICIOS_VER, SERVICIOS_SOLICITUDES, EVENTOS_VER, VENTAS, FACTURAS, CAJA_VER, CAJA_OPERAR);
             case HOUSEKEEPING -> EnumSet.of(HABITACIONES_VER, LIMPIEZA, PERSONAL_VER, INVENTARIO_VER, SERVICIOS_VER,
                     SERVICIOS_SOLICITUDES);
             case FINANZAS -> EnumSet.of(RESERVAS_VER, PROMOCIONES_VER, TARIFAS_GESTIONAR, INVENTARIO_VER, SERVICIOS_VER, EVENTOS_VER,

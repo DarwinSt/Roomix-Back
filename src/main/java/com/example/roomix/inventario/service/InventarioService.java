@@ -68,6 +68,7 @@ public class InventarioService {
                 .ubicacion(normalizarUbicacion(request.ubicacion()))
                 .proveedor(normalizarUbicacion(request.proveedor()))
                 .precioUnitario(request.precioUnitario())
+                .precioVenta(precioVenta(request.precioVenta()))
                 .activo(request.activo() == null || request.activo())
                 .build();
 
@@ -100,6 +101,7 @@ public class InventarioService {
         articulo.setUbicacion(normalizarUbicacion(request.ubicacion()));
         articulo.setProveedor(normalizarUbicacion(request.proveedor()));
         articulo.setPrecioUnitario(request.precioUnitario());
+        articulo.setPrecioVenta(precioVenta(request.precioVenta()));
         if (request.activo() != null) {
             articulo.setActivo(request.activo());
         }
@@ -324,5 +326,9 @@ public class InventarioService {
             return null;
         }
         return ubicacion.trim();
+    }
+
+    private static BigDecimal precioVenta(BigDecimal v) {
+        return v == null || v.signum() <= 0 ? null : v.setScale(2, java.math.RoundingMode.HALF_UP);
     }
 }

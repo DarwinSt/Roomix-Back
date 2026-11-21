@@ -9,6 +9,7 @@ import com.example.roomix.incidencia.domain.ContextoLimpieza;
 import com.example.roomix.incidencia.domain.EstadoIncidencia;
 import com.example.roomix.incidencia.domain.Incidencia;
 import com.example.roomix.incidencia.domain.IncidenciaTarea;
+import com.example.roomix.incidencia.domain.TipoChecklist;
 import com.example.roomix.incidencia.domain.TipoIncidencia;
 import com.example.roomix.incidencia.dto.ActualizarTareaIncidenciaRequest;
 import com.example.roomix.incidencia.dto.AsignarIncidenciaRequest;
@@ -42,54 +43,13 @@ public class IncidenciaService {
             EstadoIncidencia.EN_PROGRESO
     );
 
-    private static final Map<TipoIncidencia, List<String>> TAREAS_POR_TIPO = Map.of(
-            TipoIncidencia.LIMPIEZA, List.of(
-                    "Preparar materiales de limpieza",
-                    "Ingresar a la habitación",
-                    "Limpiar baño",
-                    "Cambiar ropa de cama",
-                    "Limpiar superficies y piso",
-                    "Revisión final del servicio"
-            ),
-            TipoIncidencia.MANTENIMIENTO, List.of(
-                    "Revisión técnica inicial",
-                    "Ejecutar reparación o adecuación",
-                    "Verificación de funcionamiento",
-                    "Cierre de mantenimiento"
-            ),
-            TipoIncidencia.SERVICIO_CUARTO, List.of(
-                    "Preparar pedido en cocina",
-                    "Entregar servicio en habitación",
-                    "Retirar vajilla y residuos",
-                    "Confirmar servicio con huésped o recepción"
-            ),
-            TipoIncidencia.OTRO, List.of(
-                    "Iniciar servicio",
-                    "Ejecutar tareas del servicio",
-                    "Verificación final"
-            )
-    );
-
-    private static final Map<TipoIncidencia, List<String>> TAREAS_ZONA_COMUN = Map.of(
-            TipoIncidencia.MANTENIMIENTO, List.of(
-                    "Revisión inicial del área",
-                    "Ejecutar reparación o adecuación",
-                    "Verificación de funcionamiento",
-                    "Cierre de mantenimiento"
-            ),
-            TipoIncidencia.OTRO, List.of(
-                    "Iniciar servicio en zona común",
-                    "Ejecutar tareas del servicio",
-                    "Verificación final"
-            )
-    );
-
     private final IncidenciaRepository incidenciaRepository;
     private final HabitacionRepository habitacionRepository;
     private final HabitacionInhabilitacionService inhabilitacionService;
     private final PersonalService personalService;
     private final com.example.roomix.inventario.service.InventarioService inventarioService;
     private final com.example.roomix.config.Licencia licencia;
+    private final ChecklistService checklistService;
 
     public List<IncidenciaResponse> listar(
             EstadoIncidencia estado,
@@ -460,10 +420,8 @@ public class IncidenciaService {
     }
 
     private void agregarTareas(Incidencia incidencia, TipoIncidencia tipo, AlcanceIncidencia alcance) {
-        Map<TipoIncidencia, List<String>> mapa = alcance == AlcanceIncidencia.ZONA_COMUN
-                ? TAREAS_ZONA_COMUN
-                : TAREAS_POR_TIPO;
-        List<String> tareas = mapa.getOrDefault(tipo, mapa.get(TipoIncidencia.OTRO));
+        // Tareas que definió el administrador para este tipo de servicio (o las predeterminadas)
+        List<String> tareas = checklistService.tareas(TipoChecklist.de(tipo, incidencia.getContextoLimpieza(), alcance));
         for (int i = 0; i < tareas.size(); i++) {
             incidencia.getTareas().add(IncidenciaTarea.builder()
                     .incidencia(incidencia)
@@ -475,9 +433,9 @@ public class IncidenciaService {
 
     private void marcarPrimeraTareaDeIngreso(Incidencia incidencia) {
         incidencia.getTareas().stream()
+                // Con checklists definidos por el hotel solo se marca la tarea que habla de ingresar o entregar
                 .filter(t -> t.getDescripcion().toLowerCase().contains("ingresar")
-                        || t.getDescripcion().toLowerCase().contains("entregar")
-                        || t.getOrden() == 2)
+                        || t.getDescripcion().toLowerCase().contains("entregar"))
                 .findFirst()
                 .ifPresent(t -> {
                     t.setCompletada(true);

@@ -53,6 +53,16 @@ public record ArticuloInventarioRequest(
 
         @Schema(description = "Costo unitario de referencia en COP", example = "18500")
         @DecimalMin(value = "0", message = "El precio no puede ser negativo")
-        BigDecimal precioUnitario
+        BigDecimal precioUnitario,
+
+        @Schema(description = "Precio de venta al huésped en COP; vacío si el artículo no se vende", example = "4500")
+        @DecimalMin(value = "0", message = "El precio de venta no puede ser negativo")
+        BigDecimal precioVenta
 ) {
+    /** Compatibilidad con los llamados anteriores (sin precio de venta). */
+    public ArticuloInventarioRequest(String nombre, String descripcion, Long categoriaId, Integer cantidad, Integer cantidadMinima,
+                                     UnidadMedida unidadMedida, String ubicacion, Boolean activo, String proveedor,
+                                     BigDecimal precioUnitario) {
+        this(nombre, descripcion, categoriaId, cantidad, cantidadMinima, unidadMedida, ubicacion, activo, proveedor, precioUnitario, null);
+    }
 }

@@ -105,10 +105,14 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/tarifas/**").authenticated()
                         .requestMatchers("/api/tarifas/**").hasAuthority(p(Permiso.TARIFAS_GESTIONAR))
 
+                        .requestMatchers(HttpMethod.GET, "/api/incidencias/checklists")
+                        .hasAnyAuthority(p(Permiso.LIMPIEZA), p(Permiso.CONFIGURACION))
+                        .requestMatchers("/api/incidencias/checklists/**").hasAuthority(p(Permiso.CONFIGURACION))
                         .requestMatchers("/api/incidencias/**").hasAuthority(p(Permiso.LIMPIEZA))
                         .requestMatchers(HttpMethod.GET, "/api/personal/**").hasAuthority(p(Permiso.PERSONAL_VER))
                         .requestMatchers("/api/personal/**").hasAuthority(p(Permiso.PERSONAL_GESTIONAR))
 
+                        .requestMatchers("/api/ventas/**").hasAuthority(p(Permiso.VENTAS))
                         .requestMatchers(HttpMethod.GET, "/api/inventario/**").hasAuthority(p(Permiso.INVENTARIO_VER))
                         .requestMatchers("/api/inventario/**").hasAuthority(p(Permiso.INVENTARIO_GESTIONAR))
 

@@ -70,6 +70,14 @@ public class ArticuloInventario {
     @Column(name = "precio_unitario", precision = 12, scale = 2)
     private BigDecimal precioUnitario;
 
+    /** Precio al que se vende al huésped (minibar, tienda); null = no se vende. */
+    @Column(name = "precio_venta", precision = 12, scale = 2)
+    private BigDecimal precioVenta;
+
+    public boolean seVende() {
+        return activo && precioVenta != null && precioVenta.signum() > 0;
+    }
+
     @Column(nullable = false)
     @Builder.Default
     private boolean activo = true;

@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
@@ -28,7 +29,10 @@ public final class ConfiguracionDtos {
             @Schema(description = "Cambia cada vez que se actualiza el logo (para refrescar la imagen)") long logoVersion,
             List<Modulo> modulos,
             ModoCobro modoCobro,
-            boolean cobraIva
+            boolean cobraIva,
+            @Schema(description = "Color principal (#RRGGBB); null = colores de Roomix") String colorPrimario,
+            @Schema(description = "Color de acento (#RRGGBB); null = colores de Roomix") String colorAcento,
+            String eslogan
     ) {
     }
 
@@ -50,7 +54,10 @@ public final class ConfiguracionDtos {
             boolean tieneLogo,
             long logoVersion,
             String clienteLicencia,
-            List<ModuloInfo> modulos
+            List<ModuloInfo> modulos,
+            String colorPrimario,
+            String colorAcento,
+            String eslogan
     ) {
     }
 
@@ -68,6 +75,14 @@ public final class ConfiguracionDtos {
             @NotNull(message = "Indique el modo de cobro") ModoCobro modoCobro,
             @Min(value = 0, message = "Los meses no pueden ser negativos") @Max(120) Integer mesesRetencionHuespedes,
             Boolean correoConfirmacionReserva
+    ) {
+    }
+
+    @Schema(description = "Apariencia del hotel: colores de la interfaz y frase de bienvenida")
+    public record AparienciaRequest(
+            @Pattern(regexp = "^#[0-9a-fA-F]{6}$", message = "El color principal debe tener el formato #RRGGBB") String colorPrimario,
+            @Pattern(regexp = "^#[0-9a-fA-F]{6}$", message = "El color de acento debe tener el formato #RRGGBB") String colorAcento,
+            @Size(max = 120, message = "La frase admite máximo 120 caracteres") String eslogan
     ) {
     }
 }

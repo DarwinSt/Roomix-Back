@@ -55,6 +55,12 @@ public class ConfiguracionController {
         return service.actualizar(request);
     }
 
+    @Operation(summary = "Cambiar la apariencia: colores de la interfaz y frase de bienvenida (administrador)")
+    @PutMapping("/apariencia")
+    public ConfiguracionResponse apariencia(@Valid @RequestBody ConfiguracionDtos.AparienciaRequest request) {
+        return service.actualizarApariencia(request);
+    }
+
     @Operation(summary = "Aplicar ahora la retención de datos de huéspedes (normalmente corre cada noche)")
     @PostMapping("/retencion/ejecutar")
     public java.util.Map<String, Integer> ejecutarRetencion() {

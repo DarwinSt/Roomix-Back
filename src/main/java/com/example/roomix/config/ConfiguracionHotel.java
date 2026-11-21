@@ -79,6 +79,18 @@ public class ConfiguracionHotel {
     @Column(name = "correo_confirmacion_reserva")
     private Boolean correoConfirmacionReserva;
 
+    /** Color principal de la interfaz (#RRGGBB); null = verde de Roomix. */
+    @Column(name = "color_primario", length = 7)
+    private String colorPrimario;
+
+    /** Color de acento (#RRGGBB); null = dorado de Roomix. */
+    @Column(name = "color_acento", length = 7)
+    private String colorAcento;
+
+    /** Frase corta del hotel que se muestra en la pantalla de ingreso. */
+    @Column(length = 120)
+    private String eslogan;
+
     @Basic(fetch = FetchType.LAZY)
     @Column(name = "logo")
     private byte[] logo;

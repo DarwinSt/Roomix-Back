@@ -27,6 +27,7 @@ import com.example.roomix.huesped.domain.TipoDocumento;
 import com.example.roomix.reserva.domain.Reserva;
 import com.example.roomix.reserva.repository.ReservaRepository;
 import com.example.roomix.servicio.domain.SolicitudServicio;
+import com.example.roomix.venta.domain.VentaProductoItem;
 import com.example.roomix.servicio.service.ServicioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -66,6 +67,7 @@ public class FacturacionService {
     private final FinanzasService finanzasService;
     private final AbonoService abonoService;
     private final ConfiguracionHotelService configuracion;
+    private final com.example.roomix.venta.service.VentaService ventaService;
 
     // ------------------------------------------------------------------ Consultas
 
@@ -99,6 +101,9 @@ public class FacturacionService {
         lineas.add(lineaAlojamiento(reserva, facturaItemRepository.estaFacturado(OrigenItem.ALOJAMIENTO, reserva.getId())));
         for (SolicitudServicio s : servicioService.cobrablesDeReserva(reserva.getId())) {
             lineas.add(lineaServicio(s, facturaItemRepository.estaFacturado(OrigenItem.SERVICIO, s.getId())));
+        }
+        for (VentaProductoItem p : ventaService.cargosDeReserva(reserva.getId())) {
+            lineas.add(lineaProducto(p, facturaItemRepository.estaFacturado(OrigenItem.PRODUCTO, p.getId())));
         }
 
         boolean exento = exentoIva(reserva.getHuesped());
@@ -150,6 +155,11 @@ public class FacturacionService {
         for (SolicitudServicio s : servicioService.cobrablesDeReserva(reserva.getId())) {
             if (!facturaItemRepository.estaFacturado(OrigenItem.SERVICIO, s.getId())) {
                 items.add(item(lineaServicio(s, false)));
+            }
+        }
+        for (VentaProductoItem p : ventaService.cargosDeReserva(reserva.getId())) {
+            if (!facturaItemRepository.estaFacturado(OrigenItem.PRODUCTO, p.getId())) {
+                items.add(item(lineaProducto(p, false)));
             }
         }
 
@@ -385,6 +395,11 @@ public class FacturacionService {
         return new LineaCuenta("Servicio: " + s.getServicio().getNombre() + " (" + fecha.format(DIA_HORA) + ")",
                 BigDecimal.valueOf(s.getCantidad()), s.getPrecioUnitario(), s.getTotal(), OrigenItem.SERVICIO,
                 s.getId(), facturado);
+    }
+
+    private LineaCuenta lineaProducto(VentaProductoItem p, boolean facturado) {
+        return new LineaCuenta("Consumo: " + p.getNombre() + " (" + p.getVenta().getFechaHora().format(DIA_HORA) + ")",
+                BigDecimal.valueOf(p.getCantidad()), p.getPrecioUnitario(), p.getTotal(), OrigenItem.PRODUCTO, p.getId(), facturado);
     }
 
     private static FacturaItem item(LineaCuenta l) {

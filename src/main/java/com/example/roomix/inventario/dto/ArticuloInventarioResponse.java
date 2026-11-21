@@ -24,6 +24,7 @@ public record ArticuloInventarioResponse(
         boolean stockBajo,
         String proveedor,
         BigDecimal precioUnitario,
+        @Schema(description = "Precio de venta al huésped; null si no se vende") BigDecimal precioVenta,
         @Schema(description = "cantidad × precio unitario") BigDecimal valorTotal,
         @Schema(type = "string", format = "date-time") LocalDateTime fechaHoraCreacion,
         @Schema(type = "string", format = "date-time") LocalDateTime fechaHoraUltimaActualizacion
@@ -42,6 +43,7 @@ public record ArticuloInventarioResponse(
                 .stockBajo(calcularStockBajo(articulo))
                 .proveedor(articulo.getProveedor())
                 .precioUnitario(articulo.getPrecioUnitario())
+                .precioVenta(articulo.getPrecioVenta())
                 .valorTotal(articulo.getPrecioUnitario() != null
                         ? articulo.getPrecioUnitario().multiply(BigDecimal.valueOf(articulo.getCantidad()))
                         : null)
