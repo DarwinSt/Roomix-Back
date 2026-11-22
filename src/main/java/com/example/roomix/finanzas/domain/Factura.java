@@ -45,6 +45,11 @@ public class Factura {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /** Control de concurrencia: si dos personas guardan el mismo registro a la vez, la segunda recibe un aviso (409). */
+    @jakarta.persistence.Version
+    @Column(name = "version", nullable = false, columnDefinition = "bigint default 0 not null")
+    private long version;
+
     /** Consecutivo con prefijo, ej. FV-000123. */
     @Column(nullable = false, length = 20)
     private String numero;

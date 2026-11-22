@@ -46,6 +46,11 @@ public class TurnoCaja {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /** Control de concurrencia: si dos personas guardan el mismo registro a la vez, la segunda recibe un aviso (409). */
+    @jakarta.persistence.Version
+    @Column(name = "version", nullable = false, columnDefinition = "bigint default 0 not null")
+    private long version;
+
     /** Usuario que abrió el turno y responde por la caja. */
     @Column(nullable = false, length = 50)
     private String cajero;

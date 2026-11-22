@@ -62,6 +62,11 @@ public enum InventarioErrorCode {
             HttpStatus.BAD_REQUEST,
             "INV-011",
             "La cantidad de una entrada o salida debe ser al menos 1"
+    ),
+    ARTICULO_MODIFICADO(
+            HttpStatus.CONFLICT,
+            "INV-012",
+            "«%s» cambió mientras lo editaba (por ejemplo, se vendió o se gastó). Recargue el formulario y vuelva a guardar"
     );
 
     private final HttpStatus httpStatus;

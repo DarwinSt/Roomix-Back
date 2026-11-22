@@ -1,5 +1,7 @@
 package com.example.roomix.inventario.service;
 
+import jakarta.persistence.LockModeType;
+
 import com.example.roomix.auth.service.UsuarioActual;
 import com.example.roomix.common.dto.PaginaResponse;
 import com.example.roomix.finanzas.domain.CategoriaFinanciera;
@@ -33,6 +35,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class InventarioService {
+
+    private final jakarta.persistence.EntityManager entityManager;
 
     private final ArticuloInventarioRepository articuloInventarioRepository;
     private final CategoriaInventarioService categoriaInventarioService;
@@ -83,6 +87,11 @@ public class InventarioService {
     @Transactional
     public ArticuloInventarioResponse actualizar(Long id, ArticuloInventarioRequest request) {
         ArticuloInventario articulo = buscarConCategoria(id);
+        entityManager.refresh(articulo, LockModeType.PESSIMISTIC_WRITE);
+        // El formulario se abrió con otra versión (p. ej. hubo una venta): guardar pisaría el stock real
+        if (request.version() != null && request.version() != articulo.getVersion()) {
+            throw new InventarioException(InventarioErrorCode.ARTICULO_MODIFICADO, articulo.getNombre());
+        }
         validarNombreUnico(request.nombre(), id);
         validarCantidadMinima(request.cantidad(), request.cantidadMinima());
         CategoriaInventario categoria = categoriaInventarioService.buscarActiva(request.categoriaId());
@@ -112,6 +121,8 @@ public class InventarioService {
     @Transactional
     public ArticuloInventarioResponse ajustarStock(Long id, AjustarStockRequest request) {
         ArticuloInventario articulo = buscarActivo(id);
+        // Bloquea y relee: si otra venta descontó stock un instante antes, se valida contra la cantidad real
+        entityManager.refresh(articulo, LockModeType.PESSIMISTIC_WRITE);
         int anterior = articulo.getCantidad();
         int cantidad = request.cantidad();
         String motivo = request.motivo() != null && !request.motivo().isBlank() ? request.motivo().trim() : null;

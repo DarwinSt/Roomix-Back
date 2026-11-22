@@ -111,6 +111,39 @@ public class GlobalExceptionHandler {
         return detail;
     }
 
+    /** Dos personas guardaron el mismo registro al mismo tiempo: la segunda debe recargar. */
+    @ExceptionHandler({org.springframework.orm.ObjectOptimisticLockingFailureException.class,
+            jakarta.persistence.OptimisticLockException.class})
+    public ProblemDetail handleVersion(Exception ex) {
+        return conflicto("CON-001", "Registro modificado por otra persona",
+                "Otra persona modificó este registro al mismo tiempo. Vuelva a cargar la pantalla y repita la operación.");
+    }
+
+    /** El registro está bloqueado por otra operación que no terminó a tiempo. */
+    @ExceptionHandler(org.springframework.dao.PessimisticLockingFailureException.class)
+    public ProblemDetail handleBloqueo(Exception ex) {
+        return conflicto("CON-002", "Registro ocupado", "Otra operación está usando este registro. Intente de nuevo en unos segundos.");
+    }
+
+    /** Restricciones de la base de datos (por ejemplo, un segundo turno de caja abierto). */
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ProblemDetail handleIntegridad(org.springframework.dao.DataIntegrityViolationException ex) {
+        String causa = String.valueOf(ex.getMostSpecificCause().getMessage()).toLowerCase();
+        if (causa.contains("uk_turno_caja_abierto")) {
+            return conflicto("CAJ-OCUPADA", "Caja ocupada", "Ya hay un turno de caja abierto: el hotel tiene una sola caja.");
+        }
+        return conflicto("CON-003", "Conflicto con otro registro",
+                "La operación choca con otro registro (por ejemplo, un dato que ya existe). Revise los datos y vuelva a intentar.");
+    }
+
+    private static ProblemDetail conflicto(String codigo, String titulo, String mensaje) {
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, mensaje);
+        detail.setTitle(titulo);
+        detail.setProperty("codigo", codigo);
+        detail.setProperty("timestamp", Instant.now());
+        return detail;
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> errores = new HashMap<>();

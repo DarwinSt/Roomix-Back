@@ -40,6 +40,11 @@ public class Reserva {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /** Control de concurrencia: si dos personas guardan el mismo registro a la vez, la segunda recibe un aviso (409). */
+    @jakarta.persistence.Version
+    @Column(name = "version", nullable = false, columnDefinition = "bigint default 0 not null")
+    private long version;
+
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "habitacion_id", nullable = false)
     private Habitacion habitacion;

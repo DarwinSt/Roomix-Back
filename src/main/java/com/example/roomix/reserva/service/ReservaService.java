@@ -45,6 +45,8 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class ReservaService {
 
+    private final jakarta.persistence.EntityManager entityManager;
+
     private static final List<EstadoReserva> ESTADOS_ACTIVOS = List.of(
             EstadoReserva.CONFIRMADA,
             EstadoReserva.EN_CURSO
@@ -147,6 +149,8 @@ public class ReservaService {
     public ReservaResponse crear(CrearReservaRequest request) {
         Habitacion habitacion = habitacionRepository.findById(request.habitacionId())
                 .orElseThrow(() -> new HabitacionNotFoundException(request.habitacionId()));
+        // Dos recepcionistas reservando la misma habitación: la segunda espera y luego ve las fechas ocupadas
+        bloquear(habitacion);
 
         inhabilitacionService.sincronizar(habitacion);
 
@@ -242,6 +246,7 @@ public class ReservaService {
     public ReservaResponse actualizar(Long id, ActualizarReservaRequest request) {
         Reserva reserva = buscarEntidad(id);
         Habitacion habitacion = reserva.getHabitacion();
+        bloquear(habitacion);
         EstadoReserva estado = reserva.getEstadoReserva();
         if (estado != EstadoReserva.CONFIRMADA && estado != EstadoReserva.EN_CURSO) {
             throw new ReservaException(ReservaErrorCode.RESERVA_NO_EDITABLE,
@@ -400,6 +405,14 @@ public class ReservaService {
                 .build();
 
         return reservaRepository.save(reserva);
+    }
+
+    /**
+     * Bloquea la fila de la habitación hasta que termine la transacción (SELECT … FOR UPDATE) y relee sus datos. Así
+     * las reservas de una misma habitación se procesan de a una y la validación de cruces ve siempre lo último guardado.
+     */
+    private void bloquear(Habitacion habitacion) {
+        entityManager.refresh(habitacion, jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);
     }
 
     /** Total = noches × tarifa − descuento de la promoción (que nunca supera el subtotal). */
