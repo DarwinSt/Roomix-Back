@@ -17,9 +17,10 @@ public interface TurnoCajaRepository extends JpaRepository<TurnoCaja, Long> {
 
     Optional<TurnoCaja> findFirstByEstadoOrderByFechaHoraCierreDesc(EstadoTurno estado);
 
+    /** El CAST evita que PostgreSQL reciba el cajero vacío como bytea (lower(bytea) no existe). */
     @Query("""
             SELECT t FROM TurnoCaja t
-            WHERE (:cajero IS NULL OR LOWER(t.cajero) = LOWER(:cajero))
+            WHERE (CAST(:cajero AS String) IS NULL OR LOWER(t.cajero) = LOWER(CAST(:cajero AS String)))
               AND t.fechaHoraApertura >= :desde AND t.fechaHoraApertura < :hasta
             ORDER BY t.fechaHoraApertura DESC
             """)
