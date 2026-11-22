@@ -99,7 +99,7 @@ public class ConfiguracionHotelService {
         ConfiguracionHotel c = entidad();
         return new ConfiguracionPublica(c.getNombre(), c.tieneLogo(), version(c),
                 licencia.habilitados().stream().sorted().toList(), modo(c), c.cobraIva(),
-                c.getColorPrimario(), c.getColorAcento(), c.getEslogan());
+                c.getColorPrimario(), c.getColorAcento(), c.getEslogan(), c.forma());
     }
 
     @Transactional(readOnly = true)
@@ -133,11 +133,29 @@ public class ConfiguracionHotelService {
 
     @Transactional
     public ConfiguracionResponse guardarLogo(MultipartFile archivo) {
+        return guardarLogo(archivo, false);
+    }
+
+    /**
+     * Guarda el logo. Si es la versión sin fondo del logo actual, se conserva el original (la primera vez) para poder
+     * volver a él; un logo nuevo reemplaza también al original.
+     */
+    @Transactional
+    public ConfiguracionResponse guardarLogo(MultipartFile archivo, boolean sinFondo) {
         if (archivo == null || archivo.isEmpty() || archivo.getSize() > MAX_LOGO
                 || archivo.getContentType() == null || !TIPOS_LOGO.contains(archivo.getContentType().toLowerCase())) {
             throw new ConfiguracionException(ConfiguracionErrorCode.LOGO_INVALIDO);
         }
         ConfiguracionHotel c = repository.findById(ConfiguracionHotel.ID).orElseGet(this::desdeVariables);
+        if (sinFondo && c.tieneLogo()) {
+            if (c.getLogoOriginal() == null) {
+                c.setLogoOriginal(c.getLogo());
+                c.setLogoOriginalTipo(c.getLogoTipo());
+            }
+        } else {
+            c.setLogoOriginal(null);
+            c.setLogoOriginalTipo(null);
+        }
         try {
             c.setLogo(archivo.getBytes());
         } catch (IOException e) {
@@ -153,6 +171,31 @@ public class ConfiguracionHotelService {
         ConfiguracionHotel c = repository.findById(ConfiguracionHotel.ID).orElseGet(this::desdeVariables);
         c.setLogo(null);
         c.setLogoTipo(null);
+        c.setLogoOriginal(null);
+        c.setLogoOriginalTipo(null);
+        c.setActualizadaPor(UsuarioActual.username());
+        return guardar(c);
+    }
+
+    /** Vuelve al logo como se subió (deshace «quitar el fondo»). */
+    @Transactional
+    public ConfiguracionResponse restaurarLogo() {
+        ConfiguracionHotel c = repository.findById(ConfiguracionHotel.ID).orElseGet(this::desdeVariables);
+        if (c.getLogoOriginal() == null) {
+            throw new ConfiguracionException(ConfiguracionErrorCode.SIN_LOGO_ORIGINAL);
+        }
+        c.setLogo(c.getLogoOriginal());
+        c.setLogoTipo(c.getLogoOriginalTipo());
+        c.setLogoOriginal(null);
+        c.setLogoOriginalTipo(null);
+        c.setActualizadaPor(UsuarioActual.username());
+        return guardar(c);
+    }
+
+    @Transactional
+    public ConfiguracionResponse cambiarFormaLogo(LogoForma forma) {
+        ConfiguracionHotel c = repository.findById(ConfiguracionHotel.ID).orElseGet(this::desdeVariables);
+        c.setLogoForma(forma);
         c.setActualizadaPor(UsuarioActual.username());
         return guardar(c);
     }
@@ -186,7 +229,7 @@ public class ConfiguracionHotelService {
                 c.getMesesRetencionHuespedes() == null ? 0 : c.getMesesRetencionHuespedes(),
                 Boolean.TRUE.equals(c.getCorreoConfirmacionReserva()), correo.habilitado(), c.tieneLogo(), version(c), licencia.cliente(),
                 Arrays.stream(Modulo.values()).map(m -> new ModuloInfo(m, m.getNombre(), licencia.habilitado(m))).toList(),
-                c.getColorPrimario(), c.getColorAcento(), c.getEslogan());
+                c.getColorPrimario(), c.getColorAcento(), c.getEslogan(), c.forma(), c.getLogoOriginal() != null);
     }
 
     private ConfiguracionHotel desdeVariables() {

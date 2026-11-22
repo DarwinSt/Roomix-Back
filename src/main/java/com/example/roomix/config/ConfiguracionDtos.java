@@ -32,7 +32,8 @@ public final class ConfiguracionDtos {
             boolean cobraIva,
             @Schema(description = "Color principal (#RRGGBB); null = colores de Roomix") String colorPrimario,
             @Schema(description = "Color de acento (#RRGGBB); null = colores de Roomix") String colorAcento,
-            String eslogan
+            String eslogan,
+            @Schema(description = "Forma del logo: ORIGINAL, ICONO o AVATAR") LogoForma logoForma
     ) {
     }
 
@@ -57,8 +58,13 @@ public final class ConfiguracionDtos {
             List<ModuloInfo> modulos,
             String colorPrimario,
             String colorAcento,
-            String eslogan
+            String eslogan,
+            LogoForma logoForma,
+            @Schema(description = "El logo actual es una versión sin fondo y se puede volver al original") boolean logoSinFondo
     ) {
+    }
+
+    public record FormaLogoRequest(@jakarta.validation.constraints.NotNull(message = "Indique la forma del logo") LogoForma forma) {
     }
 
     public record ConfiguracionRequest(

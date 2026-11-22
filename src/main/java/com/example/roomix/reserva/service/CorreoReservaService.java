@@ -204,7 +204,7 @@ public class CorreoReservaService {
                 ? "<p style=\"font-size:13px;color:#5b6660\">Si cancelas, el hotel retiene el " + penalidad.stripTrailingZeros().toPlainString()
                 + " % de lo abonado y devuelve el resto.</p>" : "";
         String logo = urlPublica != null && h.tieneLogo()
-                ? "<img src=\"" + urlPublica + "/api/configuracion/logo?v=" + version(h) + "\" alt=\"\" style=\"max-height:56px;max-width:160px;display:block;margin:0 0 10px\">"
+                ? "<img src=\"" + urlPublica + "/api/configuracion/logo?v=" + version(h) + "\" alt=\"\" style=\"" + estiloLogo(h) + "\">"
                 : "";
         String contacto = String.join(" · ", java.util.stream.Stream.of(h.getDireccion(), h.getCiudad(), h.getTelefono(), h.getEmail())
                 .filter(StringUtils::hasText).map(HtmlUtils::htmlEscape).toList());
@@ -259,6 +259,15 @@ public class CorreoReservaService {
             case CONFIRMACION -> "Confirmación de reserva";
             case MODIFICACION -> "Cambio en tu reserva";
             case CANCELACION -> "Cancelación de reserva";
+        };
+    }
+
+    /** El logo en el correo respeta la forma elegida (círculo o esquinas redondeadas, con fondo blanco). */
+    private static String estiloLogo(ConfiguracionHotel h) {
+        return switch (h.forma()) {
+            case ORIGINAL -> "max-height:56px;max-width:160px;display:block;margin:0 0 10px";
+            case ICONO -> "width:56px;height:56px;object-fit:contain;background:#ffffff;padding:4px;border-radius:12px;display:block;margin:0 0 10px";
+            case AVATAR -> "width:56px;height:56px;object-fit:contain;background:#ffffff;padding:4px;border-radius:50%;display:block;margin:0 0 10px";
         };
     }
 

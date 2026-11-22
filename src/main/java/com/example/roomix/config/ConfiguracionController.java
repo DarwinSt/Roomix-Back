@@ -79,8 +79,21 @@ public class ConfiguracionController {
 
     @Operation(summary = "Subir el logo (PNG, JPG o WebP; máx. 1 MB)")
     @PostMapping(value = "/logo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ConfiguracionResponse subirLogo(@RequestParam("archivo") MultipartFile archivo) {
-        return service.guardarLogo(archivo);
+    public ConfiguracionResponse subirLogo(@RequestParam("archivo") MultipartFile archivo,
+                                           @RequestParam(name = "sinFondo", defaultValue = "false") boolean sinFondo) {
+        return service.guardarLogo(archivo, sinFondo);
+    }
+
+    @Operation(summary = "Volver al logo como se subió (deshace quitar el fondo)")
+    @PostMapping("/logo/restaurar")
+    public ConfiguracionResponse restaurarLogo() {
+        return service.restaurarLogo();
+    }
+
+    @Operation(summary = "Forma del logo: original, ícono (esquinas redondeadas) o avatar (círculo)")
+    @org.springframework.web.bind.annotation.PutMapping("/logo/forma")
+    public ConfiguracionResponse formaLogo(@jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody ConfiguracionDtos.FormaLogoRequest request) {
+        return service.cambiarFormaLogo(request.forma());
     }
 
     @Operation(summary = "Quitar el logo")

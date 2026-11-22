@@ -98,6 +98,23 @@ public class ConfiguracionHotel {
     @Column(name = "logo_tipo", length = 40)
     private String logoTipo;
 
+    /** Logo como se subió, guardado al quitarle el fondo para poder volver a él. */
+    @Basic(fetch = FetchType.LAZY)
+    @Column(name = "logo_original")
+    private byte[] logoOriginal;
+
+    @Column(name = "logo_original_tipo", length = 40)
+    private String logoOriginalTipo;
+
+    /** ORIGINAL, ICONO o AVATAR (null = ORIGINAL). */
+    @Enumerated(jakarta.persistence.EnumType.STRING)
+    @Column(name = "logo_forma", length = 12)
+    private LogoForma logoForma;
+
+    public LogoForma forma() {
+        return logoForma != null ? logoForma : LogoForma.ORIGINAL;
+    }
+
     @Column(name = "actualizada_por", length = 50)
     private String actualizadaPor;
 
