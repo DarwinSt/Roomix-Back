@@ -129,6 +129,31 @@ class VentasChecklistAparienciaIntegracionTest {
     }
 
     @Test
+    void reporteDeVentasPorProductoConCostoYMargen() throws Exception {
+        String admin = token("admin");
+        Number categoriaId = JsonPath.read(enviar(get("/api/inventario/categorias"), admin, null)
+                .andReturn().getResponse().getContentAsString(), "$[0].id");
+        long chocolatina = id(enviar(post("/api/inventario"), admin, """
+                {"nombre":"Chocolatina de reporte","descripcion":"Minibar","categoriaId":%d,"cantidad":10,"unidadMedida":"UNIDAD",
+                 "precioUnitario":2000,"precioVenta":5000}""".formatted(categoriaId.longValue())).andExpect(status().isCreated()));
+        long venta = id(enviar(post("/api/ventas"), admin, venta("CONTADO", null, chocolatina, 2, "EFECTIVO"))
+                .andExpect(status().isCreated()));
+
+        // Ticket: la venta completa por su número
+        enviar(get("/api/ventas/" + venta), admin, null)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].nombre").value("Chocolatina de reporte"));
+
+        // El costo se guarda al vender: si después cambia, el margen de esta venta no cambia
+        enviar(get("/api/reportes/ventas-productos"), admin, null)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.productos[?(@.articuloId==%d)].ingresos".formatted(chocolatina)).value(hasItem(10000.0)))
+                .andExpect(jsonPath("$.productos[?(@.articuloId==%d)].costo".formatted(chocolatina)).value(hasItem(4000.0)))
+                .andExpect(jsonPath("$.productos[?(@.articuloId==%d)].margen".formatted(chocolatina)).value(hasItem(6000.0)));
+        enviar(get("/api/reportes/ventas-productos"), token("recepcion"), null).andExpect(status().isForbidden());
+    }
+
+    @Test
     void elAdministradorPersonalizaLosColoresDelHotel() throws Exception {
         String admin = token("admin");
         enviar(put("/api/configuracion/apariencia"), token("recepcion"), """

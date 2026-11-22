@@ -140,6 +140,7 @@ public class VentaService {
                     .cantidad(e.getValue())
                     .precioUnitario(a.getPrecioVenta())
                     .total(subtotal)
+                    .costoUnitario(a.getPrecioUnitario())
                     .build());
             total = total.add(subtotal);
         }
@@ -188,6 +189,61 @@ public class VentaService {
         venta.setAnuladaPor(UsuarioActual.username());
         venta.setFechaHoraAnulacion(LocalDateTime.now());
         return VentaResponse.from(ventaRepository.save(venta));
+    }
+
+    public VentaResponse obtener(Long id) {
+        return VentaResponse.from(ventaRepository.findById(id)
+                .orElseThrow(() -> new VentaException(VentaErrorCode.VENTA_NO_ENCONTRADA, id)));
+    }
+
+    /**
+     * Ventas del periodo por producto: unidades, ingresos, costo y margen (con el costo guardado al vender o, para ventas
+     * anteriores, el costo actual del artículo). Solo cuenta las ventas vigentes.
+     */
+    public ReporteVentas reporte(LocalDate desde, LocalDate hasta) {
+        LocalDate fin = hasta != null ? hasta : LocalDate.now();
+        LocalDate inicio = desde != null ? desde : fin.withDayOfMonth(1);
+        List<VentaProducto> ventas = ventaRepository.findByFechaHoraBetweenOrderByFechaHoraDesc(inicio.atStartOfDay(), fin.plusDays(1).atStartOfDay())
+                .stream().filter(VentaProducto::vigente).toList();
+        Map<Long, BigDecimal> costoActual = articuloRepository.findAll().stream()
+                .filter(a -> a.getPrecioUnitario() != null)
+                .collect(Collectors.toMap(ArticuloInventario::getId, ArticuloInventario::getPrecioUnitario));
+
+        Map<Long, ProductoReporte> porProducto = new LinkedHashMap<>();
+        BigDecimal contado = BigDecimal.ZERO;
+        BigDecimal cargado = BigDecimal.ZERO;
+        boolean costosCompletos = true;
+        for (VentaProducto v : ventas) {
+            if (v.getModo() == ModoVenta.CONTADO) contado = contado.add(v.getTotal());
+            else cargado = cargado.add(v.getTotal());
+            for (VentaProductoItem i : v.getItems()) {
+                BigDecimal costoUnit = i.getCostoUnitario() != null ? i.getCostoUnitario() : costoActual.get(i.getArticuloId());
+                if (costoUnit == null) costosCompletos = false;
+                BigDecimal costo = costoUnit != null ? costoUnit.multiply(BigDecimal.valueOf(i.getCantidad())) : BigDecimal.ZERO;
+                porProducto.merge(i.getArticuloId(), new ProductoReporte(i.getArticuloId(), i.getNombre(), i.getCantidad(), i.getTotal(), costo,
+                        i.getTotal().subtract(costo), costoUnit != null), ProductoReporte::sumar);
+            }
+        }
+        List<ProductoReporte> productos = porProducto.values().stream()
+                .sorted(Comparator.comparing(ProductoReporte::ingresos).reversed()).toList();
+        BigDecimal ingresos = contado.add(cargado);
+        BigDecimal costo = productos.stream().map(ProductoReporte::costo).reduce(BigDecimal.ZERO, BigDecimal::add);
+        int unidades = productos.stream().mapToInt(ProductoReporte::unidades).sum();
+        return new ReporteVentas(inicio, fin, ventas.size(), unidades, ingresos, contado, cargado, costo, ingresos.subtract(costo),
+                costosCompletos, productos);
+    }
+
+    public record ProductoReporte(Long articuloId, String nombre, int unidades, BigDecimal ingresos, BigDecimal costo, BigDecimal margen,
+                                  boolean costoConocido) {
+        ProductoReporte sumar(ProductoReporte o) {
+            return new ProductoReporte(articuloId, nombre, unidades + o.unidades, ingresos.add(o.ingresos), costo.add(o.costo),
+                    margen.add(o.margen), costoConocido && o.costoConocido);
+        }
+    }
+
+    public record ReporteVentas(LocalDate desde, LocalDate hasta, int ventas, int unidades, BigDecimal ingresos, BigDecimal contado,
+                                BigDecimal cargadoHabitaciones, BigDecimal costo, BigDecimal margen, boolean costosCompletos,
+                                List<ProductoReporte> productos) {
     }
 
     /** Productos cargados a la cuenta de una estadía (los usa la facturación). */

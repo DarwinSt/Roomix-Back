@@ -61,7 +61,7 @@ class ConcurrenciaIntegracionTest {
     void dosRecepcionistasNoPuedenReservarLaMismaHabitacionYFechas() throws Exception {
         String admin = token("admin");
         long habitacion = id(enviar(post("/api/habitaciones"), admin, """
-                {"numero":"961","tipoHabitacion":"DOBLE","descripcion":"Habitación de concurrencia","precioNoche":100000}""")
+                {"numero":"971","tipoHabitacion":"DOBLE","descripcion":"Habitación de concurrencia","precioNoche":100000}""")
                 .andExpect(status().isCreated()));
         List<Long> huespedes = new ArrayList<>();
         for (int i = 0; i < 4; i++) {

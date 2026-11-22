@@ -41,6 +41,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ReservaController {
 
+    private final com.example.roomix.reserva.service.CorreoReservaService correoReservaService;
+
     private final ReservaService reservaService;
     private final ReservaOperacionService operacionService;
     private final FacturacionService facturacionService;
@@ -95,6 +97,13 @@ public class ReservaController {
     @PutMapping("/{id}")
     public ReservaResponse actualizar(@PathVariable Long id, @Valid @RequestBody ActualizarReservaRequest request) {
         return reservaService.actualizar(id, request);
+    }
+
+    @Operation(summary = "Reenviar al huésped el correo de la reserva (confirmación o cancelación)")
+    @org.springframework.web.bind.annotation.PostMapping("/{id}/correo")
+    public ReservaResponse reenviarCorreo(@PathVariable Long id) {
+        correoReservaService.reenviar(id);
+        return reservaService.obtenerPorId(id);
     }
 
     @Operation(summary = "Cancelar reserva confirmada (con motivo)")

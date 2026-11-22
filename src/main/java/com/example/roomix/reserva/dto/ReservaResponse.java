@@ -45,7 +45,10 @@ public record ReservaResponse(
         @Schema(description = "Personas de la estadía") Integer cantidadPersonas,
         @Schema(description = "La tarifa es por persona y noche") boolean cobroPorPersona,
         @Schema(description = "Capacidad sugerida de la habitación") Integer capacidadSugerida,
-        @Schema(description = "Las personas superan la capacidad sugerida (solo advertencia)") boolean superaCapacidad
+        @Schema(description = "Las personas superan la capacidad sugerida (solo advertencia)") boolean superaCapacidad,
+        @Schema(description = "Último correo al huésped: ENVIADO, FALLIDO o SIN_CORREO (null: no se ha enviado)") String correoEstado,
+        @Schema(description = "CONFIRMACION, MODIFICACION o CANCELACION") String correoTipo,
+        LocalDateTime correoFechaHora
 ) {
     public static ReservaResponse from(Reserva reserva) {
         return ReservaResponse.builder()
@@ -81,6 +84,9 @@ public record ReservaResponse(
                 .valorDevuelto(reserva.getValorDevuelto())
                 .fechaHoraCreacion(reserva.getFechaHoraCreacion())
                 .fechaHoraUltimaActualizacion(reserva.getFechaHoraUltimaActualizacion())
+                .correoEstado(reserva.getCorreoEstado())
+                .correoTipo(reserva.getCorreoTipo())
+                .correoFechaHora(reserva.getCorreoFechaHora())
                 .build();
     }
 }

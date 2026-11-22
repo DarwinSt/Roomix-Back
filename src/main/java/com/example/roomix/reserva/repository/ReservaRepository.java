@@ -59,6 +59,16 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long>, JpaSpec
 
     List<Reserva> findByHabitacionIdOrderByFechaEntradaDesc(Long habitacionId);
 
+    /** Resultado del último correo al huésped (consulta directa: no cambia la versión de la reserva). */
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("""
+            update Reserva r set r.correoEstado = :estado, r.correoTipo = :tipo, r.correoFechaHora = :fecha where r.id = :id
+            """)
+    int registrarCorreo(@org.springframework.data.repository.query.Param("id") Long id,
+                        @org.springframework.data.repository.query.Param("estado") String estado,
+                        @org.springframework.data.repository.query.Param("tipo") String tipo,
+                        @org.springframework.data.repository.query.Param("fecha") java.time.LocalDateTime fecha);
+
     /** Estadías en un estado (p. ej. huéspedes alojados), por número de habitación. */
     List<Reserva> findByEstadoReservaOrderByHabitacionNumeroAsc(com.example.roomix.habitacion.domain.EstadoReserva estado);
 

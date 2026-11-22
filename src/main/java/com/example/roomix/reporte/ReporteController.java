@@ -17,7 +17,21 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class ReporteController {
 
+    private final com.example.roomix.venta.service.VentaService ventaService;
+
     private final ReporteService reporteService;
+
+    @io.swagger.v3.oas.annotations.Operation(summary = "Ventas de la tienda y el minibar por producto: unidades, ingresos, costo y margen")
+    @GetMapping("/ventas-productos")
+    public com.example.roomix.venta.service.VentaService.ReporteVentas ventasProductos(
+            @org.springframework.web.bind.annotation.RequestParam(required = false)
+            @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
+            java.time.LocalDate desde,
+            @org.springframework.web.bind.annotation.RequestParam(required = false)
+            @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
+            java.time.LocalDate hasta) {
+        return ventaService.reporte(desde, hasta);
+    }
 
     @Operation(summary = "Ocupación, ADR, RevPAR, canales, tipos de habitación y procedencia (por defecto, últimos 30 días)")
     @GetMapping("/ocupacion")

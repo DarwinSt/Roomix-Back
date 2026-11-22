@@ -125,6 +125,17 @@ public class Reserva {
     @Column(name = "valor_devuelto", precision = 12, scale = 2)
     private BigDecimal valorDevuelto;
 
+    /** Último correo al huésped sobre esta reserva: ENVIADO, FALLIDO o SIN_CORREO. */
+    @Column(name = "correo_estado", length = 20)
+    private String correoEstado;
+
+    /** CONFIRMACION, MODIFICACION o CANCELACION. */
+    @Column(name = "correo_tipo", length = 20)
+    private String correoTipo;
+
+    @Column(name = "correo_fecha_hora")
+    private LocalDateTime correoFechaHora;
+
     @Column(length = 500)
     private String observaciones;
 

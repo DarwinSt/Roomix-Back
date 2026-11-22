@@ -259,6 +259,8 @@ public class ReservaService {
 
         LocalDate entrada = request.fechaEntrada();
         LocalDate salida = request.fechaSalida();
+        boolean cambiaEstadia = !entrada.equals(reserva.getFechaEntrada()) || !salida.equals(reserva.getFechaSalida())
+                || (request.cantidadPersonas() != null && request.cantidadPersonas() != reserva.personas());
         int noches = validarFechas(entrada, salida);
         if (reservaRepository.existeSolapamientoExcluyendo(habitacion.getId(), reserva.getId(), entrada, salida, ESTADOS_ACTIVOS)) {
             throw new ReservaException(ReservaErrorCode.SOLAPAMIENTO);
@@ -306,6 +308,9 @@ public class ReservaService {
             sincronizarReservaVigente(habitacion);
         }
         habitacionRepository.save(habitacion);
+        if (cambiaEstadia) {
+            eventos.publishEvent(new com.example.roomix.reserva.domain.ReservaModificadaEvent(guardada.getId()));
+        }
         return ReservaResponse.from(guardada);
     }
 

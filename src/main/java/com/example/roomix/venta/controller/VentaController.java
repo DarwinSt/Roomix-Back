@@ -52,6 +52,12 @@ public class VentaController {
         return service.listar(reservaId, fecha);
     }
 
+    @Operation(summary = "Una venta (para el ticket)")
+    @GetMapping("/{id}")
+    public VentaResponse obtener(@PathVariable Long id) {
+        return service.obtener(id);
+    }
+
     @Operation(summary = "Registrar una venta")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

@@ -21,7 +21,9 @@ public enum ReservaErrorCode {
     PROMOCION_NO_APLICA("RES-013", "La promoción no aplica a esta reserva", HttpStatus.UNPROCESSABLE_ENTITY),
     PROMOCION_INVALIDA("RES-014", "Los datos de la promoción no son válidos", HttpStatus.BAD_REQUEST),
     ABONO_INSUFICIENTE("RES-015", "El abono no alcanza el mínimo exigido para reservar", HttpStatus.UNPROCESSABLE_ENTITY),
-    RESERVA_REQUIERE_PAGO("RES-016", "Las reservas se registran desde el formulario de reserva, con su pago", HttpStatus.UNPROCESSABLE_ENTITY);
+    RESERVA_REQUIERE_PAGO("RES-016", "Las reservas se registran desde el formulario de reserva, con su pago", HttpStatus.UNPROCESSABLE_ENTITY),
+    CORREO_NO_CONFIGURADO("RES-017", "El servidor no tiene configurado el envío de correos (BREVO_API_KEY y MAIL_FROM)", HttpStatus.UNPROCESSABLE_ENTITY),
+    HUESPED_SIN_CORREO("RES-018", "El huésped no tiene un correo válido registrado", HttpStatus.UNPROCESSABLE_ENTITY);
 
     private final String codigo;
     private final String mensaje;

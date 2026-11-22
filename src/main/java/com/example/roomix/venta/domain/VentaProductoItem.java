@@ -49,4 +49,8 @@ public class VentaProductoItem {
 
     @Column(nullable = false, precision = 14, scale = 2)
     private BigDecimal total;
+
+    /** Costo unitario del artículo al momento de la venta (para el margen); null si no se conocía. */
+    @Column(name = "costo_unitario", precision = 12, scale = 2)
+    private BigDecimal costoUnitario;
 }
